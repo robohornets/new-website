@@ -154,7 +154,15 @@ export default async function AdminSettingsPage() {
       </Grid>
 
       <Panel title="People on the Contact page">
-        <ul className="flex flex-col divide-y divide-line">
+        <ActionForm action={createContact} submitLabel="Add person" submitVariant="secondary" resetOnSuccess>
+          <div className="grid gap-3 md:grid-cols-[1fr_1.4fr_1fr_80px]">
+            <TextField label="Name" name="name" />
+            <TextField label="Role" name="role" placeholder="Booster Club Treasurer" />
+            <TextField label="Email" name="email" type="email" />
+            <TextField label="Order" name="sort_order" type="number" defaultValue={contacts.length} />
+          </div>
+        </ActionForm>
+        <ul className="flex flex-col divide-y divide-line border-t border-line">
           {contacts.map((c) => (
             <li key={c.id} className="flex flex-col gap-3 py-3 lg:flex-row lg:items-end">
               <EditForm action={updateContact.bind(null, c.id)} className="grow">
@@ -171,14 +179,6 @@ export default async function AdminSettingsPage() {
             </li>
           ))}
         </ul>
-        <ActionForm action={createContact} submitLabel="Add person" submitVariant="secondary" resetOnSuccess>
-          <div className="grid gap-3 md:grid-cols-[1fr_1.4fr_1fr_80px]">
-            <TextField label="Name" name="name" />
-            <TextField label="Role" name="role" placeholder="Booster Club Treasurer" />
-            <TextField label="Email" name="email" type="email" />
-            <TextField label="Order" name="sort_order" type="number" defaultValue={contacts.length} />
-          </div>
-        </ActionForm>
       </Panel>
     </>
   );

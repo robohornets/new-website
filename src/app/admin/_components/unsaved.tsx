@@ -308,7 +308,7 @@ function SavedToast() {
  * Widgets that control their own value (photo pickers, the Markdown editor)
  * put the saved value in data-default instead.
  */
-function hasChanges(form: HTMLFormElement): boolean {
+export function hasChanges(form: HTMLFormElement): boolean {
   for (const el of Array.from(form.elements)) {
     if (!(el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement || el instanceof HTMLSelectElement)) continue;
     if (el.disabled || !el.name) continue;

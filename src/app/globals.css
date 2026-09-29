@@ -57,6 +57,25 @@
   color-scheme: dark;
 }
 
+/* Tailwind 4 leaves buttons with the arrow cursor. Anything clickable gets the hand. */
+@layer base {
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  summary,
+  select:not(:disabled),
+  input[type="checkbox"]:not(:disabled),
+  input[type="radio"]:not(:disabled),
+  input[type="file"]:not(:disabled),
+  label:has(> input[type="checkbox"], > input[type="radio"], > input[type="file"]) {
+    cursor: pointer;
+  }
+
+  button:disabled,
+  select:disabled {
+    cursor: not-allowed;
+  }
+}
+
 html {
   background: var(--color-ink);
   /* Keeps #anchor targets from landing under the sticky header. */

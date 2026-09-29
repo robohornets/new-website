@@ -143,7 +143,7 @@ Everything is in **btwrobotics.com/admin**:
 | Before events | nothing | Events 1209 registers for appear from The Blue Alliance on their own. Upcoming ones show on the homepage, with a **Watch live** banner during the event. |
 | During/after events | **Seasons → (year) → event** | Results and every match fill in automatically. Fix anything (it's marked **Edited**), add a write-up, highlight video or album, or hide an event/match. |
 | Recruiting | **Join requests** | Switch the form on, share the `/join` link, then add students to the roster with one click (or decline). Switch it off when you're done. |
-| Anytime | **Team roster** | Add or remove people, set roles and subteams, add photos. Search and filter by subteam, class or leadership. Edit the subteam list at the top. Students show publicly as "First L." and their photos stay hidden unless *Show photo* is on. |
+| Anytime | **Team roster** | Each person is a card: **Edit** opens a popup for their details, subteams and photo (add, replace, remove, or hide from the site); **Remove** takes them off the season. **Add person** and **Manage subteams** are at the top, with search and filters by subteam, class or leadership. Students show publicly as "First L." and their photos stay hidden unless *Show photo* is on. |
 | Anytime | **News & outreach**, **Gallery**, **Sponsors** | Posts (Markdown), photo albums (drag and drop many at once), sponsor tiers per season. |
 | When it changes | **Site text & links** | Mission, values and the Strategic Plan (PDF or link) on the Team page. |
 | Rarely | **Site text & links** | Homepage hero, stats (`{members}` shows this season's student count, rounded down to the nearest 10), about text, socials, contact people, footer links, donate link. |
@@ -272,6 +272,8 @@ or `data-default` for widgets that control their own value, like photo pickers).
 at the bottom offers Save (every changed form, in page order) and Revert, and leaving the page is blocked: links and
 the browser Back button make the bar flash and shake, and closing the tab shows the browser's own warning. Forms that
 create something new (`ActionForm` with an "Add" button) and delete buttons still act immediately.
+Add forms sit above the list they add to. Confirmations use the site's own dialog (`useConfirm()` from
+`_components/modal.tsx`, also used by any button with a `confirm` prop) instead of the browser's.
 
 ### Admin security rules
 

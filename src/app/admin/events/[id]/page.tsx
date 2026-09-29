@@ -216,13 +216,8 @@ export default async function AdminEventPage(props: PageProps<"/admin/events/[id
           ) : undefined
         }
       >
-        <ul className="flex flex-col gap-2">
-          {matches.map((m) => (
-            <MatchItem key={m.id} match={m} />
-          ))}
-        </ul>
         <details className="rounded-md border border-dashed border-edge">
-          <summary className="cursor-pointer list-none px-4 py-3 font-semibold text-hornet">+ Add a match by hand</summary>
+          <summary className="list-none px-4 py-3 font-semibold text-hornet">+ Add a match by hand</summary>
           <div className="border-t border-line p-4">
             <ActionForm action={createMatch.bind(null, id)} submitLabel="Add match" resetOnSuccess>
               <Grid cols={4}>
@@ -240,6 +235,11 @@ export default async function AdminEventPage(props: PageProps<"/admin/events/[id
             </ActionForm>
           </div>
         </details>
+        <ul className="flex flex-col gap-2">
+          {matches.map((m) => (
+            <MatchItem key={m.id} match={m} />
+          ))}
+        </ul>
       </Panel>
 
       <Panel title="Danger zone">

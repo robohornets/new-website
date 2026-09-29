@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { MediaImage } from "@/components/media-image";
+import { ShowMore } from "@/components/show-more";
 import { Container, EmptyState, PageHeader } from "@/components/page-header";
 import { all } from "@/lib/db";
 import { getSeasons } from "@/lib/data";
@@ -34,8 +35,11 @@ export default async function SeasonsPage() {
         {seasons.length === 0 ? (
           <EmptyState>No seasons yet.</EmptyState>
         ) : (
-          <ul className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-            {seasons.map((s) => {
+          <ShowMore
+            noun="seasons"
+            initial={6}
+            className="grid gap-6 md:grid-cols-2 xl:grid-cols-3"
+            items={seasons.map((s) => {
               const seasonRobots = robotsByYear.get(s.year) ?? [];
               const photo = s.hero_key ?? seasonRobots.find((r) => r.photo_key)?.photo_key ?? null;
               return (
@@ -65,7 +69,7 @@ export default async function SeasonsPage() {
                 </li>
               );
             })}
-          </ul>
+          />
         )}
       </Container>
     </>

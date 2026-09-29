@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { ShowMore } from "@/components/show-more";
 import { Plus } from "@/components/icons";
 import { all } from "@/lib/db";
 import { SEASON_STATUS_LABEL, type SeasonStatus } from "@/lib/types";
@@ -69,8 +70,11 @@ export default async function AdminSeasonsPage() {
               </th>
             </tr>
           </thead>
-          <tbody>
-            {seasons.map((s) => (
+          <ShowMore
+            as="tbody"
+            noun="seasons"
+            columns={7}
+            items={seasons.map((s) => (
               <tr key={s.year} className="border-b border-line/60 last:border-0">
                 <td className="px-5 py-3.5">
                   <span className="font-display text-2xl font-extrabold">{s.year}</span>
@@ -90,7 +94,7 @@ export default async function AdminSeasonsPage() {
                 </td>
               </tr>
             ))}
-          </tbody>
+          />
         </table>
       </div>
     </>

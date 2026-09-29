@@ -3,6 +3,7 @@ import Link from "next/link";
 import { getAdminUser, isAccessConfigured } from "@/lib/auth";
 import { first } from "@/lib/db";
 import { AdminSidebar } from "./_components/sidebar";
+import { ConfirmProvider } from "./_components/modal";
 import { UnsavedChangesProvider } from "./_components/unsaved";
 import { HelpButton, HelpProvider } from "./_help/help-panel";
 
@@ -22,18 +23,20 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
 
   return (
     <HelpProvider>
-      <UnsavedChangesProvider>
-        <div className="flex min-h-dvh flex-col lg:flex-row">
-          <AdminSidebar email={user.email} badges={{ messages: counts?.messages ?? 0, join: counts?.join_requests ?? 0 }} />
-          {/* Bottom padding leaves room for the unsaved-changes bar. */}
-          <main className="flex min-w-0 grow flex-col gap-6 px-4 pt-5 pb-28 md:px-8 md:pt-6 xl:px-10">
-            <div className="flex justify-end">
-              <HelpButton />
-            </div>
-            {children}
-          </main>
-        </div>
-      </UnsavedChangesProvider>
+      <ConfirmProvider>
+        <UnsavedChangesProvider>
+          <div className="flex min-h-dvh flex-col lg:flex-row">
+            <AdminSidebar email={user.email} badges={{ messages: counts?.messages ?? 0, join: counts?.join_requests ?? 0 }} />
+            {/* Bottom padding leaves room for the unsaved-changes bar. */}
+            <main className="flex min-w-0 grow flex-col gap-6 px-4 pt-5 pb-28 md:px-8 md:pt-6 xl:px-10">
+              <div className="flex justify-end">
+                <HelpButton />
+              </div>
+              {children}
+            </main>
+          </div>
+        </UnsavedChangesProvider>
+      </ConfirmProvider>
     </HelpProvider>
   );
 }

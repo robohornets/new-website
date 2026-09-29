@@ -91,41 +91,7 @@ export default async function AdminSponsorsPage(props: PageProps<"/admin/sponsor
         </Panel>
       )}
 
-      <div className="grid gap-6 xl:grid-cols-[1fr_400px]">
-        <Panel title="All sponsors">
-          {sponsors.length === 0 && <p className="text-sm text-dust">No sponsors yet.</p>}
-          <ul className="flex flex-col gap-3">
-            {sponsors.map((s) => (
-              <li key={s.id}>
-                <details className="group rounded-md border border-line bg-ink">
-                  <summary className="flex cursor-pointer list-none items-center gap-4 px-4 py-3">
-                    <span className="flex h-10 w-20 shrink-0 items-center justify-center overflow-hidden rounded bg-bone">
-                      {s.logo_key ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src={mediaUrl(s.logo_key, 320) ?? ""} alt="" className="max-h-8 max-w-[72px] object-contain" />
-                      ) : (
-                        <span className="font-label text-[10px] text-ink/60">NO LOGO</span>
-                      )}
-                    </span>
-                    <span className="grow font-semibold">{s.name}</span>
-                    <span className="text-sm text-hornet group-open:hidden">Edit</span>
-                  </summary>
-                  <div className="flex flex-col gap-4 border-t border-line p-4">
-                    <EditForm action={updateSponsor.bind(null, s.id)}>
-                      <SponsorFields sponsor={s} library={library} />
-                    </EditForm>
-                    <div className="border-t border-line pt-4">
-                      <ActionButton action={deleteSponsor.bind(null, s.id)} variant="danger" confirm={`Delete ${s.name} from every season?`}>
-                        Delete sponsor
-                      </ActionButton>
-                    </div>
-                  </div>
-                </details>
-              </li>
-            ))}
-          </ul>
-        </Panel>
-
+      <div className="grid items-start gap-6 xl:grid-cols-[1fr_400px]">
         <div className="flex flex-col gap-6">
           <Panel title="Add a sponsor">
             <ActionForm action={createSponsor.bind(null, year)} submitLabel="Add sponsor" resetOnSuccess>
@@ -135,8 +101,50 @@ export default async function AdminSponsorsPage(props: PageProps<"/admin/sponsor
               )}
             </ActionForm>
           </Panel>
-          <Panel title="Tiers" description="Lower rank shows first. The top tier gets large tiles.">
+          <Panel title="All sponsors">
+            {sponsors.length === 0 && <p className="text-sm text-dust">No sponsors yet.</p>}
             <ul className="flex flex-col gap-3">
+              {sponsors.map((s) => (
+                <li key={s.id}>
+                  <details className="group rounded-md border border-line bg-ink">
+                    <summary className="flex cursor-pointer list-none items-center gap-4 px-4 py-3">
+                      <span className="flex h-10 w-20 shrink-0 items-center justify-center overflow-hidden rounded bg-bone">
+                        {s.logo_key ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={mediaUrl(s.logo_key, 320) ?? ""} alt="" className="max-h-8 max-w-[72px] object-contain" />
+                        ) : (
+                          <span className="font-label text-[10px] text-ink/60">NO LOGO</span>
+                        )}
+                      </span>
+                      <span className="grow font-semibold">{s.name}</span>
+                      <span className="text-sm text-hornet group-open:hidden">Edit</span>
+                    </summary>
+                    <div className="flex flex-col gap-4 border-t border-line p-4">
+                      <EditForm action={updateSponsor.bind(null, s.id)}>
+                        <SponsorFields sponsor={s} library={library} />
+                      </EditForm>
+                      <div className="border-t border-line pt-4">
+                        <ActionButton action={deleteSponsor.bind(null, s.id)} variant="danger" confirm={`Delete ${s.name} from every season?`}>
+                          Delete sponsor
+                        </ActionButton>
+                      </div>
+                    </div>
+                  </details>
+                </li>
+              ))}
+            </ul>
+          </Panel>
+        </div>
+
+        <div className="flex flex-col gap-6">
+          <Panel title="Tiers" description="Lower rank shows first. The top tier gets large tiles.">
+            <ActionForm action={createTier} submitLabel="Add tier" submitVariant="secondary" resetOnSuccess>
+              <div className="grid grid-cols-[1fr_80px] gap-2">
+                <TextField label="New tier" name="name" placeholder="Platinum" />
+                <TextField label="Rank" name="rank" type="number" defaultValue={tiers.length} />
+              </div>
+            </ActionForm>
+            <ul className="flex flex-col gap-3 border-t border-line pt-4">
               {tiers.map((t) => (
                 <li key={t.id} className="flex flex-wrap items-end gap-2">
                   <EditForm action={updateTier.bind(null, t.id)} className="grow">
@@ -151,12 +159,6 @@ export default async function AdminSponsorsPage(props: PageProps<"/admin/sponsor
                 </li>
               ))}
             </ul>
-            <ActionForm action={createTier} submitLabel="Add tier" submitVariant="secondary" resetOnSuccess>
-              <div className="grid grid-cols-[1fr_80px] gap-2">
-                <TextField label="New tier" name="name" placeholder="Platinum" />
-                <TextField label="Rank" name="rank" type="number" defaultValue={tiers.length} />
-              </div>
-            </ActionForm>
           </Panel>
         </div>
       </div>

@@ -6,6 +6,7 @@ import { ArrowRight, Download, External } from "@/components/icons";
 import { MediaImage } from "@/components/media-image";
 import { Container, EmptyState } from "@/components/page-header";
 import { RosterGrid } from "@/components/roster-grid";
+import { SeasonSwitcher } from "@/components/season-switcher";
 import { SponsorWall } from "@/components/sponsor-wall";
 import {
   getAlbums,
@@ -63,20 +64,8 @@ export default async function SeasonPage(props: PageProps<"/seasons/[year]">) {
     <>
       {/* Year rail */}
       <nav aria-label="Seasons" className="border-b border-line bg-panel">
-        <div className="mx-auto flex max-w-[1440px] items-center gap-2 overflow-x-auto px-4 py-4 md:px-8 xl:px-16">
-          <span className="eyebrow mr-3 shrink-0 text-xs text-ash">Season</span>
-          {seasons.map((s) => (
-            <Link
-              key={s.year}
-              href={`/seasons/${s.year}`}
-              aria-current={s.year === season.year ? "page" : undefined}
-              className={`flex h-11 shrink-0 items-center rounded-md px-4 font-label text-sm ${
-                s.year === season.year ? "bg-hornet font-bold text-ink" : "text-sand hover:bg-raise"
-              }`}
-            >
-              {s.year}
-            </Link>
-          ))}
+        <div className="mx-auto flex max-w-[1440px] items-center gap-2 px-4 py-4 md:px-8 xl:px-16">
+          <SeasonSwitcher years={seasons.map((s) => s.year)} current={season.year} href="/seasons/{year}" label="Season" variant="rail" />
         </div>
       </nav>
 

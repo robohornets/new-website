@@ -1,8 +1,9 @@
 "use client";
 
-import { useActionState, type ReactNode } from "react";
+import { useActionState, useRef, type MouseEvent, type ReactNode } from "react";
 import { useFormStatus } from "react-dom";
 import type { ActionState } from "@/lib/admin";
+import { useConfirm } from "./modal";
 
 type Action = (prev: ActionState, formData: FormData) => Promise<ActionState>;
 
@@ -62,6 +63,32 @@ export function FormStatus({ state }: { state: ActionState }) {
   return null;
 }
 
+/**
+ * onClick for a submit button that should ask first: stops the click, shows
+ * the site's confirm dialog, and submits with this same button if they agree.
+ */
+function useConfirmedSubmit(message: string | undefined, confirmLabel: string, danger: boolean) {
+  const ask = useConfirm();
+  const confirmed = useRef(false);
+  return (e: MouseEvent<HTMLButtonElement>) => {
+    if (!message || confirmed.current) {
+      confirmed.current = false;
+      return;
+    }
+    e.preventDefault();
+    const button = e.currentTarget;
+    void ask({ message, confirmLabel, danger }).then((ok) => {
+      if (!ok) return;
+      confirmed.current = true;
+      button.form?.requestSubmit(button);
+    });
+  };
+}
+
+function labelOf(children: ReactNode, fallback: string) {
+  return typeof children === "string" ? children : fallback;
+}
+
 const VARIANTS = {
   primary: "bg-hornet text-ink hover:bg-hornet-hover",
   secondary: "border border-line-strong text-bone hover:border-bone",
@@ -80,13 +107,12 @@ export function SubmitButton({
   confirm?: string;
 }) {
   const { pending } = useFormStatus();
+  const onClick = useConfirmedSubmit(confirm, labelOf(children, "Yes"), variant === "danger");
   return (
     <button
       type="submit"
       disabled={pending}
-      onClick={(e) => {
-        if (confirm && !window.confirm(confirm)) e.preventDefault();
-      }}
+      onClick={onClick}
       className={`flex h-10 items-center justify-center gap-2 rounded-md px-4 text-sm font-bold disabled:opacity-60 ${VARIANTS[variant]} ${className}`}
     >
       {pending ? "Working…" : children}
@@ -118,35 +144,5 @@ export function ActionButton({
       </SubmitButton>
       <FormStatus state={state} />
     </form>
-  );
-}
-
-/**
- * A button that runs its own Server Action from inside another form (for
- * example Delete on one row of a list that's saved as a whole).
- */
-export function InlineActionButton({
-  action,
-  children,
-  confirm,
-  className = "",
-}: {
-  action: () => Promise<void>;
-  children: ReactNode;
-  confirm?: string;
-  className?: string;
-}) {
-  return (
-    <button
-      type="submit"
-      formAction={action}
-      formNoValidate
-      onClick={(e) => {
-        if (confirm && !window.confirm(confirm)) e.preventDefault();
-      }}
-      className={`flex h-10 items-center rounded-md px-3 text-sm font-semibold text-danger hover:bg-danger/10 ${className}`}
-    >
-      {children}
-    </button>
   );
 }

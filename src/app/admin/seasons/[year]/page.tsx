@@ -139,6 +139,12 @@ export default async function AdminSeasonPage(props: PageProps<"/admin/seasons/[
 
       <Panel title="Robots" description="The first competition robot is featured on the homepage and season page.">
         <div id="robots" className="flex flex-col gap-3">
+          <details open={robots.length === 0} className="rounded-md border border-dashed border-edge">
+            <summary className="list-none px-4 py-3 font-semibold text-hornet">+ Add {robots.length ? "another" : "a"} robot</summary>
+            <div className="border-t border-line p-4">
+              <RobotForm library={library} year={year} />
+            </div>
+          </details>
           {robots.map((r) => (
             <details key={r.id} className="group rounded-md border border-line bg-ink">
               <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-4 py-3">
@@ -159,12 +165,6 @@ export default async function AdminSeasonPage(props: PageProps<"/admin/seasons/[
               </div>
             </details>
           ))}
-          <div className="rounded-md border border-dashed border-edge">
-            <h3 className="px-4 py-3 font-semibold text-hornet">+ Add {robots.length ? "another" : "a"} robot</h3>
-            <div className="border-t border-line p-4">
-              <RobotForm library={library} year={year} />
-            </div>
-          </div>
         </div>
       </Panel>
 
@@ -174,10 +174,17 @@ export default async function AdminSeasonPage(props: PageProps<"/admin/seasons/[
       >
         <div id="events" className="flex flex-col gap-4">
           <TbaSyncPanel year={year} status={tbaStatus} connected={tbaConnected} />
+          <details className="rounded-md border border-dashed border-edge">
+            <summary className="list-none px-4 py-3 font-semibold text-hornet">+ Add an event by hand</summary>
+            <div className="flex flex-col gap-3 border-t border-line p-4">
+              <p className="text-sm text-dust">For events The Blue Alliance doesn&apos;t list, like scrimmages, demos or outreach.</p>
+              <NewEventForm year={year} />
+            </div>
+          </details>
           {events.length === 0 && (
             <p className="text-sm text-dust">
               No events yet.{" "}
-              {tbaConnected ? "Click Sync above to pull them from The Blue Alliance, or add one by hand below." : "Add one by hand below."}
+              {tbaConnected ? "Click Sync above to pull them from The Blue Alliance, or add one by hand above." : "Add one by hand above."}
             </p>
           )}
           <ul className="flex flex-col gap-2">
@@ -213,13 +220,6 @@ export default async function AdminSeasonPage(props: PageProps<"/admin/seasons/[
               );
             })}
           </ul>
-          <details className="rounded-md border border-dashed border-edge">
-            <summary className="cursor-pointer list-none px-4 py-3 font-semibold text-hornet">+ Add an event by hand</summary>
-            <div className="flex flex-col gap-3 border-t border-line p-4">
-              <p className="text-sm text-dust">For events The Blue Alliance doesn&apos;t list, like scrimmages, demos or outreach.</p>
-              <NewEventForm year={year} />
-            </div>
-          </details>
         </div>
       </Panel>
 

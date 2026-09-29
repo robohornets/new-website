@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { MediaImage } from "@/components/media-image";
+import { SeasonSwitcher } from "@/components/season-switcher";
 import { Container, EmptyState, PageHeader } from "@/components/page-header";
-import { getAlbums, getSeasons } from "@/lib/data";
+import { getAlbums } from "@/lib/data";
+import { all } from "@/lib/db";
 
 export const metadata: Metadata = {
   title: "Gallery",
@@ -12,35 +14,21 @@ export const metadata: Metadata = {
 export default async function GalleryPage(props: PageProps<"/gallery">) {
   const { season: seasonParam } = await props.searchParams;
   const season = Number(Array.isArray(seasonParam) ? seasonParam[0] : seasonParam) || undefined;
-  const [albums, seasons] = await Promise.all([getAlbums(season), getSeasons()]);
-  const yearsWithAlbums = seasons.map((s) => s.year);
+  const [albums, withAlbums] = await Promise.all([
+    getAlbums(season),
+    all<{ year: number }>("SELECT DISTINCT season_year AS year FROM albums WHERE published = 1 AND season_year IS NOT NULL"),
+  ]);
+  // Only years that have albums, so every filter button shows something.
+  const yearsWithAlbums = withAlbums.map((r) => r.year);
 
   return (
     <>
       <PageHeader label="Photos" title="Gallery" intro={<p>Build nights, competition days and everything in between.</p>}>
-        <nav aria-label="Filter by season" className="flex flex-wrap gap-2 pt-2">
-          <Link
-            href="/gallery"
-            aria-current={!season ? "page" : undefined}
-            className={`flex h-11 items-center rounded-full px-5 text-sm font-semibold ${
-              !season ? "bg-bone text-ink" : "border border-line-strong text-sand hover:border-bone"
-            }`}
-          >
-            All
-          </Link>
-          {yearsWithAlbums.map((y) => (
-            <Link
-              key={y}
-              href={`/gallery?season=${y}`}
-              aria-current={season === y ? "page" : undefined}
-              className={`flex h-11 items-center rounded-full px-5 font-label text-sm ${
-                season === y ? "bg-bone font-bold text-ink" : "border border-line-strong text-sand hover:border-bone"
-              }`}
-            >
-              {y}
-            </Link>
-          ))}
-        </nav>
+        {yearsWithAlbums.length > 0 && (
+          <nav aria-label="Filter by season" className="pt-2">
+            <SeasonSwitcher years={yearsWithAlbums} current={season ?? null} href="/gallery?season={year}" variant="pill" all={{ label: "All", href: "/gallery" }} />
+          </nav>
+        )}
       </PageHeader>
       <Container className="py-16 md:py-24">
         {albums.length === 0 ? (
