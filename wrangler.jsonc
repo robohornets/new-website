@@ -18,7 +18,7 @@
 	"d1_databases": [
 		{
 			"binding": "DB",
-			"database_name": "btwrobotics",
+			"database_name": "btw-robotics",
 			"database_id": "0a483600-2eec-4bff-a8d3-739fcb5b1962",
 			"migrations_dir": "migrations"
 		}
@@ -40,7 +40,7 @@
 		// Filled in after creating the Cloudflare Access application for /admin.
 		// Team domain looks like "robohornets.cloudflareaccess.com".
 		// The AUD tag is on the Access application's Overview tab.
-		"CF_ACCESS_TEAM_DOMAIN": "",
-		"CF_ACCESS_AUD": ""
+		"CF_ACCESS_TEAM_DOMAIN": "btwrobotics.cloudflareaccess.com",
+		"CF_ACCESS_AUD": "2ad31c4d1d3df9e3711402f47a218712d9d8148f95ae1d92c7ac1bee55500a02"
 	}
 }
