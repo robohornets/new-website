@@ -2,7 +2,8 @@
 	"$schema": "node_modules/wrangler/config-schema.json",
 	"name": "btw-robotics",
 	"account_id": "bf0f37839f565aba35f34152a14d23eb",
-	"main": ".open-next/worker.js",
+	// worker.ts wraps the OpenNext build and adds the TBA sync cron job.
+	"main": "worker.ts",
 	"compatibility_date": "2026-09-01",
 	"compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
 	"assets": {
@@ -13,6 +14,11 @@
 	// 	{ "pattern": "btwrobotics.com", "custom_domain": true }
 	// ],
 	"workers_dev": true,
+	"triggers": {
+		// Every 15 minutes. Most runs do nothing; during an event they refresh it,
+		// and once a day they check for new events (see src/lib/tba/sync.ts).
+		"crons": ["*/15 * * * *"]
+	},
 	"observability": {
 		"enabled": true
 	},
@@ -42,6 +48,9 @@
 		// Team domain looks like "robohornets.cloudflareaccess.com".
 		// The AUD tag is on the Access application's Overview tab.
 		"CF_ACCESS_TEAM_DOMAIN": "btwrobotics.cloudflareaccess.com",
-		"CF_ACCESS_AUD": "2ad31c4d1d3df9e3711402f47a218712d9d8148f95ae1d92c7ac1bee55500a02"
-	},
+		"CF_ACCESS_AUD": "2ad31c4d1d3df9e3711402f47a218712d9d8148f95ae1d92c7ac1bee55500a02",
+		// The Blue Alliance team to sync. The API key is a secret:
+		//   npx wrangler secret put TBA_API_KEY
+		"TBA_TEAM_KEY": "frc1209"
+	}
 }

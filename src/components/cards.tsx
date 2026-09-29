@@ -114,35 +114,28 @@ export function PostCard({ post }: { post: Post }) {
 export function EventRow({ event }: { event: TeamEvent }) {
   const md = monthDay(event.start_date);
   return (
-    <li className="flex items-center gap-5 rounded-md border border-line bg-ink px-5 py-4.5">
-      <div className="flex w-16 shrink-0 flex-col items-center gap-0.5">
-        <span className="font-mono text-xs text-dust">{md?.month ?? "TBD"}</span>
-        <span className="font-display text-[34px] leading-none font-extrabold">{md?.day ?? "–"}</span>
-      </div>
-      <div className="flex min-w-0 grow flex-col gap-1">
-        <span className="text-[17px] font-semibold">
-          {event.tba_key ? (
-            <a
-              href={`https://www.thebluealliance.com/event/${event.tba_key}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-hornet"
-            >
-              {event.name}
-            </a>
-          ) : (
-            event.name
-          )}
-        </span>
-        {event.location && <span className="text-sm text-dust">{event.location}</span>}
-      </div>
-      {(event.rank || event.awards || event.record) && (
-        <div className="flex flex-col items-end gap-1 text-right">
-          {event.rank && <span className="font-mono text-sm font-bold text-amber">{event.rank}</span>}
-          {event.record && <span className="font-mono text-xs text-dust">{event.record}</span>}
-          {event.awards && <span className="text-[13px] text-dust">{event.awards}</span>}
+    <li>
+      <Link
+        href={`/seasons/${event.season_year}/events/${event.id}`}
+        className="group flex items-center gap-5 rounded-md border border-line bg-ink px-5 py-4.5 hover:border-edge"
+      >
+        <div className="flex w-16 shrink-0 flex-col items-center gap-0.5">
+          <span className="font-mono text-xs text-dust">{md?.month ?? "TBD"}</span>
+          <span className="font-display text-[34px] leading-none font-extrabold">{md?.day ?? "–"}</span>
         </div>
-      )}
+        <div className="flex min-w-0 grow flex-col gap-1">
+          <span className="text-[17px] font-semibold group-hover:text-hornet">{event.name}</span>
+          {event.location && <span className="text-sm text-dust">{event.location}</span>}
+        </div>
+        {(event.rank || event.awards || event.record || event.playoff_result) && (
+          <div className="flex flex-col items-end gap-1 text-right">
+            {event.rank && <span className="font-mono text-sm font-bold text-amber">{event.rank}</span>}
+            {event.record && <span className="font-mono text-xs text-dust">{event.record}</span>}
+            {event.playoff_result && <span className="text-[13px] text-sand">{event.playoff_result}</span>}
+            {event.awards && <span className="text-[13px] text-dust">{event.awards}</span>}
+          </div>
+        )}
+      </Link>
     </li>
   );
 }

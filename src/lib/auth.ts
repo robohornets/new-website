@@ -24,17 +24,17 @@ function jwksFor(teamDomain: string) {
  * stays locked even if someone reaches the Worker another way
  * (workers.dev URL, a misconfigured Access policy).
  *
- * Without CF_ACCESS_TEAM_DOMAIN / CF_ACCESS_AUD the admin is closed, except
- * under `next dev` where a local developer is let in.
+ * Without CF_ACCESS_TEAM_DOMAIN / CF_ACCESS_AUD the admin is closed.
+ * Under `next dev` (which only ever runs on a developer's own machine; the
+ * deployed Worker is always a production build) a local developer is let in.
  */
 export const getAdminUser = cache(async (): Promise<AdminUser | null> => {
+  if (process.env.NODE_ENV === "development") return { email: "dev@localhost" };
+
   const env = await getEnv();
   const teamDomain = env.CF_ACCESS_TEAM_DOMAIN?.trim().replace(/^https?:\/\//, "").replace(/\/$/, "");
   const aud = env.CF_ACCESS_AUD?.trim();
-
-  if (!teamDomain || !aud) {
-    return process.env.NODE_ENV === "development" ? { email: "dev@localhost" } : null;
-  }
+  if (!teamDomain || !aud) return null;
 
   const token = (await headers()).get("cf-access-jwt-assertion");
   if (!token) return null;

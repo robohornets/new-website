@@ -6,6 +6,7 @@ import { all, first } from "@/lib/db";
 import { formatBytes, formatDateTime } from "@/lib/format";
 import { SEASON_STATUS_LABEL, type Message } from "@/lib/types";
 import { AdminPageHeader, Panel } from "./_components/fields";
+import { HelpStartCard } from "./_help/help-panel";
 import { requireAdminPage } from "@/lib/auth";
 
 export default async function AdminDashboard() {
@@ -68,6 +69,8 @@ export default async function AdminDashboard() {
           </>
         }
       />
+
+      <HelpStartCard />
 
       {season ? (
         <div className="grid gap-4 xl:grid-cols-3">

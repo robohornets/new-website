@@ -12,6 +12,7 @@ export const EXPORT_TABLES: { name: string; label: string; omit?: string[] }[] =
   { name: "seasons", label: "Seasons" },
   { name: "robots", label: "Robots" },
   { name: "events", label: "Events & results" },
+  { name: "matches", label: "Matches" },
   { name: "people", label: "People" },
   { name: "roster_entries", label: "Roster (per season)" },
   { name: "sponsor_tiers", label: "Sponsor tiers" },

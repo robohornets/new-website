@@ -182,49 +182,27 @@ export async function deleteRobot(id: number, _prev: ActionState): Promise<Actio
 
 // ---- Events -----------------------------------------------------------------
 
-function eventFields(fd: FormData) {
-  const name = str(fd, "name", 160);
-  if (!name) throw new FormError("Give the event a name.");
-  return [
-    name,
-    oneOf(fd, "kind", EVENT_KINDS, "regional"),
-    str(fd, "location", 160),
-    date(fd, "start_date"),
-    date(fd, "end_date"),
-    optional(fd, "tba_key", 40)?.toLowerCase() ?? null,
-    str(fd, "rank", 60),
-    str(fd, "record", 60),
-    str(fd, "awards", 300),
-    str(fd, "notes", 2000),
-  ] as const;
-}
+// Editing, syncing and deleting events lives in ../events/actions.ts.
 
+/** Adds an event by hand, for things The Blue Alliance doesn't list (scrimmages, demos). */
 export async function createEvent(year: number, _prev: ActionState, fd: FormData): Promise<ActionState> {
-  return adminAction({ action: "create", entity: "event", entityId: year }, async () => {
-    await run(
-      `INSERT INTO events (name, kind, location, start_date, end_date, tba_key, rank, record, awards, notes, season_year)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      ...eventFields(fd),
+  let id = 0;
+  const result = await adminAction({ action: "create", entity: "event", entityId: year }, async () => {
+    const name = str(fd, "name", 160);
+    if (!name) throw new FormError("Give the event a name.");
+    const row = await first<{ id: number }>(
+      `INSERT INTO events (name, kind, location, start_date, end_date, tba_key, season_year)
+       VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING id`,
+      name,
+      oneOf(fd, "kind", EVENT_KINDS, "offseason"),
+      str(fd, "location", 160),
+      date(fd, "start_date"),
+      date(fd, "end_date"),
+      optional(fd, "tba_key", 40)?.toLowerCase() ?? null,
       year,
     );
-    return "Event added.";
+    id = row?.id ?? 0;
   });
-}
-
-export async function updateEvent(id: number, _prev: ActionState, fd: FormData): Promise<ActionState> {
-  return adminAction({ action: "update", entity: "event", entityId: id }, async () => {
-    await run(
-      `UPDATE events SET name = ?, kind = ?, location = ?, start_date = ?, end_date = ?, tba_key = ?, rank = ?,
-         record = ?, awards = ?, notes = ? WHERE id = ?`,
-      ...eventFields(fd),
-      id,
-    );
-  });
-}
-
-export async function deleteEvent(id: number, _prev: ActionState): Promise<ActionState> {
-  return adminAction({ action: "delete", entity: "event", entityId: id }, async () => {
-    await run("DELETE FROM events WHERE id = ?", id);
-    return "Event removed.";
-  });
+  if (result.ok && id) redirect(`/admin/events/${id}?created=1`);
+  return result;
 }

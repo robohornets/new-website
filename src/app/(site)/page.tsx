@@ -11,18 +11,58 @@ import {
   getPosts,
   getRobots,
   getSettings,
+  getLiveEvents,
   getUpcomingEvents,
 } from "@/lib/data";
 import { formatDate } from "@/lib/format";
+import type { TeamEvent } from "@/lib/types";
+
+/** Shown at the top of the homepage while 1209 is at an event. */
+function LiveBanner({ event }: { event: TeamEvent }) {
+  const status = [event.rank, event.record, event.playoff_result].filter(Boolean).join(" · ");
+  return (
+    <section aria-label="Live event" className="border-b border-hornet/40 bg-amber-bg">
+      <div className="mx-auto flex max-w-[1440px] flex-col gap-3 px-4 py-4 md:flex-row md:items-center md:justify-between md:px-8 xl:px-16">
+        <p className="flex flex-wrap items-center gap-x-3 gap-y-1">
+          <span className="flex items-center gap-2 font-mono text-xs font-bold tracking-widest text-hornet">
+            <span className="size-2 animate-pulse rounded-full bg-hornet" aria-hidden="true" />
+            LIVE NOW
+          </span>
+          <span className="font-semibold">{event.name}</span>
+          {status && <span className="font-mono text-sm text-sand">{status}</span>}
+        </p>
+        <div className="flex gap-2.5">
+          {event.webcast_url && (
+            <a
+              href={event.webcast_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex h-11 items-center rounded-md bg-hornet px-5 text-sm font-bold text-ink hover:bg-amber"
+            >
+              Watch live
+            </a>
+          )}
+          <Link
+            href={`/seasons/${event.season_year}/events/${event.id}`}
+            className="flex h-11 items-center rounded-md border border-hornet/60 px-5 text-sm font-semibold text-bone hover:border-hornet"
+          >
+            Follow our matches
+          </Link>
+        </div>
+      </div>
+    </section>
+  );
+}
 
 export default async function HomePage() {
-  const [settings, season, featured, posts, sponsors, upcoming] = await Promise.all([
+  const [settings, season, featured, posts, sponsors, upcoming, live] = await Promise.all([
     getSettings(),
     getCurrentSeason(),
     getFeaturedRobots(3),
     getPosts({ limit: 3 }),
     getLatestSponsors(),
     getUpcomingEvents(3),
+    getLiveEvents(),
   ]);
   const seasonRobots = season ? await getRobots(season.year) : [];
   const { hero, stats, about, build_steps, join, contact } = settings;
@@ -37,6 +77,10 @@ export default async function HomePage() {
 
   return (
     <>
+      {live.map((e) => (
+        <LiveBanner key={e.id} event={e} />
+      ))}
+
       {/* HERO */}
       <section className="relative overflow-hidden">
         <HexField />

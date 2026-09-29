@@ -67,6 +67,40 @@ export type TeamEvent = {
   record: string;
   awards: string;
   notes: string;
+  website: string | null;
+  webcast_url: string | null;
+  timezone: string | null;
+  alliance: string;
+  playoff_result: string;
+  recap: string;
+  highlight_video_url: string | null;
+  album_id: number | null;
+  hidden: number;
+  /** Latest values from The Blue Alliance (JSON). */
+  tba: string | null;
+  /** JSON array of field names an admin has overridden. */
+  overrides: string;
+  tba_synced_at: string | null;
+};
+
+export type Match = {
+  id: number;
+  event_id: number;
+  tba_key: string | null;
+  comp_level: string;
+  set_number: number;
+  match_number: number;
+  time: number | null;
+  red_teams: string;
+  blue_teams: string;
+  red_score: number | null;
+  blue_score: number | null;
+  our_alliance: "red" | "blue" | null;
+  result: "win" | "loss" | "tie" | "";
+  video_url: string | null;
+  hidden: number;
+  tba: string | null;
+  overrides: string;
 };
 
 export type PersonKind = "student" | "mentor";

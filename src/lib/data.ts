@@ -5,6 +5,7 @@ import type {
   Album,
   AlbumPhoto,
   Contact,
+  Match,
   Post,
   PostCategory,
   Robot,
@@ -101,17 +102,45 @@ export const getFeaturedRobots = cache(async (limit = 3): Promise<Robot[]> => {
   return rows.map(toRobot);
 });
 
-export const getEvents = cache(async (year: number): Promise<TeamEvent[]> =>
+/** A season's events. Hidden ones are left out unless `includeHidden` (admin). */
+export const getEvents = cache(async (year: number, includeHidden = false): Promise<TeamEvent[]> =>
   all<TeamEvent>(
-    `SELECT * FROM events WHERE season_year = ? ORDER BY start_date IS NULL, start_date, id`,
+    `SELECT * FROM events WHERE season_year = ? ${includeHidden ? "" : "AND hidden = 0"}
+     ORDER BY start_date IS NULL, start_date, id`,
     year,
   ),
 );
 
+export const getEvent = cache(async (id: number): Promise<TeamEvent | null> =>
+  first<TeamEvent>("SELECT * FROM events WHERE id = ?", id),
+);
+
+// "Today" in Tulsa, for SQLite: UTC minus 5 hours (6 in winter) is close enough.
+const TODAY = "date('now', '-5 hours')";
+
 export const getUpcomingEvents = cache(async (limit = 3): Promise<TeamEvent[]> =>
   all<TeamEvent>(
-    `SELECT * FROM events WHERE start_date >= date('now') ORDER BY start_date LIMIT ?`,
+    `SELECT * FROM events WHERE hidden = 0 AND date(start_date) > ${TODAY} ORDER BY start_date LIMIT ?`,
     limit,
+  ),
+);
+
+/** Events happening right now. */
+export const getLiveEvents = cache(async (): Promise<TeamEvent[]> =>
+  all<TeamEvent>(
+    `SELECT * FROM events WHERE hidden = 0 AND start_date IS NOT NULL
+       AND date(start_date) <= ${TODAY} AND date(COALESCE(end_date, start_date)) >= ${TODAY}
+     ORDER BY start_date`,
+  ),
+);
+
+/** Matches in play order: quals, then playoffs by round. */
+export const getMatches = cache(async (eventId: number, includeHidden = false): Promise<Match[]> =>
+  all<Match>(
+    `SELECT * FROM matches WHERE event_id = ? ${includeHidden ? "" : "AND hidden = 0"}
+     ORDER BY CASE comp_level WHEN 'qm' THEN 0 WHEN 'ef' THEN 1 WHEN 'qf' THEN 2 WHEN 'sf' THEN 3 WHEN 'f' THEN 4 ELSE 5 END,
+              set_number, match_number, id`,
+    eventId,
   ),
 );
 

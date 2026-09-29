@@ -116,7 +116,7 @@ export function ActionButton({
       <SubmitButton variant={variant} confirm={confirm}>
         {children}
       </SubmitButton>
-      {state.error && <span className="text-sm text-danger">{state.error}</span>}
+      <FormStatus state={state} />
     </form>
   );
 }

@@ -61,24 +61,48 @@ migrations. Wrangler tracks which migrations have run, so this is safe to rerun 
 The Worker also checks the Access token itself, so the admin stays locked even when the Worker is reached by its
 `*.workers.dev` URL. While those two values are empty, the deployed admin is **locked for everyone**.
 
-### 5. Pick a Workers plan
+### 5. Connect The Blue Alliance
+
+Events, rankings, awards and match results come from [The Blue Alliance](https://www.thebluealliance.com) (TBA).
+
+1. Sign in at thebluealliance.com, open **Account**, and under **Read API Keys** add a key (description: "btwrobotics.com").
+2. Store it as a Worker secret (never in `wrangler.jsonc`):
+
+   ```bash
+   npx wrangler secret put TBA_API_KEY
+   ```
+
+3. In the admin, go to **Seasons, robots & events** and click **Import all past seasons from TBA** once.
+
+After that it runs itself: a cron trigger (`triggers.crons` in `wrangler.jsonc`, handled in `worker.ts`) fires every
+15 minutes. During an event (the day before through the day after) it refreshes that event; once a day it checks
+for newly registered events. It sends TBA's ETags back, so unchanged data isn't downloaded again. Each run touches
+at most three events, which keeps it inside the Workers Free plan's per-run limits. Admins can also press
+**Sync now** on a season or event at any time.
+
+Admin edits always win: a field an admin changes is marked **Edited** and syncing never touches it again until
+someone clicks **Reset to TBA** (`src/lib/tba/fields.ts`).
+
+### 6. Pick a Workers plan
 
 The **Workers Free** plan caps each request at 10 ms of CPU. Rendering a Next.js page usually takes 10–30 ms, so
-some page loads on Free will fail with error 1102. **Workers Paid ($5/month)** raises the cap to 30 s and includes
-10 million requests a month, which is plenty for this site. Upgrade under **Workers & Pages → Plans**.
+busy pages on Free can fail with error 1102 (Cloudflare allows occasional overruns, not steady ones).
+**Workers Paid ($5/month)** raises the cap to 30 s and includes 10 million requests a month, which is plenty for this
+site. Upgrade under **Workers & Pages → Plans**. Nothing in the code needs to change when you switch.
 
 Images transformations need no setup: the free Images plan includes 5,000 unique transformations a month (see
 [Photos and videos](#photos-and-videos)).
 
-### 6. Deploy
+### 7. Deploy
 
 ```bash
 npm run deploy
 ```
 
-`wrangler.jsonc` attaches the Worker to `btwrobotics.com` as a custom domain. If `btwrobotics.com` still has old DNS
-records (A/CNAME for the old host), delete them first in **DNS → Records**, or the deploy will refuse to take the
-domain.
+Until the domain is set up, the site runs on the Worker's `*.workers.dev` address and the `routes` block in
+`wrangler.jsonc` stays commented out. When `btwrobotics.com` is on Cloudflare, uncomment it, delete any old DNS
+records for the domain (A/CNAME for the old host) in **DNS → Records**, and deploy again. Then point the Cloudflare
+Access application at `btwrobotics.com/admin` too.
 
 ---
 
@@ -89,9 +113,19 @@ npm run db:migrate:local   # creates a local D1 in .wrangler/ with the starter c
 npm run dev                # http://localhost:3000
 ```
 
-Under `npm run dev`, `/admin` is open without Access (you're signed in as `dev@localhost`) and uploads go to a local
-R2 emulation. To try the real Worker runtime locally, run `npm run preview`. The admin is locked there unless the
-Access vars are set.
+Under `npm run dev`, `/admin` is always open (you're signed in as `dev@localhost`) and uploads go to a local R2
+emulation. `next dev` only runs on your own machine; the deployed Worker is a production build and always checks
+Cloudflare Access. To try the real Worker runtime locally, run `npm run preview`, where the admin needs Access like
+production does.
+
+To sync from TBA locally, put your key in a `.dev.vars` file (git-ignored):
+
+```
+TBA_API_KEY=your-key
+```
+
+To run the cron job by hand: `npx opennextjs-cloudflare build && npx wrangler dev --test-scheduled`, then open
+`http://localhost:8787/__scheduled?cron=*/15+*+*+*+*`.
 
 Other scripts: `npm run lint`, `npm run typecheck`, `npm run cf-typegen` (rerun after changing `wrangler.jsonc`).
 
@@ -105,8 +139,8 @@ Everything is in **btwrobotics.com/admin**:
 | --- | --- | --- |
 | Before or at kickoff | **Seasons → Start new season** | Year, game name, kickoff date. Carries over returning students (skips anyone whose graduation year has passed), mentors and sponsors, and makes it the homepage's current season. |
 | Build season | **Seasons → (year)** | Add the robot: name, specs (`Label: value` per line), tags, GitHub link, photo. Set status to *Build season*. |
-| Before events | **Seasons → (year) → Competitions** | Add each regional with dates and its Blue Alliance key. Upcoming ones appear on the homepage. |
-| After events | same place | Rank, record and awards. |
+| Before events | nothing | Events 1209 registers for appear from The Blue Alliance on their own. Upcoming ones show on the homepage, with a **Watch live** banner during the event. |
+| During/after events | **Seasons → (year) → event** | Results and every match fill in automatically. Fix anything (it's marked **Edited**), add a write-up, highlight video or album, or hide an event/match. |
 | Anytime | **Team roster** | Add or remove people and set roles. Students show publicly as "First L." and their photos stay hidden unless *Show photo* is on. |
 | Anytime | **News & outreach**, **Gallery**, **Sponsors** | Posts (Markdown), photo albums (drag and drop many at once), sponsor tiers per season. |
 | Rarely | **Site text & links** | Homepage hero, stats, about text, socials, contact people, footer links, donate link. |
@@ -121,10 +155,13 @@ Older seasons stay browsable at `/seasons/<year>` with their robot, events, rost
 ```
 src/app/(site)/        public pages (home, team, seasons, news, outreach, gallery, sponsors, contact)
 src/app/admin/         admin panel: pages, server actions, api/upload
+src/app/admin/_help/   the admin's Help panel and its guides (guides.ts): update them when the admin changes
 src/app/media/[...key] serves R2 originals, and resized copies via the Images binding
 src/lib/               db helpers, data queries, Cloudflare Access auth, types
+src/lib/tba/           The Blue Alliance client, field mapping, overrides and sync (plain Worker code)
 migrations/            D1 schema and seed data
-wrangler.jsonc         Worker config: D1, R2, Access vars, custom domain
+worker.ts              Worker entry: serves the OpenNext build and runs the TBA cron job
+wrangler.jsonc         Worker config: D1, R2, Images, cron, Access and TBA vars, custom domain
 open-next.config.ts    OpenNext adapter config
 ```
 
@@ -137,7 +174,12 @@ Content is organised around **seasons**. Each FRC year is a row, and most other 
 
 - `seasons`: year (PK), game name, summary, status (`pre_kickoff` / `build` / `competition` / `offseason`), kickoff date, reveal video, hero photo, `is_current` (at most one)
 - `robots`: per season: name, kind (competition / kitbot / …), description, specs JSON, tags JSON, code and CAD links, photo
-- `events`: per season: name, kind, location, dates, Blue Alliance key, rank, record, awards
+- `events`: per season: name, kind, location, dates, website, webcast, Blue Alliance key, rank, record, alliance,
+  playoff result, awards, plus admin-only extras (write-up, highlight video, album, hidden). `tba` holds the latest
+  TBA values and `overrides` lists the fields an admin changed; syncing only writes fields not in that list.
+- `matches`: per event: round, teams on each alliance, scores, our side, result, video, hidden, with the same
+  `tba`/`overrides` pair
+- `tba_cache`: the last ETag for each TBA request, so unchanged data is skipped
 - `people` + `roster_entries`: a person exists once; a roster entry puts them on a season with a role, subteam and leadership flag. This is how the roster carries over year to year.
 - `sponsors` + `sponsor_tiers` + `sponsor_seasons`: sponsors are stored once; each season lists who sponsored it and at what tier
 - `posts`: news and outreach articles in Markdown (raw HTML is not rendered), optionally tied to a season

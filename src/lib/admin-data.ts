@@ -26,6 +26,18 @@ export async function getCurrentYear(): Promise<number | null> {
   return row?.year ?? null;
 }
 
+export type TbaStatus = { at: string; trigger: string; ok: boolean; message: string; errors: string[] };
+
+/** Result of the last Blue Alliance sync (manual or automatic). */
+export async function getTbaStatus(): Promise<TbaStatus | null> {
+  const row = await first<{ value: string }>("SELECT value FROM site_settings WHERE key = 'tba_status'");
+  try {
+    return row ? (JSON.parse(row.value) as TbaStatus) : null;
+  } catch {
+    return null;
+  }
+}
+
 /** Resolves ?season= against existing seasons, defaulting to the current one. */
 export async function resolveSeasonParam(raw: string | string[] | undefined): Promise<{ year: number | null; years: number[] }> {
   const years = await getSeasonYears();
