@@ -10,7 +10,7 @@ import { AdminPageHeader, Checkbox, Panel, SelectField, TextField } from "../_co
 import { EditForm } from "../_components/unsaved";
 import { saveSettings } from "../settings/actions";
 import { addJoinToRoster, clearJoinTab, declineJoin, deleteJoin, reopenJoin } from "./actions";
-import { CopyJoinLink } from "./copy-link";
+import { CopyLink } from "../_components/copy-link";
 
 export const metadata: Metadata = { title: "Join requests" };
 
@@ -95,7 +95,7 @@ export default async function AdminJoinPage(props: PageProps<"/admin/join">) {
             </span>
           </div>
         </EditForm>
-        <CopyJoinLink />
+        <CopyLink path="/join" />
       </Panel>
 
       <nav aria-label="Request status" className="flex flex-wrap gap-1.5">

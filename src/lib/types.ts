@@ -261,4 +261,6 @@ export type SiteSettings = {
   strategic_plan: StrategicPlan;
   /** The /join form only accepts requests while this is on. */
   join_requests: { open: boolean };
+  /** /scouting only works while this is on. */
+  scouting: { open: boolean };
 };

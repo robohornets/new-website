@@ -13,6 +13,7 @@ const GROUPS = [
       { href: "/admin/seasons", label: "Seasons, robots & events" },
       { href: "/admin/roster", label: "Team roster" },
       { href: "/admin/join", label: "Join requests", badge: "join" },
+      { href: "/admin/scouting", label: "Scouting" },
     ],
   },
   {

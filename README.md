@@ -147,6 +147,7 @@ Everything is in **btwrobotics.com/admin**:
 | Anytime | **News & outreach**, **Gallery**, **Sponsors** | Posts (Markdown), photo albums (drag and drop many at once), sponsor tiers per season. |
 | When it changes | **Site text & links** | Mission, values and the Strategic Plan (PDF or link) on the Team page. |
 | Rarely | **Site text & links** | Homepage hero, stats (`{members}` shows this season's student count, rounded down to the nearest 10), about text, socials, contact people, footer links, donate link. |
+| After kickoff | **Scouting** | Build this year's scouting form (copy last year's or start from the example), then tick **Open /scouting** and share the link. |
 | Always | **Messages** | Contact form submissions. |
 
 Older seasons stay browsable at `/seasons/<year>` with their robot, events, roster, sponsors and photos.
@@ -183,6 +184,7 @@ hornet** at small sizes: save its SVG as `src/app/icon.svg` and delete `src/app/
 ```
 src/app/(site)/        public pages (home, team, seasons, news, outreach, gallery, sponsors, contact)
 src/app/join/          the unlisted join-request form (on/off in the admin)
+src/app/scouting/      the public scouting app (/scouting) and its API (/scouting/api/*)
 src/app/admin/         admin panel: pages, server actions, api/upload
 src/app/admin/_help/   the admin's Help panel and its guides (guides.ts): update them when the admin changes
 src/app/media/[...key] serves R2 originals, and resized copies via the Images binding
@@ -211,6 +213,7 @@ Content is organised around **seasons**. Each FRC year is a row, and most other 
 - `tba_cache`: the last ETag for each TBA request, so unchanged data is skipped
 - `people` + `roster_entries`: a person exists once; a roster entry puts them on a season with a role, main subteam and leadership flag. This is how the roster carries over year to year.
 - `subteams` + `roster_extra_subteams`: the subteam list admins edit (private ones can't be picked on the join form), and any extra subteams a roster entry is on
+- `scouting_forms`, `scouting_entries`, `scouting_history`: see Scouting below
 - `join_requests`: students asking to join from `/join` (name, class, subteam ranking, about), with pending / added / declined status. The form only accepts requests while `site_settings.join_requests.open` is on.
 - `sponsors` + `sponsor_tiers` + `sponsor_seasons`: sponsors are stored once; each season lists who sponsored it and at what tier
 - `posts`: news and outreach articles in Markdown (raw HTML is not rendered), optionally tied to a season
@@ -263,6 +266,25 @@ rclone config create r2 s3 provider=Cloudflare access_key_id=<key> secret_access
   endpoint=https://bf0f37839f565aba35f34152a14d23eb.r2.cloudflarestorage.com
 rclone copy r2:btwrobotics-media ./btwrobotics-media --progress
 ```
+
+### Scouting
+
+`/scouting` is a public, team-by-team notebook for competitions (not linked from the site; share the link). It only
+works while **Open /scouting** is on in the admin, and uses the current season's form.
+
+- **Form** (`scouting_forms`, one per season): *Robot questions* (one shared sheet per team, like a wiki page) and
+  *Match report* questions (any number per team, each tied to a TBA match or a general note). Field types are in
+  `src/lib/scouting.ts`: heading, counter, yes/no, pick one, pick any, 1–5 rating, number, short text, notes. Answers are
+  stored by field id, so renaming a question keeps its answers.
+- **Data** (`scouting_entries`): anyone can add, edit or delete. The robot sheet merges per question, so two phones
+  filling in different questions offline both keep their answers. Every change first copies the old version into
+  `scouting_history`; the admin can restore any version or deleted entry.
+- **Offline**: `public/scouting-sw.js` keeps the page and its files on the phone (production builds only). The app
+  keeps the last copy of every event and team it opened in `localStorage` and queues changes there, uploading them to
+  `POST /scouting/api/sync` when signal returns. Writes are rate limited per network (2000 changes an hour).
+- **The Blue Alliance**: team lists, rankings, OPRs, team info, match lists and robot photos come through
+  `tbaCachedJson` (`src/lib/tba/cache.ts`), which keeps each response in `tba_json_cache` for a few minutes and then
+  revalidates with an ETag. Without a TBA key, scouts can still type team numbers.
 
 ### Admin forms and the save bar
 

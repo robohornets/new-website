@@ -6,14 +6,14 @@
 
 export type Guide = {
   id: string;
-  group: "Start here" | "Season basics" | "Photos & posts" | "People & sponsors" | "Site text";
+  group: "Start here" | "Season basics" | "Photos & posts" | "People & sponsors" | "Site text" | "Scouting";
   title: string;
   pages: string[];
   steps: string[];
   tips?: string[];
 };
 
-export const GROUPS: Guide["group"][] = ["Start here", "Season basics", "Photos & posts", "People & sponsors", "Site text"];
+export const GROUPS: Guide["group"][] = ["Start here", "Season basics", "Photos & posts", "People & sponsors", "Site text", "Scouting"];
 
 export const GUIDES: Guide[] = [
   // ---- Start here ------------------------------------------------------------
@@ -365,6 +365,51 @@ export const GUIDES: Guide[] = [
       "Click **Save changes** in the bar at the bottom. The Team page shows the summary with a **Read the Strategic Plan** button.",
     ],
     tips: ["Clear both the PDF and the link to hide the section."],
+  },
+
+  // ---- Scouting ---------------------------------------------------------------
+  {
+    id: "scouting-form",
+    group: "Scouting",
+    title: "Set up scouting for a new game",
+    pages: ["/admin/scouting"],
+    steps: [
+      "After kickoff, go to **Scouting** and check the season at the top is the new one.",
+      "Under the form, click the **Copy the … form** button to reuse last year's questions, or **Start from the example form**.",
+      "**Robot questions** are what you ask a team in their pit (drivetrain, weight, what they can score). Each team has one shared sheet anyone can update.",
+      "**Match report** is filled in while watching one of their matches. A team can have as many reports as you like.",
+      "Rename questions for this year's game, change options, use ↑ ↓ to reorder, and **+ Counter**, **+ Yes / no**, **+ Pick one** and the others to add more. **Heading** splits the form into parts like Autonomous and Endgame.",
+      "Click **Save changes** in the bar at the bottom.",
+    ],
+    tips: [
+      "Removing a question hides it but keeps the answers people gave. Adding it back brings them back.",
+      "Counters get big − and + buttons on phones, so they're best for things you count during a match.",
+    ],
+  },
+  {
+    id: "scouting-open",
+    group: "Scouting",
+    title: "Open scouting for an event",
+    pages: ["/admin/scouting"],
+    steps: [
+      "On **Scouting**, tick **Open /scouting** and click **Save changes**.",
+      "Click **Copy link** and share it with your scouts. It isn't linked anywhere on the site. Anyone with the link can add to it, including other teams.",
+      "Have everyone open the link once with signal (hotel Wi-Fi, before the event). After that it works in the stands with no signal: what they save waits on the phone and uploads by itself when signal comes back.",
+      "Teams at your events come from The Blue Alliance, with their rank, record, OPR and matches. Scouts can also type any team number.",
+      "Untick **Open /scouting** at the end of the season.",
+    ],
+  },
+  {
+    id: "scouting-results",
+    group: "Scouting",
+    title: "Look at results and fix mistakes",
+    pages: ["/admin/scouting"],
+    steps: [
+      "**Results** at the bottom of **Scouting** lists every team scouted this season. Click **Open** to see their robot sheet and all their reports.",
+      "Anyone on /scouting can edit or delete, so every change is kept. Open **Earlier versions** under an entry and click **Restore this version** to undo a change.",
+      "Deleted entries are listed under **Deleted** with a **Restore** button.",
+      "**Robots CSV** and **Match reports CSV** download everything as a spreadsheet, one column per question, for pick lists.",
+    ],
   },
 ];
 

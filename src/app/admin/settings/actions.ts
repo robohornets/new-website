@@ -72,6 +72,8 @@ function build(section: Section, fd: FormData): unknown {
       };
     case "join_requests":
       return { open: bool(fd, "open") === 1 };
+    case "scouting":
+      return { open: bool(fd, "open") === 1 };
   }
 }
 

@@ -31,6 +31,7 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   values: [],
   strategic_plan: { summary: "", media_id: null, url: "", updated: "" },
   join_requests: { open: false },
+  scouting: { open: false },
 };
 
 export const getSettings = cache(async (): Promise<SiteSettings> => {
