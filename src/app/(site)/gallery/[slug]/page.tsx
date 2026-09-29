@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Container, EmptyState } from "@/components/page-header";
 import { getAlbum, getAlbumPhotos } from "@/lib/data";
-import { mediaUrl } from "@/lib/media";
+import { isVideo, mediaSrcSet, mediaUrl, originalUrl } from "@/lib/media";
 
 export async function generateMetadata(props: PageProps<"/gallery/[slug]">): Promise<Metadata> {
   const album = await getAlbum((await props.params).slug);
@@ -41,14 +41,30 @@ export default async function AlbumPage(props: PageProps<"/gallery/[slug]">) {
         ) : (
           <ul className="columns-1 gap-4 sm:columns-2 lg:columns-3">
             {photos.map((p) => {
-              const src = mediaUrl(p.r2_key) ?? "";
+              const original = originalUrl(p.r2_key) ?? "";
               return (
                 <li key={p.media_id} className="mb-4 break-inside-avoid">
                   <figure className="flex flex-col gap-2">
-                    <a href={src} target="_blank" rel="noopener noreferrer" className="block overflow-hidden rounded-md">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={src} alt={p.alt || p.caption || `Photo from ${album.title}`} loading="lazy" className="w-full" />
-                    </a>
+                    {isVideo(p.r2_key) ? (
+                      <video src={original} controls preload="metadata" playsInline className="w-full rounded-md bg-panel">
+                        <a href={original}>Download the video</a>
+                      </video>
+                    ) : (
+                      // Opens a large 1920px copy rather than the (possibly huge) original.
+                      <a href={mediaUrl(p.r2_key, 1920) ?? original} target="_blank" rel="noopener noreferrer" className="block overflow-hidden rounded-md">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={mediaUrl(p.r2_key, 960) ?? original}
+                          srcSet={mediaSrcSet(p.r2_key, 1280)}
+                          sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+                          width={p.width ?? undefined}
+                          height={p.height ?? undefined}
+                          alt={p.alt || p.caption || `Photo from ${album.title}`}
+                          loading="lazy"
+                          className="h-auto w-full"
+                        />
+                      </a>
+                    )}
                     {p.caption && <figcaption className="text-sm text-dust">{p.caption}</figcaption>}
                   </figure>
                 </li>

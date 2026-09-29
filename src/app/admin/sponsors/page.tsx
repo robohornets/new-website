@@ -101,7 +101,7 @@ export default async function AdminSponsorsPage(props: PageProps<"/admin/sponsor
                     <span className="flex h-10 w-20 shrink-0 items-center justify-center overflow-hidden rounded bg-bone">
                       {s.logo_key ? (
                         // eslint-disable-next-line @next/next/no-img-element
-                        <img src={mediaUrl(s.logo_key) ?? ""} alt="" className="max-h-8 max-w-[72px] object-contain" />
+                        <img src={mediaUrl(s.logo_key, 320) ?? ""} alt="" className="max-h-8 max-w-[72px] object-contain" />
                       ) : (
                         <span className="font-mono text-[10px] text-ink/60">NO LOGO</span>
                       )}

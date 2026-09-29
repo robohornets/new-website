@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getSeasonYears } from "@/lib/admin-data";
 import { all, first } from "@/lib/db";
-import { mediaUrl } from "@/lib/media";
+import { downloadUrl, isVideo, mediaUrl, originalUrl } from "@/lib/media";
 import type { Album } from "@/lib/types";
 import { ActionButton, ActionForm } from "../../_components/action-form";
 import { BulkUploader } from "../../_components/bulk-uploader";
@@ -20,7 +20,7 @@ export default async function AdminAlbumPage(props: PageProps<"/admin/gallery/[i
   if (!album) notFound();
   const [photos, years] = await Promise.all([
     all<{ media_id: number; r2_key: string; alt: string; filename: string; caption: string; sort_order: number }>(
-      `SELECT ap.media_id, m.r2_key, m.alt, m.filename, ap.caption, ap.sort_order
+      `SELECT ap.media_id, m.r2_key, m.content_type, m.alt, m.filename, ap.caption, ap.sort_order
        FROM album_photos ap JOIN media m ON m.id = ap.media_id WHERE ap.album_id = ? ORDER BY ap.sort_order, m.created_at`,
       id,
     ),
@@ -52,8 +52,12 @@ export default async function AdminAlbumPage(props: PageProps<"/admin/gallery/[i
             {photos.map((p) => (
               <li key={p.media_id} className="flex flex-col gap-3 rounded-md border border-line bg-ink p-3">
                 <div className="relative">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={mediaUrl(p.r2_key) ?? ""} alt={p.alt} loading="lazy" className="h-44 w-full rounded object-cover" />
+                  {isVideo(p.r2_key) ? (
+                    <video src={originalUrl(p.r2_key) ?? ""} preload="metadata" muted controls className="h-44 w-full rounded bg-panel object-cover" />
+                  ) : (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={mediaUrl(p.r2_key, 640) ?? ""} alt={p.alt} loading="lazy" className="h-44 w-full rounded object-cover" />
+                  )}
                   {album.cover_media_id === p.media_id && (
                     <span className="absolute top-2 left-2 rounded bg-ink/90 px-2 py-0.5 font-mono text-[10px] text-amber">COVER</span>
                   )}
@@ -63,8 +67,11 @@ export default async function AdminAlbumPage(props: PageProps<"/admin/gallery/[i
                   <TextField label="Caption" name="caption" defaultValue={p.caption} />
                   <TextField label="Order" name="sort_order" type="number" defaultValue={p.sort_order} />
                 </ActionForm>
+                <a href={downloadUrl(p.r2_key) ?? ""} className="text-sm font-semibold text-hornet hover:text-amber">
+                  Download original · {p.filename}
+                </a>
                 <div className="flex flex-wrap gap-2 border-t border-line pt-3">
-                  {album.cover_media_id !== p.media_id && (
+                  {album.cover_media_id !== p.media_id && !isVideo(p.r2_key) && (
                     <ActionButton action={setAlbumCover.bind(null, id, p.media_id)}>Make cover</ActionButton>
                   )}
                   <ActionButton action={removeAlbumPhoto.bind(null, id, p.media_id)} variant="danger" confirm="Remove this photo from the album? It stays in the media library.">

@@ -49,11 +49,11 @@ export function BulkUploader({ albumId, label = "Upload photos" }: { albumId?: n
       >
         <Upload className="text-hornet" size={28} />
         <span className="font-semibold">{progress ? `Uploading ${progress.done} of ${progress.total}…` : label}</span>
-        <span className="text-xs text-dust">Drop files here or click to choose. JPG, PNG, WebP, GIF, AVIF, SVG or PDF up to 25 MB each.</span>
+        <span className="text-xs text-dust">Drop files here or click to choose. Photos (JPG, PNG, HEIC, WebP…) up to 20 MB, videos (MP4, MOV, WebM) up to 95 MB. Files are kept exactly as uploaded.</span>
         <input
           type="file"
           multiple
-          accept="image/*,application/pdf"
+          accept="image/*,.heic,.heif,video/mp4,video/webm,video/quicktime,application/pdf"
           className="sr-only"
           disabled={Boolean(progress)}
           onChange={(e) => {

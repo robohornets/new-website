@@ -7,13 +7,26 @@ export type MediaOption = { id: number; r2_key: string; filename: string };
 
 type Uploaded = { id: number; r2_key: string; filename: string };
 
+// Some browsers leave File.type empty for HEIC photos from iPhones.
+function guessType(name: string): string {
+  const ext = name.split(".").pop()?.toLowerCase();
+  return (
+    { heic: "image/heic", heif: "image/heif", jpg: "image/jpeg", jpeg: "image/jpeg", png: "image/png", mov: "video/quicktime", mp4: "video/mp4" }[
+      ext ?? ""
+    ] ?? "application/octet-stream"
+  );
+}
+
 export async function uploadFiles(files: File[], extra: Record<string, string> = {}): Promise<Uploaded[]> {
   const out: Uploaded[] = [];
   for (const file of files) {
-    const body = new FormData();
-    body.append("file", file);
-    for (const [k, v] of Object.entries(extra)) body.append(k, v);
-    const res = await fetch("/admin/api/upload", { method: "POST", body });
+    const params = new URLSearchParams({ filename: file.name, ...extra });
+    // The file is the whole request body, so the Worker can stream it into R2.
+    const res = await fetch(`/admin/api/upload?${params}`, {
+      method: "POST",
+      body: file,
+      headers: { "content-type": file.type || guessType(file.name) },
+    });
     const json = (await res.json().catch(() => ({}))) as { media?: Uploaded; error?: string };
     if (!res.ok || !json.media) throw new Error(json.error ?? `Upload failed (${res.status})`);
     out.push(json.media);
@@ -43,7 +56,7 @@ export function MediaField({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
-  const preview = mediaUrl(selected?.r2_key);
+  const preview = mediaUrl(selected?.r2_key, 320);
 
   async function onFile(files: FileList | null) {
     if (!files?.length) return;
@@ -81,7 +94,7 @@ export function MediaField({
               <input
                 ref={fileRef}
                 type="file"
-                accept="image/*"
+                accept="image/*,.heic,.heif"
                 className="sr-only"
                 disabled={busy}
                 onChange={(e) => onFile(e.target.files)}

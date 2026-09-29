@@ -73,7 +73,13 @@ export default async function HomePage() {
           <div className="relative grow sm:min-h-[460px] lg:h-[620px]">
             <div className="chamfer relative h-[260px] overflow-hidden rounded sm:absolute sm:inset-0 sm:h-auto">
               {season?.hero_key ? (
-                <MediaImage mediaKey={season.hero_key} alt={`Team 1209 in ${season.year}`} className="size-full" loading="eager" />
+                <MediaImage
+                  mediaKey={season.hero_key}
+                  alt={`Team 1209 in ${season.year}`}
+                  className="size-full"
+                  loading="eager"
+                  sizes="(min-width: 1024px) 55vw, 100vw"
+                />
               ) : (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img

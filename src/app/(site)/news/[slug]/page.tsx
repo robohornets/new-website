@@ -11,7 +11,7 @@ import { mediaUrl } from "@/lib/media";
 export async function generateMetadata(props: PageProps<"/news/[slug]">): Promise<Metadata> {
   const post = await getPost((await props.params).slug);
   if (!post) return { title: "Post not found" };
-  const image = mediaUrl(post.cover_key);
+  const image = mediaUrl(post.cover_key, 1280);
   return {
     title: post.title,
     description: post.excerpt || undefined,
@@ -51,7 +51,7 @@ export default async function PostPage(props: PageProps<"/news/[slug]">) {
       </Container>
       {post.cover_key && (
         <Container size="article" className="pb-10">
-          <MediaImage mediaKey={post.cover_key} alt="" className="max-h-[640px] w-full rounded-md" loading="eager" />
+          <MediaImage mediaKey={post.cover_key} alt="" className="max-h-[640px] w-full rounded-md" loading="eager" sizes="(min-width: 1200px) 1200px, 100vw" />
         </Container>
       )}
       <Container size="text" className="pb-20 md:pb-28">

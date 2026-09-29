@@ -6,7 +6,7 @@ export function RosterGrid({ members }: { members: RosterMember[] }) {
   return (
     <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
       {members.map((m) => {
-        const photo = canShowPhoto(m) ? mediaUrl(m.photo_key) : null;
+        const photo = canShowPhoto(m) ? mediaUrl(m.photo_key, 320) : null;
         const roleColor = m.kind === "mentor" ? "text-mentor" : m.is_leadership ? "text-amber" : "text-dust";
         return (
           <li key={m.entry_id} className="flex flex-col gap-3">

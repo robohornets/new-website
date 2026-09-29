@@ -186,9 +186,12 @@ export const getLatestSponsors = cache(async (): Promise<{ year: number | null; 
   return { year: latest.year, sponsors: await getSeasonSponsors(latest.year) };
 });
 
-const ALBUM_COLUMNS = `a.id, a.slug, a.title, a.description, a.season_year, a.published, a.created_at,
-  COALESCE(a.cover_media_id, (SELECT ap.media_id FROM album_photos ap WHERE ap.album_id = a.id ORDER BY ap.sort_order LIMIT 1)) AS cover_media_id,
-  (SELECT m.r2_key FROM media m WHERE m.id = COALESCE(a.cover_media_id, (SELECT ap.media_id FROM album_photos ap WHERE ap.album_id = a.id ORDER BY ap.sort_order LIMIT 1))) AS cover_key,
+// The cover is the chosen one, or else the album's first image (never a video).
+const FIRST_IMAGE = `(SELECT ap.media_id FROM album_photos ap JOIN media mi ON mi.id = ap.media_id
+  WHERE ap.album_id = a.id AND mi.content_type LIKE 'image/%' ORDER BY ap.sort_order LIMIT 1)`;
+export const ALBUM_COLUMNS = `a.id, a.slug, a.title, a.description, a.season_year, a.published, a.created_at,
+  COALESCE(a.cover_media_id, ${FIRST_IMAGE}) AS cover_media_id,
+  (SELECT m.r2_key FROM media m WHERE m.id = COALESCE(a.cover_media_id, ${FIRST_IMAGE})) AS cover_key,
   (SELECT COUNT(*) FROM album_photos ap WHERE ap.album_id = a.id) AS photo_count`;
 
 export const getAlbums = cache(async (seasonYear?: number): Promise<Album[]> =>
@@ -210,7 +213,7 @@ export const getAlbum = cache(async (slug: string): Promise<Album | null> =>
 
 export const getAlbumPhotos = cache(async (albumId: number, limit = 500): Promise<AlbumPhoto[]> =>
   all<AlbumPhoto>(
-    `SELECT ap.media_id, m.r2_key, m.alt, ap.caption, ap.sort_order
+    `SELECT ap.media_id, m.r2_key, m.content_type, m.width, m.height, m.alt, ap.caption, ap.sort_order
      FROM album_photos ap JOIN media m ON m.id = ap.media_id
      WHERE ap.album_id = ? ORDER BY ap.sort_order, m.created_at LIMIT ?`,
     albumId,
@@ -221,11 +224,11 @@ export const getAlbumPhotos = cache(async (albumId: number, limit = 500): Promis
 /** A handful of photos from the newest albums of a season, for previews. */
 export const getSeasonPhotos = cache(async (year: number, limit = 4): Promise<AlbumPhoto[]> =>
   all<AlbumPhoto>(
-    `SELECT ap.media_id, m.r2_key, m.alt, ap.caption, ap.sort_order
+    `SELECT ap.media_id, m.r2_key, m.content_type, m.width, m.height, m.alt, ap.caption, ap.sort_order
      FROM album_photos ap
      JOIN albums a ON a.id = ap.album_id
      JOIN media m ON m.id = ap.media_id
-     WHERE a.season_year = ? AND a.published = 1
+     WHERE a.season_year = ? AND a.published = 1 AND m.content_type LIKE 'image/%'
      ORDER BY a.created_at DESC, ap.sort_order LIMIT ?`,
     year,
     limit,

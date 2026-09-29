@@ -31,6 +31,11 @@
 			"bucket_name": "btwrobotics-media"
 		}
 	],
+	"images": {
+		// Cloudflare Images transformations: resizes and re-encodes R2 originals on
+		// request (see src/app/media/[...key]/route.ts). Only the original is stored.
+		"binding": "IMAGES"
+	},
 	"vars": {
 		// Filled in after creating the Cloudflare Access application for /admin.
 		// Team domain looks like "robohornets.cloudflareaccess.com".

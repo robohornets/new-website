@@ -23,7 +23,13 @@ const GROUPS = [
       { href: "/admin/settings", label: "Site text & links" },
     ],
   },
-  { label: "Files", items: [{ href: "/admin/media", label: "Media library" }] },
+  {
+    label: "Files",
+    items: [
+      { href: "/admin/media", label: "Media library" },
+      { href: "/admin/export", label: "Export & backup" },
+    ],
+  },
 ] as const;
 
 function active(pathname: string, href: string) {

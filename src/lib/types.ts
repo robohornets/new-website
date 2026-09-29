@@ -15,6 +15,8 @@ export type Media = {
   size_bytes: number;
   alt: string;
   uploaded_by: string | null;
+  width: number | null;
+  height: number | null;
   created_at: string;
 };
 
@@ -136,6 +138,9 @@ export type Album = {
 export type AlbumPhoto = {
   media_id: number;
   r2_key: string;
+  content_type: string;
+  width: number | null;
+  height: number | null;
   alt: string;
   caption: string;
   sort_order: number;

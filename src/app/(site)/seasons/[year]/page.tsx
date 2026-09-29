@@ -18,7 +18,7 @@ import {
   getSeasons,
   getSeasonSponsors,
 } from "@/lib/data";
-import { mediaUrl } from "@/lib/media";
+import { mediaSrcSet, mediaUrl } from "@/lib/media";
 import { SEASON_STATUS_LABEL } from "@/lib/types";
 
 function parseYear(raw: string) {
@@ -179,7 +179,7 @@ export default async function SeasonPage(props: PageProps<"/seasons/[year]">) {
           <ul className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             {otherRobots.map((r) => (
               <li key={r.id} className="flex gap-5 rounded-md border border-line bg-panel p-5">
-                <MediaImage mediaKey={r.photo_key} alt="" className="size-24 shrink-0 rounded" />
+                <MediaImage mediaKey={r.photo_key} alt="" className="size-24 shrink-0 rounded" sizes="96px" maxWidth={320} />
                 <div className="flex flex-col gap-1.5">
                   <span className="font-display text-3xl leading-none font-extrabold uppercase">{r.name}</span>
                   <span className="font-mono text-xs text-dust uppercase">{r.kind}</span>
@@ -265,7 +265,14 @@ export default async function SeasonPage(props: PageProps<"/seasons/[year]">) {
               {photos.map((p) => (
                 <li key={p.media_id} className="h-48 overflow-hidden rounded-md md:h-[360px]">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={mediaUrl(p.r2_key) ?? ""} alt={p.alt || p.caption} loading="lazy" className="size-full object-cover" />
+                  <img
+                    src={mediaUrl(p.r2_key, 640) ?? ""}
+                    srcSet={mediaSrcSet(p.r2_key, 1280)}
+                    sizes="(min-width: 1024px) 25vw, 50vw"
+                    alt={p.alt || p.caption}
+                    loading="lazy"
+                    className="size-full object-cover"
+                  />
                 </li>
               ))}
             </ul>

@@ -47,7 +47,7 @@ export function SponsorWall({ sponsors, showEmpty = true }: { sponsors: SeasonSp
 }
 
 function SponsorTile({ sponsor, large }: { sponsor: SeasonSponsor; large: boolean }) {
-  const logo = mediaUrl(sponsor.logo_key);
+  const logo = mediaUrl(sponsor.logo_key, large ? 640 : 320);
   const inner = logo ? (
     // eslint-disable-next-line @next/next/no-img-element
     <img
