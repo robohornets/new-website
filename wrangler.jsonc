@@ -1,6 +1,6 @@
 {
 	"$schema": "node_modules/wrangler/config-schema.json",
-	"name": "btwrobotics",
+	"name": "btw-robotics",
 	"account_id": "bf0f37839f565aba35f34152a14d23eb",
 	"main": ".open-next/worker.js",
 	"compatibility_date": "2026-09-01",
