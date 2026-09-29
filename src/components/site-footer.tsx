@@ -9,17 +9,11 @@ export function SiteFooter({ settings }: { settings: SiteSettings }) {
   return (
     <footer className="border-t border-line bg-ink-deep">
       <div className="mx-auto max-w-[1440px] px-4 md:px-8 xl:px-16">
-        <div className="flex flex-col gap-6 border-b border-line py-14 md:flex-row md:items-end md:justify-between md:py-18">
-          <p className="flex flex-col gap-1">
-            <span className="font-label text-[13px] tracking-[0.15em] text-dust md:text-[15px]">WHAT TIME IS IT?</span>
-            <span className="font-display text-[112px] leading-[0.82] font-black tracking-tight text-hornet md:text-[220px]">
-              12:09!
-            </span>
-          </p>
-          <p className="max-w-sm text-[15px] leading-relaxed text-ash md:mb-3">
-            Ask anyone on the team. It&apos;s the catchphrase you&apos;ll hear in the pits at every event.
-          </p>
-        </div>
+        {/* The team's call and response, kept to one line. */}
+        <p className="flex flex-wrap items-baseline gap-x-4 gap-y-1 border-b border-line py-7 md:py-9">
+          <span className="text-[15px] font-medium text-dust md:text-lg">What time is it?</span>
+          <span className="font-display text-[40px] leading-none font-black text-hornet md:text-[56px]">12:09!</span>
+        </p>
 
         <div className="flex flex-col gap-12 py-14 lg:flex-row lg:justify-between">
           <div className="flex max-w-sm flex-col gap-5">

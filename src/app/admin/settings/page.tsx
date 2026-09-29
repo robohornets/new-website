@@ -40,7 +40,19 @@ export default async function AdminSettingsPage() {
       <Grid>
         <Panel title="Stats strip" description="Up to four, one per line as: value | label">
           <EditForm action={saveSettings.bind(null, "stats")}>
-            <TextArea label="Stats" name="stats" rows={4} mono defaultValue={s.stats.map((x) => `${x.value} | ${x.label}`).join("\n")} />
+            <TextArea
+              label="Stats"
+              name="stats"
+              rows={4}
+              mono
+              defaultValue={s.stats.map((x) => `${x.value} | ${x.label}`).join("\n")}
+              hint={
+                <>
+                  Type <code className="font-mono text-bone">{"{members}"}</code> as a value to show this season&apos;s number of students
+                  from the roster, rounded down to the nearest 10 (42 students shows as 40+).
+                </>
+              }
+            />
           </EditForm>
         </Panel>
         <Panel title="Join the team box">

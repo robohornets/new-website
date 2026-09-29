@@ -72,3 +72,11 @@ export function formatBytes(bytes: number): string {
   }
   return `${n.toFixed(n < 10 ? 1 : 0)} ${units[i]}`;
 }
+
+/** The placeholder admins type in a homepage stat to show the live student count. */
+export const MEMBER_COUNT_TOKEN = "{members}";
+
+/** 42 → "40+", 7 → "7". Rounded down so the "+" stays true. */
+export function roundedCount(n: number): string {
+  return n < 10 ? String(n) : `${Math.floor(n / 10) * 10}+`;
+}

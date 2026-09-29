@@ -176,6 +176,24 @@ export const getRoster = cache(async (year: number): Promise<RosterMember[]> => 
   return rows.map((r) => ({ ...r, extra_subteam_ids: parseJson<number[]>(r.extra_subteam_ids, []) }));
 });
 
+/**
+ * How many students are on the current season's roster (or, before this
+ * season's roster is entered, the latest season that has one). Only the
+ * number leaves the database; the homepage shows it as "40+".
+ */
+export const getStudentCount = cache(async (): Promise<number> => {
+  const row = await first<{ n: number }>(
+    `SELECT COUNT(*) AS n FROM roster_entries e JOIN people p ON p.id = e.person_id
+     WHERE p.kind = 'student' AND e.season_year = (
+       SELECT e2.season_year FROM roster_entries e2 JOIN people p2 ON p2.id = e2.person_id
+       JOIN seasons s ON s.year = e2.season_year
+       WHERE p2.kind = 'student'
+       ORDER BY s.is_current DESC, e2.season_year DESC LIMIT 1
+     )`,
+  );
+  return row?.n ?? 0;
+});
+
 export const getSubteams = cache(async (): Promise<Subteam[]> =>
   all<Subteam>("SELECT id, name, private, sort_order FROM subteams ORDER BY sort_order, name"),
 );

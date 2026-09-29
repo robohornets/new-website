@@ -146,7 +146,7 @@ Everything is in **btwrobotics.com/admin**:
 | Anytime | **Team roster** | Add or remove people, set roles and subteams, add photos. Search and filter by subteam, class or leadership. Edit the subteam list at the top. Students show publicly as "First L." and their photos stay hidden unless *Show photo* is on. |
 | Anytime | **News & outreach**, **Gallery**, **Sponsors** | Posts (Markdown), photo albums (drag and drop many at once), sponsor tiers per season. |
 | When it changes | **Site text & links** | Mission, values and the Strategic Plan (PDF or link) on the Team page. |
-| Rarely | **Site text & links** | Homepage hero, stats, about text, socials, contact people, footer links, donate link. |
+| Rarely | **Site text & links** | Homepage hero, stats (`{members}` shows this season's student count, rounded down to the nearest 10), about text, socials, contact people, footer links, donate link. |
 | Always | **Messages** | Contact form submissions. |
 
 Older seasons stay browsable at `/seasons/<year>` with their robot, events, roster, sponsors and photos.

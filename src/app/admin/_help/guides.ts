@@ -326,6 +326,19 @@ export const GUIDES: Guide[] = [
 
   // ---- Site text -------------------------------------------------------------
   {
+    id: "stats",
+    group: "Site text",
+    title: "Change the numbers on the homepage",
+    pages: ["/admin/settings"],
+    steps: [
+      "Go to **Site text & links** and find **Stats strip**.",
+      "Each line is one number: the number, a | bar, then the words under it. For example: 2002 | Year the team was founded",
+      "For the member count, type **{members}** instead of a number. The site counts the students on this season's roster and rounds down to the nearest 10, so 42 students shows as 40+.",
+      "Click **Save changes** in the bar at the bottom.",
+    ],
+    tips: ["Only the count is shown. The roster itself stays on the Team page, with students as first name and last initial."],
+  },
+  {
     id: "mission-values",
     group: "Site text",
     title: "Change the mission or values",

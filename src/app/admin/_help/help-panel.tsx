@@ -188,7 +188,7 @@ export function HelpButton() {
       type="button"
       onClick={() => open("page")}
       aria-haspopup="dialog"
-      className="flex h-11 items-center gap-2 rounded-full border-2 border-hornet bg-rust pr-4 pl-1.5 font-bold text-bone hover:bg-hornet hover:text-ink"
+      className="flex h-11 items-center gap-2 rounded-full border-2 border-hornet bg-rust pr-4 pl-1.5 font-bold text-bone transition-colors duration-200 hover:bg-rust-hover"
     >
       <span className="flex size-7 items-center justify-center rounded-full bg-hornet font-display text-lg text-ink" aria-hidden="true">
         ?
@@ -205,7 +205,7 @@ export function HelpStartCard() {
     <button
       type="button"
       onClick={() => open("all")}
-      className="flex w-full flex-col gap-4 rounded-md border-2 border-hornet bg-rust p-6 text-left hover:bg-raise sm:flex-row sm:items-center"
+      className="group flex w-full flex-col gap-4 rounded-md border-2 border-hornet bg-rust p-6 text-left transition duration-200 hover:-translate-y-0.5 hover:bg-rust-hover hover:shadow-[0_10px_28px_rgba(0,0,0,0.45)] motion-reduce:hover:translate-y-0 sm:flex-row sm:items-center"
     >
       <span className="flex size-16 shrink-0 items-center justify-center rounded-full bg-hornet font-display text-4xl font-black text-ink" aria-hidden="true">
         ?
@@ -217,7 +217,9 @@ export function HelpStartCard() {
           roster and sponsors.
         </span>
       </span>
-      <span className="flex h-12 shrink-0 items-center rounded-md bg-hornet px-5 font-bold text-ink">Open help</span>
+      <span className="flex h-12 shrink-0 items-center rounded-md bg-hornet px-5 font-bold text-ink transition-colors duration-200 group-hover:bg-hornet-hover">
+        Open help
+      </span>
     </button>
   );
 }

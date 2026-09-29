@@ -12,9 +12,10 @@ import {
   getRobots,
   getSettings,
   getLiveEvents,
+  getStudentCount,
   getUpcomingEvents,
 } from "@/lib/data";
-import { formatDate } from "@/lib/format";
+import { formatDate, MEMBER_COUNT_TOKEN, roundedCount } from "@/lib/format";
 import type { TeamEvent } from "@/lib/types";
 
 /** Shown at the top of the homepage while 1209 is at an event. */
@@ -55,7 +56,7 @@ function LiveBanner({ event }: { event: TeamEvent }) {
 }
 
 export default async function HomePage() {
-  const [settings, season, featured, posts, sponsors, upcoming, live] = await Promise.all([
+  const [settings, season, featured, posts, sponsors, upcoming, live, studentCount] = await Promise.all([
     getSettings(),
     getCurrentSeason(),
     getFeaturedRobots(3),
@@ -63,9 +64,14 @@ export default async function HomePage() {
     getLatestSponsors(),
     getUpcomingEvents(3),
     getLiveEvents(),
+    getStudentCount(),
   ]);
   const seasonRobots = season ? await getRobots(season.year) : [];
-  const { hero, stats, about, build_steps, join, contact } = settings;
+  const { hero, about, build_steps, join, contact } = settings;
+  // "{members}" in a stat becomes this season's student count; hidden until there's a roster.
+  const stats = settings.stats
+    .filter((s) => !s.value.includes(MEMBER_COUNT_TOKEN) || studentCount > 0)
+    .map((s) => ({ ...s, value: s.value.replaceAll(MEMBER_COUNT_TOKEN, roundedCount(studentCount)) }));
 
   const nextUp = upcoming[0]
     ? `${upcoming[0].name} · ${formatDate(upcoming[0].start_date, { year: undefined })}`

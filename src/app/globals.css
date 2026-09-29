@@ -24,6 +24,8 @@
   /* BTW Orange lightened slightly, for the hover state of orange buttons only. */
   --color-hornet-hover: #fda234;
   --color-rust: #a53000;
+  /* Rusty Orange a touch darker, for the hover state of rust buttons. */
+  --color-rust-hover: #8f2900;
   --color-mentor: #8fb8ff;
   --color-danger: #ff6b5e;
 
