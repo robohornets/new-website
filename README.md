@@ -142,7 +142,8 @@ Everything is in **btwrobotics.com/admin**:
 | End of season | **Seasons → (year)** | Upload the engineering notebook PDF (or paste a link) under *Season basics*. |
 | Before events | nothing | Events 1209 registers for appear from The Blue Alliance on their own. Upcoming ones show on the homepage, with a **Watch live** banner during the event. |
 | During/after events | **Seasons → (year) → event** | Results and every match fill in automatically. Fix anything (it's marked **Edited**), add a write-up, highlight video or album, or hide an event/match. |
-| Anytime | **Team roster** | Add or remove people and set roles. Students show publicly as "First L." and their photos stay hidden unless *Show photo* is on. |
+| Recruiting | **Join requests** | Switch the form on, share the `/join` link, then add students to the roster with one click (or decline). Switch it off when you're done. |
+| Anytime | **Team roster** | Add or remove people, set roles and subteams, add photos. Search and filter by subteam, class or leadership. Edit the subteam list at the top. Students show publicly as "First L." and their photos stay hidden unless *Show photo* is on. |
 | Anytime | **News & outreach**, **Gallery**, **Sponsors** | Posts (Markdown), photo albums (drag and drop many at once), sponsor tiers per season. |
 | When it changes | **Site text & links** | Mission, values and the Strategic Plan (PDF or link) on the Team page. |
 | Rarely | **Site text & links** | Homepage hero, stats, about text, socials, contact people, footer links, donate link. |
@@ -181,6 +182,7 @@ hornet** at small sizes: save its SVG as `src/app/icon.svg` and delete `src/app/
 
 ```
 src/app/(site)/        public pages (home, team, seasons, news, outreach, gallery, sponsors, contact)
+src/app/join/          the unlisted join-request form (on/off in the admin)
 src/app/admin/         admin panel: pages, server actions, api/upload
 src/app/admin/_help/   the admin's Help panel and its guides (guides.ts): update them when the admin changes
 src/app/media/[...key] serves R2 originals, and resized copies via the Images binding
@@ -207,7 +209,9 @@ Content is organised around **seasons**. Each FRC year is a row, and most other 
 - `matches`: per event: round, teams on each alliance, scores, our side, result, video, hidden, with the same
   `tba`/`overrides` pair
 - `tba_cache`: the last ETag for each TBA request, so unchanged data is skipped
-- `people` + `roster_entries`: a person exists once; a roster entry puts them on a season with a role, subteam and leadership flag. This is how the roster carries over year to year.
+- `people` + `roster_entries`: a person exists once; a roster entry puts them on a season with a role, main subteam and leadership flag. This is how the roster carries over year to year.
+- `subteams` + `roster_extra_subteams`: the subteam list admins edit (private ones can't be picked on the join form), and any extra subteams a roster entry is on
+- `join_requests`: students asking to join from `/join` (name, class, subteam ranking, about), with pending / added / declined status. The form only accepts requests while `site_settings.join_requests.open` is on.
 - `sponsors` + `sponsor_tiers` + `sponsor_seasons`: sponsors are stored once; each season lists who sponsored it and at what tier
 - `posts`: news and outreach articles in Markdown (raw HTML is not rendered), optionally tied to a season
 - `albums` + `album_photos`: gallery albums, optionally tied to a season
@@ -259,6 +263,15 @@ rclone config create r2 s3 provider=Cloudflare access_key_id=<key> secret_access
   endpoint=https://bf0f37839f565aba35f34152a14d23eb.r2.cloudflarestorage.com
 rclone copy r2:btwrobotics-media ./btwrobotics-media --progress
 ```
+
+### Admin forms and the save bar
+
+Edits go through `EditForm` (`src/app/admin/_components/unsaved.tsx`) instead of a Save button per box. A form is
+"changed" when any field differs from what the server rendered (`defaultValue`, `defaultChecked`, `defaultSelected`,
+or `data-default` for widgets that control their own value, like photo pickers). While anything is changed, the bar
+at the bottom offers Save (every changed form, in page order) and Revert, and leaving the page is blocked: links and
+the browser Back button make the bar flash and shake, and closing the tab shows the browser's own warning. Forms that
+create something new (`ActionForm` with an "Add" button) and delete buttons still act immediately.
 
 ### Admin security rules
 

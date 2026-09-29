@@ -1,6 +1,6 @@
 "use server";
 
-import { adminAction, FormError, int, optionalInt, parsePairs, str, url, type ActionState } from "@/lib/admin";
+import { adminAction, bool, FormError, int, optionalInt, parsePairs, str, url, type ActionState } from "@/lib/admin";
 import { run } from "@/lib/db";
 import type { SiteSettings, Social, SocialPlatform } from "@/lib/types";
 
@@ -70,6 +70,8 @@ function build(section: Section, fd: FormData): unknown {
         url: url(fd, "plan_url") ?? "",
         updated: str(fd, "updated", 40),
       };
+    case "join_requests":
+      return { open: bool(fd, "open") === 1 };
   }
 }
 

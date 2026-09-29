@@ -46,6 +46,7 @@ export function MarkdownEditor({ name, defaultValue }: { name: string; defaultVa
         name={name}
         aria-labelledby={`${name}-label`}
         value={value}
+        data-default={defaultValue}
         onChange={(e) => setValue(e.target.value)}
         rows={18}
         hidden={tab === "preview"}

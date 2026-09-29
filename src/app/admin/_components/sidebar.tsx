@@ -6,12 +6,13 @@ import { useState } from "react";
 import { Close, Menu } from "@/components/icons";
 
 const GROUPS = [
-  { label: "Overview", items: [{ href: "/admin", label: "Dashboard" }, { href: "/admin/messages", label: "Messages", badge: "unread" }] },
+  { label: "Overview", items: [{ href: "/admin", label: "Dashboard" }, { href: "/admin/messages", label: "Messages", badge: "messages" }] },
   {
     label: "Seasons",
     items: [
       { href: "/admin/seasons", label: "Seasons, robots & events" },
       { href: "/admin/roster", label: "Team roster" },
+      { href: "/admin/join", label: "Join requests", badge: "join" },
     ],
   },
   {
@@ -36,7 +37,7 @@ function active(pathname: string, href: string) {
   return href === "/admin" ? pathname === "/admin" : pathname.startsWith(href);
 }
 
-export function AdminSidebar({ email, unread }: { email: string; unread: number }) {
+export function AdminSidebar({ email, badges }: { email: string; badges: { messages: number; join: number } }) {
   const pathname = usePathname();
   const [openFor, setOpenFor] = useState<string | null>(null);
   const open = openFor === pathname;
@@ -56,7 +57,7 @@ export function AdminSidebar({ email, unread }: { email: string; unread: number 
               }`}
             >
               {item.label}
-              {"badge" in item && unread > 0 && <span className="font-label text-xs text-hornet">{unread}</span>}
+              {"badge" in item && badges[item.badge] > 0 && <span className="font-label text-xs text-hornet">{badges[item.badge]}</span>}
             </Link>
           ))}
         </div>

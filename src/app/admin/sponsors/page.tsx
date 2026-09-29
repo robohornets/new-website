@@ -4,6 +4,7 @@ import { all } from "@/lib/db";
 import { mediaUrl } from "@/lib/media";
 import type { Sponsor, SponsorTier } from "@/lib/types";
 import { ActionButton, ActionForm } from "../_components/action-form";
+import { EditForm } from "../_components/unsaved";
 import { AdminPageHeader, Grid, inputClass, Panel, SelectField, TextArea, TextField } from "../_components/fields";
 import { MediaField } from "../_components/media-field";
 import { SeasonPicker } from "../_components/season-picker";
@@ -43,7 +44,7 @@ export default async function AdminSponsorsPage(props: PageProps<"/admin/sponsor
           {sponsors.length === 0 ? (
             <p className="text-sm text-dust">Add a sponsor below first.</p>
           ) : (
-            <ActionForm action={saveLineup.bind(null, year)} submitLabel={`Save ${year} lineup`}>
+            <EditForm action={saveLineup.bind(null, year)}>
               <input type="hidden" name="ids" value={sponsors.map((s) => s.id).join(",")} />
               <div className="overflow-x-auto">
                 <table className="w-full min-w-[560px] text-left text-sm">
@@ -85,7 +86,7 @@ export default async function AdminSponsorsPage(props: PageProps<"/admin/sponsor
                   </tbody>
                 </table>
               </div>
-            </ActionForm>
+            </EditForm>
           )}
         </Panel>
       )}
@@ -110,9 +111,9 @@ export default async function AdminSponsorsPage(props: PageProps<"/admin/sponsor
                     <span className="text-sm text-hornet group-open:hidden">Edit</span>
                   </summary>
                   <div className="flex flex-col gap-4 border-t border-line p-4">
-                    <ActionForm action={updateSponsor.bind(null, s.id)}>
+                    <EditForm action={updateSponsor.bind(null, s.id)}>
                       <SponsorFields sponsor={s} library={library} />
-                    </ActionForm>
+                    </EditForm>
                     <div className="border-t border-line pt-4">
                       <ActionButton action={deleteSponsor.bind(null, s.id)} variant="danger" confirm={`Delete ${s.name} from every season?`}>
                         Delete sponsor
@@ -138,12 +139,12 @@ export default async function AdminSponsorsPage(props: PageProps<"/admin/sponsor
             <ul className="flex flex-col gap-3">
               {tiers.map((t) => (
                 <li key={t.id} className="flex flex-wrap items-end gap-2">
-                  <ActionForm action={updateTier.bind(null, t.id)} className="grow" submitLabel="Save" submitVariant="secondary">
+                  <EditForm action={updateTier.bind(null, t.id)} className="grow">
                     <div className="grid grid-cols-[1fr_80px] gap-2">
                       <TextField label="Name" name="name" defaultValue={t.name} />
                       <TextField label="Rank" name="rank" type="number" defaultValue={t.rank} />
                     </div>
-                  </ActionForm>
+                  </EditForm>
                   <ActionButton action={deleteTier.bind(null, t.id)} variant="danger" confirm={`Delete the ${t.name} tier?`}>
                     Delete
                   </ActionButton>

@@ -29,7 +29,7 @@ export function ContactForm({ defaultTopic }: { defaultTopic: MessageTopic }) {
       )}
       <div className="grid gap-5 sm:grid-cols-2">
         <Field label="Your name" error={state.fieldErrors?.name}>
-          <input name="name" autoComplete="name" required className={input} aria-invalid={Boolean(state.fieldErrors?.name)} />
+          <input name="name" autoComplete="name" required defaultValue={state.values?.name} className={input} aria-invalid={Boolean(state.fieldErrors?.name)} />
         </Field>
         <Field label="Email" error={state.fieldErrors?.email}>
           <input
@@ -37,13 +37,14 @@ export function ContactForm({ defaultTopic }: { defaultTopic: MessageTopic }) {
             type="email"
             autoComplete="email"
             required
+            defaultValue={state.values?.email}
             className={input}
             aria-invalid={Boolean(state.fieldErrors?.email)}
           />
         </Field>
       </div>
       <Field label="What's this about?">
-        <select name="topic" defaultValue={defaultTopic} className={input}>
+        <select name="topic" defaultValue={state.values?.topic ?? defaultTopic} className={input}>
           {MESSAGE_TOPICS.map((t) => (
             <option key={t.value} value={t.value}>
               {t.label}
@@ -56,6 +57,7 @@ export function ContactForm({ defaultTopic }: { defaultTopic: MessageTopic }) {
           name="body"
           rows={6}
           required
+          defaultValue={state.values?.body}
           className={`${input} h-auto py-3`}
           aria-invalid={Boolean(state.fieldErrors?.body)}
         />

@@ -51,7 +51,7 @@ export function DocumentField({
   return (
     <fieldset className="flex flex-col gap-3">
       <legend className="mb-1.5 text-sm font-semibold">{label}</legend>
-      <input type="hidden" name={`${name}_media_id`} value={selected?.id ?? ""} />
+      <input type="hidden" name={`${name}_media_id`} value={selected?.id ?? ""} data-default={current?.id ?? ""} />
       <div className="flex flex-wrap items-center gap-3 rounded-md border border-line bg-ink px-4 py-3">
         <span className="rounded bg-rust px-1.5 py-0.5 font-label text-[10px] font-bold tracking-wide text-white">PDF</span>
         {selected ? (

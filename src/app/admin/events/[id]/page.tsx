@@ -9,6 +9,7 @@ import { EVENT_TBA_FIELDS, MATCH_TBA_FIELDS, parseOverrides, parseTba } from "@/
 import { matchLabel } from "@/lib/tba/map";
 import type { Match } from "@/lib/types";
 import { ActionButton, ActionForm } from "../../_components/action-form";
+import { EditForm } from "../../_components/unsaved";
 import { AdminPageHeader, Checkbox, Grid, Panel, SelectField, TextArea, TextField } from "../../_components/fields";
 import { TbaField } from "../../_components/tba-field";
 import {
@@ -124,7 +125,7 @@ export default async function AdminEventPage(props: PageProps<"/admin/events/[id
         </div>
       )}
 
-      <ActionForm action={updateEvent.bind(null, id)} submitLabel="Save event">
+      <EditForm action={updateEvent.bind(null, id)}>
         <Panel
           title="Results & details"
           description={
@@ -197,7 +198,7 @@ export default async function AdminEventPage(props: PageProps<"/admin/events/[id
             <TextArea label="Private notes" name="notes" rows={2} defaultValue={event.notes} hint="Only admins see these." />
           </Grid>
         </Panel>
-      </ActionForm>
+      </EditForm>
 
       <Panel
         title={`Matches (${matches.length})`}
@@ -278,7 +279,7 @@ function MatchItem({ match: m }: { match: Match }) {
           <span className="ml-auto text-hornet group-open:hidden">Edit</span>
         </summary>
         <div className="flex flex-col gap-3 border-t border-line p-3">
-          <ActionForm action={updateMatch.bind(null, m.id)} submitLabel="Save match" submitVariant="secondary">
+          <EditForm action={updateMatch.bind(null, m.id)}>
             {!synced && (
               <Grid cols={4}>
                 <SelectField label="Round" name="comp_level" defaultValue={m.comp_level} options={LEVELS} />
@@ -305,7 +306,7 @@ function MatchItem({ match: m }: { match: Match }) {
               ))}
             </div>
             <Checkbox label="Hide this match from the site" name="hidden" defaultChecked={m.hidden === 1} />
-          </ActionForm>
+          </EditForm>
           {!synced && (
             <div className="border-t border-line pt-3">
               <ActionButton action={deleteMatch.bind(null, m.id)} variant="danger" confirm="Delete this match?">

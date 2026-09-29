@@ -42,7 +42,7 @@ export function SiteHeader() {
   const open = openFor === pathname;
 
   return (
-    <header className="relative z-30 border-b border-line bg-ink">
+    <header className="sticky top-0 z-40 border-b border-line bg-ink">
       <div className="mx-auto flex h-[72px] max-w-[1440px] items-center justify-between px-4 md:h-[88px] md:px-8 xl:px-16">
         <Logo />
         <nav aria-label="Main" className="hidden items-center gap-7 text-[15px] font-medium lg:flex">
@@ -80,7 +80,7 @@ export function SiteHeader() {
         <nav
           id="mobile-nav"
           aria-label="Main"
-          className="absolute inset-x-0 top-full border-b border-line bg-ink px-4 pt-2 pb-6 lg:hidden"
+          className="absolute inset-x-0 top-full max-h-[calc(100dvh-72px)] overflow-y-auto border-b border-line bg-ink px-4 pt-2 pb-6 lg:hidden"
         >
           <ul className="flex flex-col">
             {NAV.map((item) => (

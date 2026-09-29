@@ -120,3 +120,33 @@ export function ActionButton({
     </form>
   );
 }
+
+/**
+ * A button that runs its own Server Action from inside another form (for
+ * example Delete on one row of a list that's saved as a whole).
+ */
+export function InlineActionButton({
+  action,
+  children,
+  confirm,
+  className = "",
+}: {
+  action: () => Promise<void>;
+  children: ReactNode;
+  confirm?: string;
+  className?: string;
+}) {
+  return (
+    <button
+      type="submit"
+      formAction={action}
+      formNoValidate
+      onClick={(e) => {
+        if (confirm && !window.confirm(confirm)) e.preventDefault();
+      }}
+      className={`flex h-10 items-center rounded-md px-3 text-sm font-semibold text-danger hover:bg-danger/10 ${className}`}
+    >
+      {children}
+    </button>
+  );
+}

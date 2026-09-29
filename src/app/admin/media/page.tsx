@@ -5,7 +5,8 @@ import { all, first } from "@/lib/db";
 import { formatBytes, formatDate } from "@/lib/format";
 import { downloadUrl, isVideo, mediaUrl, originalUrl } from "@/lib/media";
 import type { Media } from "@/lib/types";
-import { ActionButton, ActionForm } from "../_components/action-form";
+import { ActionButton } from "../_components/action-form";
+import { EditForm } from "../_components/unsaved";
 import { BulkUploader } from "../_components/bulk-uploader";
 import { AdminPageHeader, TextField } from "../_components/fields";
 import { deleteMedia, updateMediaAlt } from "./actions";
@@ -69,9 +70,9 @@ export default async function AdminMediaPage(props: PageProps<"/admin/media">) {
                   Open
                 </a>
               </div>
-              <ActionForm action={updateMediaAlt.bind(null, m.id)} submitLabel="Save" submitVariant="secondary">
+              <EditForm action={updateMediaAlt.bind(null, m.id)}>
                 <TextField label="Alt text" name="alt" defaultValue={m.alt} />
-              </ActionForm>
+              </EditForm>
               <ActionButton action={deleteMedia.bind(null, m.id)} variant="danger" confirm={`Delete ${m.filename}? Anything using it will show no image.`}>
                 Delete file
               </ActionButton>

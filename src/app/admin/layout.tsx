@@ -3,6 +3,7 @@ import Link from "next/link";
 import { getAdminUser, isAccessConfigured } from "@/lib/auth";
 import { first } from "@/lib/db";
 import { AdminSidebar } from "./_components/sidebar";
+import { UnsavedChangesProvider } from "./_components/unsaved";
 import { HelpButton, HelpProvider } from "./_help/help-panel";
 
 export const metadata: Metadata = {
@@ -14,19 +15,25 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
   const user = await getAdminUser();
   if (!user) return <AccessRequired configured={await isAccessConfigured()} />;
 
-  const unread = await first<{ n: number }>("SELECT COUNT(*) AS n FROM messages WHERE read_at IS NULL AND archived = 0");
+  const counts = await first<{ messages: number; join_requests: number }>(
+    `SELECT (SELECT COUNT(*) FROM messages WHERE read_at IS NULL AND archived = 0) AS messages,
+            (SELECT COUNT(*) FROM join_requests WHERE status = 'pending') AS join_requests`,
+  );
 
   return (
     <HelpProvider>
-      <div className="flex min-h-dvh flex-col lg:flex-row">
-        <AdminSidebar email={user.email} unread={unread?.n ?? 0} />
-        <main className="flex min-w-0 grow flex-col gap-6 px-4 py-5 md:px-8 md:py-6 xl:px-10">
-          <div className="flex justify-end">
-            <HelpButton />
-          </div>
-          {children}
-        </main>
-      </div>
+      <UnsavedChangesProvider>
+        <div className="flex min-h-dvh flex-col lg:flex-row">
+          <AdminSidebar email={user.email} badges={{ messages: counts?.messages ?? 0, join: counts?.join_requests ?? 0 }} />
+          {/* Bottom padding leaves room for the unsaved-changes bar. */}
+          <main className="flex min-w-0 grow flex-col gap-6 px-4 pt-5 pb-28 md:px-8 md:pt-6 xl:px-10">
+            <div className="flex justify-end">
+              <HelpButton />
+            </div>
+            {children}
+          </main>
+        </div>
+      </UnsavedChangesProvider>
     </HelpProvider>
   );
 }

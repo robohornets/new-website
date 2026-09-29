@@ -122,12 +122,36 @@ export type Person = {
   graduation_year: number | null;
 };
 
+export type Subteam = { id: number; name: string; private: number; sort_order: number };
+
 export type RosterMember = Person & {
   entry_id: number;
   role: string;
+  /** Main subteam: shown on the public roster. */
+  subteam_id: number | null;
   subteam: string;
+  /** Other subteams they're also on this season. */
+  extra_subteam_ids: number[];
   is_leadership: number;
   sort_order: number;
+};
+
+export type JoinRequestStatus = "pending" | "added" | "declined";
+
+export type JoinRequest = {
+  id: number;
+  first_name: string;
+  last_name: string;
+  graduation_year: number;
+  ranking: { id: number; name: string }[];
+  about: string;
+  status: JoinRequestStatus;
+  assigned_subteam_id: number | null;
+  person_id: number | null;
+  season_year: number | null;
+  decided_by: string | null;
+  decided_at: string | null;
+  created_at: string;
 };
 
 export type PostCategory = "news" | "outreach";
@@ -235,4 +259,6 @@ export type SiteSettings = {
   mission: string;
   values: CoreValue[];
   strategic_plan: StrategicPlan;
+  /** The /join form only accepts requests while this is on. */
+  join_requests: { open: boolean };
 };

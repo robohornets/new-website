@@ -1,15 +1,16 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getMediaOptions, resolveSeasonParam } from "@/lib/admin-data";
-import { getRoster } from "@/lib/data";
+import { getRoster, getSubteams } from "@/lib/data";
 import { all } from "@/lib/db";
-import { displayName } from "@/lib/format";
 import type { Person } from "@/lib/types";
-import { ActionButton, ActionForm } from "../_components/action-form";
-import { AdminPageHeader, Checkbox, Grid, Panel, SelectField, TextArea, TextField } from "../_components/fields";
+import { ActionForm, InlineActionButton } from "../_components/action-form";
+import { AdminPageHeader, Checkbox, Grid, inputClass, Panel, SelectField, TextArea, TextField } from "../_components/fields";
 import { MediaField } from "../_components/media-field";
 import { SeasonPicker } from "../_components/season-picker";
-import { addExistingPerson, addNewPerson, removeRosterEntry, updateRosterEntry } from "./actions";
+import { EditForm } from "../_components/unsaved";
+import { addExistingPerson, addNewPerson, createSubteam, deleteSubteam, saveSubteams } from "./actions";
+import { RosterList } from "./roster-list";
 import { requireAdminPage } from "@/lib/auth";
 
 export const metadata: Metadata = { title: "Team roster" };
@@ -32,7 +33,7 @@ export default async function AdminRosterPage(props: PageProps<"/admin/roster">)
     );
   }
 
-  const [roster, others, library] = await Promise.all([
+  const [roster, others, library, subteams] = await Promise.all([
     getRoster(year),
     all<Person>(
       `SELECT p.*, NULL AS photo_key FROM people p
@@ -41,7 +42,10 @@ export default async function AdminRosterPage(props: PageProps<"/admin/roster">)
       year,
     ),
     getMediaOptions(),
+    getSubteams(),
   ]);
+  const onSubteam = (id: number) => roster.filter((m) => m.subteam_id === id || m.extra_subteam_ids.includes(id)).length;
+  const subteamOptions = [{ value: "", label: "None" }, ...subteams.map((t) => ({ value: t.id, label: t.private ? `${t.name} (private)` : t.name }))];
 
   return (
     <>
@@ -51,35 +55,65 @@ export default async function AdminRosterPage(props: PageProps<"/admin/roster">)
       />
       <SeasonPicker basePath="/admin/roster" years={years} current={year} />
 
-      <Panel title={`${year} roster`} description={`${roster.length} people`}>
+      <Panel
+        title="Subteams"
+        description="The list you pick from on the roster and the join form. Private subteams (like Drive Team) can't be picked on the join form; only an admin can put someone on one."
+      >
+        {subteams.length > 0 && (
+          <EditForm action={saveSubteams} className="gap-0">
+            <input type="hidden" name="ids" value={subteams.map((t) => t.id).join(",")} />
+            <div className="hidden grid-cols-[80px_1fr_120px_140px_auto] gap-3 pb-2 font-label text-[11px] tracking-wider text-ash uppercase md:grid">
+              <span>Order</span>
+              <span>Name</span>
+              <span>Private</span>
+              <span>{year} roster</span>
+              <span className="sr-only">Delete</span>
+            </div>
+            <ul className="flex flex-col divide-y divide-line border-y border-line">
+              {subteams.map((t) => (
+                <li key={t.id} className="grid grid-cols-[72px_1fr] items-center gap-3 py-2 md:grid-cols-[80px_1fr_120px_140px_auto]">
+                  <input
+                    type="number"
+                    name={`order_${t.id}`}
+                    defaultValue={t.sort_order}
+                    aria-label={`${t.name}: order`}
+                    className={inputClass}
+                  />
+                  <input name={`name_${t.id}`} defaultValue={t.name} aria-label={`${t.name}: name`} className={inputClass} />
+                  <label className="col-start-2 flex items-center gap-2 text-sm md:col-start-auto">
+                    <input type="checkbox" name={`private_${t.id}`} defaultChecked={t.private === 1} className="size-4 accent-hornet" />
+                    Private
+                  </label>
+                  <span className="col-start-2 text-sm text-dust md:col-start-auto">
+                    {onSubteam(t.id) === 1 ? "1 person" : `${onSubteam(t.id)} people`}
+                  </span>
+                  <InlineActionButton
+                    action={deleteSubteam.bind(null, t.id)}
+                    confirm={`Delete ${t.name}? People on it stay on the roster with no subteam.`}
+                    className="col-start-2 justify-self-start md:col-start-auto"
+                  >
+                    Delete
+                  </InlineActionButton>
+                </li>
+              ))}
+            </ul>
+          </EditForm>
+        )}
+        <ActionForm action={createSubteam} submitLabel="Add subteam" submitVariant="secondary" resetOnSuccess className="mt-2">
+          <div className="flex flex-wrap items-end gap-4">
+            <TextField label="New subteam" name="name" placeholder="Pit Crew" className="min-w-60 grow md:grow-0" />
+            <div className="pb-2.5">
+              <Checkbox label="Private" name="private" />
+            </div>
+          </div>
+        </ActionForm>
+      </Panel>
+
+      <Panel title={`${year} roster`}>
         {roster.length === 0 ? (
           <p className="text-sm text-dust">Nobody on this season yet. Add people below.</p>
         ) : (
-          <ul className="flex flex-col divide-y divide-line">
-            {roster.map((m) => (
-              <li key={m.entry_id} className="flex flex-col gap-3 py-3 xl:flex-row xl:items-center">
-                <div className="flex min-w-56 items-baseline gap-2">
-                  <Link href={`/admin/people/${m.id}`} className="font-semibold hover:text-hornet">
-                    {m.first_name} {m.last_name}
-                  </Link>
-                  <span className={`font-label text-[11px] uppercase ${m.kind === "mentor" ? "text-mentor" : "text-ash"}`}>{m.kind}</span>
-                </div>
-                <ActionForm action={updateRosterEntry.bind(null, m.entry_id)} className="grow" submitLabel="Save" submitVariant="secondary">
-                  <div className="grid items-end gap-3 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_90px_auto]">
-                    <TextField label="Role" name="role" defaultValue={m.role} />
-                    <TextField label="Subteam" name="subteam" defaultValue={m.subteam} />
-                    <TextField label="Order" name="sort_order" type="number" defaultValue={m.sort_order} />
-                    <div className="pb-2.5">
-                      <Checkbox label="Leadership" name="is_leadership" defaultChecked={m.is_leadership === 1} />
-                    </div>
-                  </div>
-                </ActionForm>
-                <ActionButton action={removeRosterEntry.bind(null, m.entry_id)} variant="danger" confirm={`Remove ${displayName(m)} from ${year}?`}>
-                  Remove
-                </ActionButton>
-              </li>
-            ))}
-          </ul>
+          <RosterList members={roster} subteams={subteams} year={year} />
         )}
       </Panel>
 
@@ -100,7 +134,7 @@ export default async function AdminRosterPage(props: PageProps<"/admin/roster">)
               />
               <TextField label="Graduation year" name="graduation_year" type="number" placeholder={String(year + 1)} hint="Used to skip graduates when starting a new season." />
               <TextField label="Role" name="role" placeholder="Programming lead" />
-              <TextField label="Subteam" name="subteam" placeholder="Programming" />
+              <SelectField label="Subteam" name="subteam_id" defaultValue="" options={subteamOptions} />
             </Grid>
             <TextArea label="Short bio" name="bio" rows={2} />
             <MediaField name="photo_media_id" label="Photo" current={null} library={library} />
@@ -121,7 +155,7 @@ export default async function AdminRosterPage(props: PageProps<"/admin/roster">)
               />
               <Grid>
                 <TextField label="Role" name="role" placeholder="Member" />
-                <TextField label="Subteam" name="subteam" />
+                <SelectField label="Subteam" name="subteam_id" defaultValue="" options={subteamOptions} />
               </Grid>
               <Checkbox label="Leadership" name="is_leadership" />
             </ActionForm>

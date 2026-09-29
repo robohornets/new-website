@@ -61,8 +61,8 @@ export async function createSeason(_prev: ActionState, fd: FormData): Promise<Ac
       if (bool(fd, "carry_students")) {
         // Everyone who hasn't graduated before the new season.
         statements.push([
-          `INSERT OR IGNORE INTO roster_entries (season_year, person_id, role, subteam, is_leadership, sort_order)
-           SELECT ?, e.person_id, e.role, e.subteam, 0, e.sort_order
+          `INSERT OR IGNORE INTO roster_entries (season_year, person_id, role, subteam_id, is_leadership, sort_order)
+           SELECT ?, e.person_id, e.role, e.subteam_id, 0, e.sort_order
            FROM roster_entries e JOIN people p ON p.id = e.person_id
            WHERE e.season_year = ? AND p.kind = 'student'
              AND (p.graduation_year IS NULL OR p.graduation_year >= ?)`,
@@ -73,12 +73,24 @@ export async function createSeason(_prev: ActionState, fd: FormData): Promise<Ac
       }
       if (bool(fd, "carry_mentors")) {
         statements.push([
-          `INSERT OR IGNORE INTO roster_entries (season_year, person_id, role, subteam, is_leadership, sort_order)
-           SELECT ?, e.person_id, e.role, e.subteam, e.is_leadership, e.sort_order
+          `INSERT OR IGNORE INTO roster_entries (season_year, person_id, role, subteam_id, is_leadership, sort_order)
+           SELECT ?, e.person_id, e.role, e.subteam_id, e.is_leadership, e.sort_order
            FROM roster_entries e JOIN people p ON p.id = e.person_id
            WHERE e.season_year = ? AND p.kind = 'mentor'`,
           year,
           previous.year,
+        ]);
+      }
+      if (bool(fd, "carry_students") || bool(fd, "carry_mentors")) {
+        // Extra subteams follow the people who were carried over.
+        statements.push([
+          `INSERT OR IGNORE INTO roster_extra_subteams (entry_id, subteam_id)
+           SELECT ne.id, x.subteam_id
+           FROM roster_extra_subteams x
+           JOIN roster_entries oe ON oe.id = x.entry_id AND oe.season_year = ?
+           JOIN roster_entries ne ON ne.person_id = oe.person_id AND ne.season_year = ?`,
+          previous.year,
+          year,
         ]);
       }
       if (bool(fd, "carry_sponsors")) {

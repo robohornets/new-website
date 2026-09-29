@@ -33,6 +33,22 @@
   --font-label: var(--font-raleway), system-ui, sans-serif;
   /* Only for code, keys and file paths. */
   --font-mono: var(--font-jetbrains), ui-monospace, monospace;
+
+  /* The admin's unsaved-changes bar. */
+  --animate-shake: shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+  --animate-rise: rise 0.2s ease-out both;
+
+  @keyframes shake {
+    10%, 90% { transform: translateX(-2px); }
+    20%, 80% { transform: translateX(4px); }
+    30%, 50%, 70% { transform: translateX(-8px); }
+    40%, 60% { transform: translateX(8px); }
+  }
+
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: none; }
+  }
 }
 
 :root {
@@ -41,6 +57,14 @@
 
 html {
   background: var(--color-ink);
+  /* Keeps #anchor targets from landing under the sticky header. */
+  scroll-padding-top: 88px;
+}
+
+@media (min-width: 768px) {
+  html {
+    scroll-padding-top: 104px;
+  }
 }
 
 body {

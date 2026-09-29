@@ -10,6 +10,7 @@ import { tbaConfigured } from "@/lib/tba/client";
 import { parseOverrides } from "@/lib/tba/fields";
 import type { Robot } from "@/lib/types";
 import { ActionButton, ActionForm } from "../../_components/action-form";
+import { EditForm } from "../../_components/unsaved";
 import { AdminPageHeader, Grid, Panel, SelectField, TextArea, TextField } from "../../_components/fields";
 import { DocumentField } from "../../_components/document-field";
 import { MediaField, type MediaOption } from "../../_components/media-field";
@@ -96,7 +97,7 @@ export default async function AdminSeasonPage(props: PageProps<"/admin/seasons/[
       />
 
       <Panel title="Season basics">
-        <ActionForm action={updateSeason.bind(null, year)}>
+        <EditForm action={updateSeason.bind(null, year)}>
           <Grid>
             <TextField label="Game name" name="game_name" defaultValue={season.game_name} />
             <SelectField
@@ -133,7 +134,7 @@ export default async function AdminSeasonPage(props: PageProps<"/admin/seasons/[
             currentUrl={season.notebook_url}
             hint="Upload the PDF (up to 95 MB) or paste a link to it. Shown as a button on the season page and listed on the Team page."
           />
-        </ActionForm>
+        </EditForm>
       </Panel>
 
       <Panel title="Robots" description="The first competition robot is featured on the homepage and season page.">
@@ -236,9 +237,8 @@ export default async function AdminSeasonPage(props: PageProps<"/admin/seasons/[
 }
 
 function RobotForm({ robot, library, year }: { robot?: Robot; library: MediaOption[]; year?: number }) {
-  const action = robot ? updateRobot.bind(null, robot.id) : createRobot.bind(null, year!);
-  return (
-    <ActionForm action={action} submitLabel={robot ? "Save robot" : "Add robot"} resetOnSuccess={!robot}>
+  const fields = (
+    <>
       <Grid cols={3}>
         <TextField label="Name" name="name" defaultValue={robot?.name} required />
         <SelectField label="Type" name="kind" defaultValue={robot?.kind ?? "competition"} options={ROBOT_KINDS} />
@@ -267,6 +267,13 @@ function RobotForm({ robot, library, year }: { robot?: Robot; library: MediaOpti
         current={library.find((m) => m.id === robot?.photo_media_id) ?? null}
         library={library}
       />
+    </>
+  );
+  return robot ? (
+    <EditForm action={updateRobot.bind(null, robot.id)}>{fields}</EditForm>
+  ) : (
+    <ActionForm action={createRobot.bind(null, year!)} submitLabel="Add robot" resetOnSuccess>
+      {fields}
     </ActionForm>
   );
 }

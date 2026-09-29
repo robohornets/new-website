@@ -5,7 +5,8 @@ import { getSeasonYears } from "@/lib/admin-data";
 import { all, first } from "@/lib/db";
 import { downloadUrl, isVideo, mediaUrl, originalUrl } from "@/lib/media";
 import type { Album } from "@/lib/types";
-import { ActionButton, ActionForm } from "../../_components/action-form";
+import { ActionButton } from "../../_components/action-form";
+import { EditForm } from "../../_components/unsaved";
 import { BulkUploader } from "../../_components/bulk-uploader";
 import { AdminPageHeader, Checkbox, Grid, Panel, SelectField, TextArea, TextField } from "../../_components/fields";
 import { deleteAlbum, removeAlbumPhoto, setAlbumCover, updateAlbum, updateAlbumPhoto } from "../actions";
@@ -62,11 +63,11 @@ export default async function AdminAlbumPage(props: PageProps<"/admin/gallery/[i
                     <span className="absolute top-2 left-2 rounded bg-ink/90 px-2 py-0.5 font-label text-[10px] text-hornet">COVER</span>
                   )}
                 </div>
-                <ActionForm action={updateAlbumPhoto.bind(null, id, p.media_id)} submitLabel="Save" submitVariant="secondary">
+                <EditForm action={updateAlbumPhoto.bind(null, id, p.media_id)}>
                   <TextField label="Alt text" name="alt" defaultValue={p.alt} placeholder="Drive team celebrating in the pits" />
                   <TextField label="Caption" name="caption" defaultValue={p.caption} />
                   <TextField label="Order" name="sort_order" type="number" defaultValue={p.sort_order} />
-                </ActionForm>
+                </EditForm>
                 <a href={downloadUrl(p.r2_key) ?? ""} className="text-sm font-semibold text-hornet hover:text-hornet-hover">
                   Download original · {p.filename}
                 </a>
@@ -85,7 +86,7 @@ export default async function AdminAlbumPage(props: PageProps<"/admin/gallery/[i
       </Panel>
 
       <Panel title="Album details">
-        <ActionForm action={updateAlbum.bind(null, id)}>
+        <EditForm action={updateAlbum.bind(null, id)}>
           <input type="hidden" name="cover_media_id" value={album.cover_media_id ?? ""} />
           <Grid cols={3}>
             <TextField label="Title" name="title" defaultValue={album.title} required />
@@ -99,7 +100,7 @@ export default async function AdminAlbumPage(props: PageProps<"/admin/gallery/[i
           </Grid>
           <TextArea label="Description" name="description" rows={2} defaultValue={album.description} />
           <Checkbox label="Visible on the site" name="published" defaultChecked={album.published === 1} />
-        </ActionForm>
+        </EditForm>
       </Panel>
 
       <Panel title="Danger zone">

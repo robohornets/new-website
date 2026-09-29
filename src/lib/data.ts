@@ -13,6 +13,7 @@ import type {
   Season,
   SeasonSponsor,
   SiteSettings,
+  Subteam,
   TeamEvent,
 } from "./types";
 
@@ -29,6 +30,7 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   mission: "",
   values: [],
   strategic_plan: { summary: "", media_id: null, url: "", updated: "" },
+  join_requests: { open: false },
 };
 
 export const getSettings = cache(async (): Promise<SiteSettings> => {
@@ -154,17 +156,28 @@ export const getMatches = cache(async (eventId: number, includeHidden = false): 
   ),
 );
 
-export const getRoster = cache(async (year: number): Promise<RosterMember[]> =>
-  all<RosterMember>(
+type RosterRow = Omit<RosterMember, "extra_subteam_ids"> & { extra_subteam_ids: string };
+
+export const getRoster = cache(async (year: number): Promise<RosterMember[]> => {
+  const rows = await all<RosterRow>(
     `SELECT p.id, p.first_name, p.last_name, p.kind, p.bio, p.photo_media_id, m.r2_key AS photo_key,
-            p.show_photo, p.graduation_year, e.id AS entry_id, e.role, e.subteam, e.is_leadership, e.sort_order
+            p.show_photo, p.graduation_year, e.id AS entry_id, e.role, e.subteam_id,
+            COALESCE(st.name, '') AS subteam,
+            (SELECT json_group_array(x.subteam_id) FROM roster_extra_subteams x WHERE x.entry_id = e.id) AS extra_subteam_ids,
+            e.is_leadership, e.sort_order
      FROM roster_entries e
      JOIN people p ON p.id = e.person_id
      LEFT JOIN media m ON m.id = p.photo_media_id
+     LEFT JOIN subteams st ON st.id = e.subteam_id
      WHERE e.season_year = ?
      ORDER BY p.kind = 'mentor', e.is_leadership DESC, e.sort_order, p.first_name`,
     year,
-  ),
+  );
+  return rows.map((r) => ({ ...r, extra_subteam_ids: parseJson<number[]>(r.extra_subteam_ids, []) }));
+});
+
+export const getSubteams = cache(async (): Promise<Subteam[]> =>
+  all<Subteam>("SELECT id, name, private, sort_order FROM subteams ORDER BY sort_order, name"),
 );
 
 const POST_COLUMNS = `p.id, p.slug, p.title, p.category, p.excerpt, p.body, p.cover_media_id,

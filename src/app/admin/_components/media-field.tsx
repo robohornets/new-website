@@ -77,7 +77,7 @@ export function MediaField({
   return (
     <fieldset className="flex flex-col gap-2">
       <legend className="mb-1.5 text-sm font-semibold">{label}</legend>
-      <input type="hidden" name={name} value={selected?.id ?? ""} />
+      <input type="hidden" name={name} value={selected?.id ?? ""} data-default={current?.id ?? ""} />
       <div className="flex flex-wrap items-center gap-4">
         <div className="hatch flex size-24 shrink-0 items-center justify-center overflow-hidden rounded-md border border-line">
           {preview ? (
@@ -130,5 +130,89 @@ export function MediaField({
         </div>
       </div>
     </fieldset>
+  );
+}
+
+/**
+ * A small round photo for list rows: click it to upload a new photo, or
+ * remove the current one. Submits the media id under `name`.
+ */
+export function PhotoThumbField({
+  name,
+  label,
+  current,
+  initials,
+}: {
+  name: string;
+  label: string;
+  current: MediaOption | null;
+  initials: string;
+}) {
+  const [selected, setSelected] = useState<MediaOption | null>(current);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
+  const preview = mediaUrl(selected?.r2_key, 320);
+
+  async function onFile(files: FileList | null) {
+    if (!files?.length) return;
+    setBusy(true);
+    setError(null);
+    try {
+      const [m] = await uploadFiles([files[0]]);
+      setSelected(m);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Upload failed");
+    } finally {
+      setBusy(false);
+      if (fileRef.current) fileRef.current.value = "";
+    }
+  }
+
+  return (
+    <div className="relative flex shrink-0 flex-col items-center">
+      <input type="hidden" name={name} value={selected?.id ?? ""} data-default={current?.id ?? ""} />
+      <button
+        type="button"
+        onClick={() => fileRef.current?.click()}
+        disabled={busy}
+        aria-label={selected ? `${label}: change photo` : `${label}: add photo`}
+        title={selected ? "Change photo" : "Add photo"}
+        className="group relative flex size-12 items-center justify-center overflow-hidden rounded-full border border-line-strong bg-ink hover:border-hornet"
+      >
+        {preview ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={preview} alt="" className="size-full object-cover" />
+        ) : (
+          <span className="font-label text-sm font-bold text-dust group-hover:hidden">{initials}</span>
+        )}
+        <span
+          className={`absolute inset-0 items-center justify-center bg-ink/70 text-lg font-bold text-hornet ${busy ? "flex" : "hidden group-hover:flex"}`}
+          aria-hidden="true"
+        >
+          {busy ? "…" : "+"}
+        </span>
+      </button>
+      <input
+        ref={fileRef}
+        type="file"
+        accept="image/*,.heic,.heif"
+        className="sr-only"
+        tabIndex={-1}
+        onChange={(e) => onFile(e.target.files)}
+      />
+      {selected && (
+        <button
+          type="button"
+          onClick={() => setSelected(null)}
+          aria-label={`${label}: remove photo`}
+          title="Remove photo"
+          className="absolute -top-1 -right-1 flex size-5 items-center justify-center rounded-full border border-line-strong bg-raise text-xs text-dust hover:text-bone"
+        >
+          ×
+        </button>
+      )}
+      {error && <span className="absolute top-full mt-1 w-40 text-xs text-danger">{error}</span>}
+    </div>
   );
 }

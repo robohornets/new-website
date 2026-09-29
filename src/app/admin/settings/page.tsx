@@ -3,6 +3,7 @@ import { SOCIAL_LABEL } from "@/components/icons";
 import { getContacts, getMediaFile, getSettings } from "@/lib/data";
 import type { SocialPlatform } from "@/lib/types";
 import { ActionButton, ActionForm } from "../_components/action-form";
+import { EditForm } from "../_components/unsaved";
 import { DocumentField } from "../_components/document-field";
 import { AdminPageHeader, Grid, Panel, TextArea, TextField } from "../_components/fields";
 import { createContact, deleteContact, saveSettings, updateContact } from "./actions";
@@ -22,10 +23,10 @@ export default async function AdminSettingsPage() {
 
   return (
     <>
-      <AdminPageHeader title="Site text & links" description="The words on the homepage, Team, Contact and footer, plus the mission, values and Strategic Plan. Each box saves on its own." />
+      <AdminPageHeader title="Site text & links" description="The words on the homepage, Team, Contact and footer, plus the mission, values and Strategic Plan." />
 
       <Panel title="Homepage hero">
-        <ActionForm action={saveSettings.bind(null, "hero")}>
+        <EditForm action={saveSettings.bind(null, "hero")}>
           <TextField label="Small line above the title" name="eyebrow" defaultValue={s.hero.eyebrow} />
           <Grid>
             <TextField label="Title, first part (white)" name="titleTop" defaultValue={s.hero.titleTop} />
@@ -33,39 +34,39 @@ export default async function AdminSettingsPage() {
           </Grid>
           <TextArea label="Intro" name="intro" rows={3} defaultValue={s.hero.intro} />
           <p className="text-xs text-dust">The hero photo comes from the current season&apos;s &quot;Season photo&quot;, set under Seasons.</p>
-        </ActionForm>
+        </EditForm>
       </Panel>
 
       <Grid>
         <Panel title="Stats strip" description="Up to four, one per line as: value | label">
-          <ActionForm action={saveSettings.bind(null, "stats")}>
+          <EditForm action={saveSettings.bind(null, "stats")}>
             <TextArea label="Stats" name="stats" rows={4} mono defaultValue={s.stats.map((x) => `${x.value} | ${x.label}`).join("\n")} />
-          </ActionForm>
+          </EditForm>
         </Panel>
         <Panel title="Join the team box">
-          <ActionForm action={saveSettings.bind(null, "join")}>
+          <EditForm action={saveSettings.bind(null, "join")}>
             <TextField label="Heading" name="heading" defaultValue={s.join.heading} />
             <TextArea label="Text" name="body" rows={3} defaultValue={s.join.body} />
-          </ActionForm>
+          </EditForm>
         </Panel>
       </Grid>
 
       <Panel title="About the team">
-        <ActionForm action={saveSettings.bind(null, "about")}>
+        <EditForm action={saveSettings.bind(null, "about")}>
           <TextField label="Heading" name="heading" defaultValue={s.about.heading} />
           <TextArea label="Short version" name="body" rows={3} defaultValue={s.about.body} hint="Homepage and the top of the Team page." />
           <TextArea label="Long version" name="long" rows={8} defaultValue={s.about.long} hint="Team page. Leave a blank line between paragraphs." />
-        </ActionForm>
+        </EditForm>
       </Panel>
 
       <Panel title="Mission" description="The mission statement at the top of the Team page.">
-        <ActionForm action={saveSettings.bind(null, "mission")}>
+        <EditForm action={saveSettings.bind(null, "mission")}>
           <TextArea label="Mission statement" name="mission" rows={3} defaultValue={s.mission} hint="Leave blank to hide it." />
-        </ActionForm>
+        </EditForm>
       </Panel>
 
       <Panel title="Values" description="The numbered cards under the mission on the Team page. Leave a name blank to hide that card.">
-        <ActionForm action={saveSettings.bind(null, "values")}>
+        <EditForm action={saveSettings.bind(null, "values")}>
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             {values.map((v, i) => (
               <fieldset key={i} className="flex flex-col gap-3 rounded-md border border-line p-4">
@@ -75,11 +76,11 @@ export default async function AdminSettingsPage() {
               </fieldset>
             ))}
           </div>
-        </ActionForm>
+        </EditForm>
       </Panel>
 
       <Panel title="Strategic Plan" description="Shown on the Team page with a button to read the full plan.">
-        <ActionForm action={saveSettings.bind(null, "strategic_plan")}>
+        <EditForm action={saveSettings.bind(null, "strategic_plan")}>
           <TextArea label="Short summary" name="summary" rows={3} defaultValue={s.strategic_plan.summary} hint="A sentence or two about what the plan covers." />
           <TextField label="Last updated" name="updated" defaultValue={s.strategic_plan.updated} placeholder="Fall 2026" hint="Optional. Shown next to the button." />
           <DocumentField
@@ -89,11 +90,11 @@ export default async function AdminSettingsPage() {
             currentUrl={s.strategic_plan.url || null}
             hint="Upload the PDF, or paste a link to it (for example a Google Drive link set to “Anyone with the link”). Leave both empty to hide this section."
           />
-        </ActionForm>
+        </EditForm>
       </Panel>
 
       <Panel title="How a season works" description="The numbered steps on the homepage and Team page. Leave a title blank to hide that step.">
-        <ActionForm action={saveSettings.bind(null, "build_steps")}>
+        <EditForm action={saveSettings.bind(null, "build_steps")}>
           <div className="grid gap-4 lg:grid-cols-2">
             {steps.map((step, i) => (
               <fieldset key={i} className="flex flex-col gap-3 rounded-md border border-line p-4">
@@ -106,37 +107,37 @@ export default async function AdminSettingsPage() {
               </fieldset>
             ))}
           </div>
-        </ActionForm>
+        </EditForm>
       </Panel>
 
       <Grid>
         <Panel title="Contact details">
-          <ActionForm action={saveSettings.bind(null, "contact")}>
+          <EditForm action={saveSettings.bind(null, "contact")}>
             <TextField label="Team email" name="email" type="email" defaultValue={s.contact.email} />
             <TextArea label="Address" name="address" rows={2} defaultValue={s.contact.address} />
             <TextField label="Map link" name="mapsUrl" type="url" defaultValue={s.contact.mapsUrl} />
             <TextArea label="Contact page intro" name="intro" rows={2} defaultValue={s.contact.intro} />
-          </ActionForm>
+          </EditForm>
         </Panel>
         <Panel title="Social media" description="Leave blank to hide.">
-          <ActionForm action={saveSettings.bind(null, "socials")}>
+          <EditForm action={saveSettings.bind(null, "socials")}>
             {PLATFORMS.map((p) => (
               <TextField key={p} label={SOCIAL_LABEL[p]} name={p} type="url" defaultValue={s.socials.find((x) => x.platform === p)?.url} />
             ))}
-          </ActionForm>
+          </EditForm>
         </Panel>
       </Grid>
 
       <Grid>
         <Panel title="Footer links" description="One per line as: Label | https://…">
-          <ActionForm action={saveSettings.bind(null, "friend_links")}>
+          <EditForm action={saveSettings.bind(null, "friend_links")}>
             <TextArea label="Links" name="links" rows={4} mono defaultValue={s.friend_links.map((l) => `${l.label} | ${l.url}`).join("\n")} />
-          </ActionForm>
+          </EditForm>
         </Panel>
         <Panel title="Donations" description="A link to your donation page (booster club, school foundation, etc.). Leave blank to hide the Donate button.">
-          <ActionForm action={saveSettings.bind(null, "donate_url")}>
+          <EditForm action={saveSettings.bind(null, "donate_url")}>
             <TextField label="Donate link" name="donate_url" type="url" defaultValue={s.donate_url} />
-          </ActionForm>
+          </EditForm>
         </Panel>
       </Grid>
 
@@ -144,14 +145,14 @@ export default async function AdminSettingsPage() {
         <ul className="flex flex-col divide-y divide-line">
           {contacts.map((c) => (
             <li key={c.id} className="flex flex-col gap-3 py-3 lg:flex-row lg:items-end">
-              <ActionForm action={updateContact.bind(null, c.id)} className="grow" submitLabel="Save" submitVariant="secondary">
+              <EditForm action={updateContact.bind(null, c.id)} className="grow">
                 <div className="grid gap-3 md:grid-cols-[1fr_1.4fr_1fr_80px]">
                   <TextField label="Name" name="name" defaultValue={c.name} />
                   <TextField label="Role" name="role" defaultValue={c.role} />
                   <TextField label="Email" name="email" type="email" defaultValue={c.email} />
                   <TextField label="Order" name="sort_order" type="number" defaultValue={c.sort_order} />
                 </div>
-              </ActionForm>
+              </EditForm>
               <ActionButton action={deleteContact.bind(null, c.id)} variant="danger" confirm={`Remove ${c.name}?`}>
                 Remove
               </ActionButton>

@@ -2,6 +2,7 @@ import type { MediaOption } from "@/lib/admin-data";
 import type { Post } from "@/lib/types";
 import type { ActionState } from "@/lib/admin";
 import { ActionForm } from "../_components/action-form";
+import { EditForm } from "../_components/unsaved";
 import { Checkbox, Grid, Panel, SelectField, TextArea, TextField } from "../_components/fields";
 import { MediaField } from "../_components/media-field";
 import { MarkdownEditor } from "./markdown-editor";
@@ -17,8 +18,7 @@ export function PostForm({
   library: MediaOption[];
   years: number[];
 }) {
-  return (
-    <ActionForm action={action} submitLabel={post ? "Save post" : "Create post"}>
+  const fields = (
       <div className="grid gap-6 xl:grid-cols-[1fr_360px]">
         <Panel>
           <TextField label="Title" name="title" defaultValue={post?.title} required />
@@ -54,6 +54,13 @@ export function PostForm({
           </Panel>
         </div>
       </div>
+  );
+  // Editing goes through the save bar; a new post has its own Create button.
+  return post ? (
+    <EditForm action={action}>{fields}</EditForm>
+  ) : (
+    <ActionForm action={action} submitLabel="Create post">
+      {fields}
     </ActionForm>
   );
 }
