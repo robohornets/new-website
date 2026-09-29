@@ -19,12 +19,18 @@ export function Container({
   children,
   className = "",
   size = "wide",
+  id,
 }: {
   children: ReactNode;
   className?: string;
   size?: keyof typeof WIDTHS;
+  id?: string;
 }) {
-  return <div className={`mx-auto px-4 md:px-8 ${size === "wide" ? "xl:px-16" : ""} ${WIDTHS[size]} ${className}`}>{children}</div>;
+  return (
+    <div id={id} className={`mx-auto px-4 md:px-8 ${size === "wide" ? "xl:px-16" : ""} ${WIDTHS[size]} ${className}`}>
+      {children}
+    </div>
+  );
 }
 
 export function EmptyState({ children }: { children: ReactNode }) {

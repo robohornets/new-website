@@ -3,6 +3,8 @@ import Link from "next/link";
 import { ArrowRight, Download, External } from "@/components/icons";
 import { Container, EmptyState, PageHeader } from "@/components/page-header";
 import { RosterGrid } from "@/components/roster-grid";
+import { TeamCalendar } from "@/components/team-calendar";
+import { calendarLinks, getUpcomingCalendar } from "@/lib/calendar";
 import { getCurrentSeason, getMediaFile, getRoster, getSeasons, getSettings, getSubteams } from "@/lib/data";
 import { documentLink } from "@/lib/media";
 
@@ -13,6 +15,7 @@ export const metadata: Metadata = {
 
 export default async function TeamPage() {
   const [settings, season, seasons, subteams] = await Promise.all([getSettings(), getCurrentSeason(), getSeasons(), getSubteams()]);
+  const calendar = settings.calendar.id ? await getUpcomingCalendar(settings.calendar.id) : null;
   const [roster, planFile] = await Promise.all([
     season ? getRoster(season.year) : [],
     getMediaFile(settings.strategic_plan.media_id),
@@ -92,6 +95,17 @@ export default async function TeamPage() {
             </ol>
           </Container>
         </section>
+      )}
+
+      {settings.calendar.id && (
+        <Container id="calendar" className="grid gap-8 pt-16 md:pt-24 lg:grid-cols-[1fr_1.6fr] lg:gap-16">
+          <div className="flex flex-col gap-4">
+            <span className="eyebrow eyebrow-bar text-bone">Calendar</span>
+            <h2 className="font-display text-5xl leading-[0.95] font-extrabold uppercase md:text-7xl">Meetings &amp; events</h2>
+            <p className="text-[17px] leading-relaxed text-sand">Build meetings, outreach and competitions for the next two months, straight from the team calendar.</p>
+          </div>
+          <TeamCalendar items={calendar} links={calendarLinks(settings.calendar.id)} />
+        </Container>
       )}
 
       {(plan || notebooks.length > 0) && (

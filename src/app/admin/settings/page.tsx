@@ -105,6 +105,23 @@ export default async function AdminSettingsPage() {
         </EditForm>
       </Panel>
 
+      <Panel title="Calendar" description="Upcoming meetings and events on the Team page, from the team's Google Calendar.">
+        <EditForm action={saveSettings.bind(null, "calendar")}>
+          <TextField
+            label="Google Calendar ID"
+            name="id"
+            defaultValue={s.calendar.id}
+            placeholder="btwrobotics@gmail.com"
+            hint={
+              <>
+                Usually the Gmail address. The calendar must be public: in Google Calendar, open Settings, pick the calendar, and under Access
+                permissions tick Make available to public. A public iCal link (https://…ics) works too. Leave blank to hide the calendar.
+              </>
+            }
+          />
+        </EditForm>
+      </Panel>
+
       <Panel title="How a season works" description="The numbered steps on the homepage and Team page. Leave a title blank to hide that step.">
         <EditForm action={saveSettings.bind(null, "build_steps")}>
           <div className="grid gap-4 lg:grid-cols-2">

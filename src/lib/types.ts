@@ -263,4 +263,6 @@ export type SiteSettings = {
   join_requests: { open: boolean };
   /** /scouting only works while this is on. */
   scouting: { open: boolean };
+  /** Google Calendar ID (e.g. btwrobotics@gmail.com) or a public iCal link. Empty hides the calendar. */
+  calendar: { id: string };
 };

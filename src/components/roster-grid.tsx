@@ -47,36 +47,34 @@ function Group({ title, count, children }: { title: string; count: number; child
  * Everyone as compact cards: their photo when it may be shown, otherwise
  * their initials on a brand-colored badge, so nobody is an empty box.
  *
- * `subteams` groups students: Leadership first, then each subteam (in the
- * admin's order) with people under their main subteam, then anyone without
- * one. Without it, it's one list (used for mentors).
+ * `subteams` groups students under their main subteam (in the admin's
+ * order), then anyone without one under "More members". Leaders come first
+ * in their group and show only their role (Lead, Co-Lead…), since the
+ * heading already says the subteam. Without `subteams` it's one list (used
+ * for mentors).
  */
 export function RosterGrid({ members, subteams }: { members: RosterMember[]; subteams?: Subteam[] }) {
   if (!subteams) return <Cards members={members.map(toPublic)} />;
 
   // In a subteam's own section, "Member" under every name is just noise.
   const quiet = (m: RosterMember) => ({ ...toPublic(m), role: m.role === "Member" ? "" : m.role });
-  const leaders = members.filter((m) => m.is_leadership === 1);
-  const rest = members.filter((m) => m.is_leadership !== 1);
+  // Leaders first; otherwise keep the roster's order (the admin's Order number, then name).
+  const leadersFirst = (list: RosterMember[]) =>
+    list.map((m, i) => ({ m, i })).sort((a, b) => b.m.is_leadership - a.m.is_leadership || a.i - b.i).map(({ m }) => m);
   const groups = subteams
-    .map((s) => ({ title: s.name, members: rest.filter((m) => m.subteam_id === s.id) }))
+    .map((s) => ({ title: s.name, members: leadersFirst(members.filter((m) => m.subteam_id === s.id)) }))
     .filter((g) => g.members.length > 0);
-  const unassigned = rest.filter((m) => m.subteam_id === null || !subteams.some((s) => s.id === m.subteam_id));
+  const unassigned = leadersFirst(members.filter((m) => m.subteam_id === null || !subteams.some((s) => s.id === m.subteam_id)));
 
   return (
     <div className="flex flex-col gap-10">
-      {leaders.length > 0 && (
-        <Group title="Leadership" count={leaders.length}>
-          <Cards members={leaders.map(quiet)} showSubteam />
-        </Group>
-      )}
       {groups.map((g) => (
         <Group key={g.title} title={g.title} count={g.members.length}>
           <Cards members={g.members.map(quiet)} />
         </Group>
       ))}
       {unassigned.length > 0 && (
-        <Group title={groups.length > 0 || leaders.length > 0 ? "More members" : "Members"} count={unassigned.length}>
+        <Group title={groups.length > 0 ? "More members" : "Members"} count={unassigned.length}>
           <Cards members={unassigned.map(quiet)} />
         </Group>
       )}

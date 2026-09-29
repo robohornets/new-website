@@ -146,6 +146,7 @@ Everything is in **btwrobotics.com/admin**:
 | Anytime | **Team roster** | Each person is a card: **Edit** opens a popup for their details, subteams and photo (add, replace, remove, or hide from the site); **Remove** takes them off the season. **Add person** and **Manage subteams** are at the top, with search and filters by subteam, class or leadership. Students show publicly as "First L." and their photos stay hidden unless *Show photo* is on. On the Team page people are grouped into Leadership and then their main subteam, as compact cards with their photo or initials; a bio, if filled in, opens when the card is clicked. |
 | Anytime | **News & outreach**, **Gallery**, **Sponsors** | Posts (Markdown), photo albums (drag and drop many at once), sponsor tiers per season. |
 | When it changes | **Site text & links** | Mission, values and the Strategic Plan (PDF or link) on the Team page. |
+| Anytime | Google Calendar | Meetings and events added to the team's public Google Calendar show on the Team page within about 10 minutes (the calendar is set under **Site text & links → Calendar**). |
 | Rarely | **Site text & links** | Homepage hero, stats (`{members}` shows this season's student count, rounded down to the nearest 10), about text, socials, contact people, footer links, donate link. |
 | After kickoff | **Scouting** | Build this year's scouting form (copy last year's or start from the example), then tick **Open /scouting** and share the link. |
 | Always | **Messages** | Contact form submissions. |
@@ -285,6 +286,13 @@ works while **Open /scouting** is on in the admin, and uses the current season's
 - **The Blue Alliance**: team lists, rankings, OPRs, team info, match lists and robot photos come through
   `tbaCachedJson` (`src/lib/tba/cache.ts`), which keeps each response in `tba_json_cache` for a few minutes and then
   revalidates with an ETag. Without a TBA key, scouts can still type team numbers.
+
+### Calendar
+
+The Team page's *Meetings & events* comes from the public iCal feed of the Google Calendar set in
+`site_settings.calendar.id` (default `btwrobotics@gmail.com`). `src/lib/calendar.ts` fetches it at most every 10
+minutes (keeping the last copy in `feed_cache`, so it still shows if Google is down), expands repeating events with
+`ical.js` (skipped and moved occurrences included), and lists the next 60 days in Central time.
 
 ### Admin forms and the save bar
 

@@ -340,6 +340,18 @@ export const GUIDES: Guide[] = [
     tips: ["Only the count is shown. The roster itself stays on the Team page, with students as first name and last initial."],
   },
   {
+    id: "calendar",
+    group: "Site text",
+    title: "Show the team calendar",
+    pages: ["/admin/settings"],
+    steps: [
+      "The Team page lists the next two months from the team's Google Calendar (meetings, outreach, competitions). Add and change events in Google Calendar as usual; the site picks them up within about 10 minutes.",
+      "The calendar has to be public. In Google Calendar, open Settings, click the calendar on the left, and under Access permissions tick Make available to public.",
+      "To use a different calendar, go to Site text & links and change **Google Calendar ID** under **Calendar** (it's usually the Gmail address), then click **Save changes**. Leave it blank to hide the calendar.",
+    ],
+    tips: ["Anything on the calendar is public, including the description, so keep private details out of events."],
+  },
+  {
     id: "mission-values",
     group: "Site text",
     title: "Change the mission or values",

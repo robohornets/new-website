@@ -74,6 +74,13 @@ function build(section: Section, fd: FormData): unknown {
       return { open: bool(fd, "open") === 1 };
     case "scouting":
       return { open: bool(fd, "open") === 1 };
+    case "calendar": {
+      const id = str(fd, "id", 300);
+      if (id && !/^https:\/\//i.test(id) && !/^[^\s@]+@[^\s@]+$/.test(id)) {
+        throw new FormError("Use the calendar ID (it looks like an email address) or its public iCal link starting with https://.");
+      }
+      return { id };
+    }
   }
 }
 
