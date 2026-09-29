@@ -9,7 +9,6 @@ export function SiteFooter({ settings }: { settings: SiteSettings }) {
   return (
     <footer className="border-t border-line bg-ink-deep">
       <div className="mx-auto max-w-[1440px] px-4 md:px-8 xl:px-16">
-        {/* The team's call-and-response. */}
         <div className="flex flex-col gap-6 border-b border-line py-14 md:flex-row md:items-end md:justify-between md:py-18">
           <p className="flex flex-col gap-1">
             <span className="font-mono text-[13px] tracking-[0.15em] text-dust md:text-[15px]">WHAT TIME IS IT?</span>
@@ -18,7 +17,7 @@ export function SiteFooter({ settings }: { settings: SiteSettings }) {
             </span>
           </p>
           <p className="max-w-sm text-[15px] leading-relaxed text-ash md:mb-3">
-            Ask anyone on the team. It&apos;s the call-and-response you&apos;ll hear in the pits at every event.
+            Ask anyone on the team. It&apos;s the catchphrase you&apos;ll hear in the pits at every event.
           </p>
         </div>
 
