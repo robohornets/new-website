@@ -1,0 +1,41 @@
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "btwrobotics",
+	"account_id": "bf0f37839f565aba35f34152a14d23eb",
+	"main": ".open-next/worker.js",
+	"compatibility_date": "2026-09-01",
+	"compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+	"assets": {
+		"directory": ".open-next/assets",
+		"binding": "ASSETS"
+	},
+	"routes": [
+		{ "pattern": "btwrobotics.com", "custom_domain": true }
+	],
+	"observability": {
+		"enabled": true
+	},
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "btwrobotics",
+			"database_id": "0a483600-2eec-4bff-a8d3-739fcb5b1962",
+			"migrations_dir": "migrations"
+		}
+	],
+	"r2_buckets": [
+		{
+			// Photos, robot pictures and sponsor logos uploaded from /admin.
+			// Create it first: npx wrangler r2 bucket create btwrobotics-media
+			"binding": "MEDIA",
+			"bucket_name": "btwrobotics-media"
+		}
+	],
+	"vars": {
+		// Filled in after creating the Cloudflare Access application for /admin.
+		// Team domain looks like "robohornets.cloudflareaccess.com".
+		// The AUD tag is on the Access application's Overview tab.
+		"CF_ACCESS_TEAM_DOMAIN": "",
+		"CF_ACCESS_AUD": ""
+	}
+}
