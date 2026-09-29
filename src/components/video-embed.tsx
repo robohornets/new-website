@@ -36,7 +36,7 @@ export function VideoEmbed({ url, title }: { url: string; title: string }) {
     return <video src={url} controls preload="metadata" playsInline className="w-full rounded-md border border-line bg-panel" title={title} />;
   }
   return (
-    <a href={url} target="_blank" rel="noopener noreferrer" className="font-semibold text-hornet hover:text-amber">
+    <a href={url} target="_blank" rel="noopener noreferrer" className="font-semibold text-hornet hover:text-hornet-hover">
       Watch the video
     </a>
   );

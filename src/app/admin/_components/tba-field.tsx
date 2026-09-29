@@ -35,12 +35,12 @@ export function TbaField({
   const shown = value ?? "";
   const fromTba = tbaValue === null || tbaValue === undefined || tbaValue === "" ? "(nothing yet)" : String(tbaValue);
   return (
-    <div className={`flex flex-col gap-1.5 rounded-md p-3 ${overridden ? "border border-amber/50 bg-amber-bg/40" : "border border-transparent"}`}>
+    <div className={`flex flex-col gap-1.5 rounded-md p-3 ${overridden ? "border border-rust bg-rust/15" : "border border-transparent"}`}>
       <label className="flex flex-col gap-1.5 text-sm font-semibold">
         <span className="flex flex-wrap items-center gap-2">
           {label}
           {overridden && (
-            <span className="rounded bg-amber px-1.5 py-0.5 font-mono text-[10px] font-bold tracking-wide text-ink">EDITED</span>
+            <span className="rounded bg-rust px-1.5 py-0.5 font-label text-[10px] font-bold tracking-wide text-white">EDITED</span>
           )}
         </span>
         {options ? (
@@ -60,16 +60,16 @@ export function TbaField({
       {synced && (
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
           <span className="text-dust">
-            The Blue Alliance says: <span className="font-mono text-sand">{fromTba}</span>
+            The Blue Alliance says: <span className="font-label text-sand">{fromTba}</span>
           </span>
           {overridden && (
-            <button type="submit" formAction={reset} formNoValidate className="font-semibold text-hornet underline-offset-2 hover:text-amber hover:underline">
+            <button type="submit" formAction={reset} formNoValidate className="font-semibold text-hornet underline-offset-2 hover:text-hornet-hover hover:underline">
               Reset to TBA
             </button>
           )}
         </div>
       )}
-      {overridden && <span className="text-xs text-amber">The site shows your value. Syncing won&apos;t change it.</span>}
+      {overridden && <span className="text-xs text-hornet">The site shows your value. Syncing won&apos;t change it.</span>}
       {hint && <span className="text-xs text-dust">{hint}</span>}
     </div>
   );

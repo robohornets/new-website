@@ -11,7 +11,7 @@ export function SiteFooter({ settings }: { settings: SiteSettings }) {
       <div className="mx-auto max-w-[1440px] px-4 md:px-8 xl:px-16">
         <div className="flex flex-col gap-6 border-b border-line py-14 md:flex-row md:items-end md:justify-between md:py-18">
           <p className="flex flex-col gap-1">
-            <span className="font-mono text-[13px] tracking-[0.15em] text-dust md:text-[15px]">WHAT TIME IS IT?</span>
+            <span className="font-label text-[13px] tracking-[0.15em] text-dust md:text-[15px]">WHAT TIME IS IT?</span>
             <span className="font-display text-[112px] leading-[0.82] font-black tracking-tight text-hornet md:text-[220px]">
               12:09!
             </span>
@@ -23,9 +23,10 @@ export function SiteFooter({ settings }: { settings: SiteSettings }) {
 
         <div className="flex flex-col gap-12 py-14 lg:flex-row lg:justify-between">
           <div className="flex max-w-sm flex-col gap-5">
-            <span className="font-display text-4xl leading-none font-black md:text-[44px]">
-              ROBOHORNETS <span className="text-hornet">1209</span>
-            </span>
+            <Link href="/" aria-label="RoboHornets home" className="self-start">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/brand/logo-lockup-on-dark.svg" alt="" width={518} height={251} className="h-24 w-auto md:h-28" />
+            </Link>
             {contact.address && (
               <p className="text-[15px] leading-relaxed whitespace-pre-line text-dust">
                 {contact.mapsUrl ? (
@@ -38,7 +39,7 @@ export function SiteFooter({ settings }: { settings: SiteSettings }) {
               </p>
             )}
             {contact.email && (
-              <a href={`mailto:${contact.email}`} className="font-mono text-[15px] text-hornet hover:text-amber">
+              <a href={`mailto:${contact.email}`} className="font-label text-[15px] text-hornet hover:text-hornet-hover">
                 {contact.email}
               </a>
             )}
@@ -86,9 +87,9 @@ export function SiteFooter({ settings }: { settings: SiteSettings }) {
 
         <div className="flex flex-col gap-2 border-t border-line py-6 text-[13px] text-ash sm:flex-row sm:justify-between">
           <span>
-            © {year} RoboHornets · FRC Team 1209 · Booker T. Washington High School
+            © {year} FRC Team 1209 - RoboHornets · Booker T. Washington High School
           </span>
-          <span className="font-mono">btwrobotics.com</span>
+          <span className="font-label">btwrobotics.com</span>
         </div>
       </div>
     </footer>

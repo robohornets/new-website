@@ -141,7 +141,7 @@ export function OriginalsDownloader({ totalFiles, totalBytes }: { totalFiles: nu
           type="button"
           onClick={toFolder}
           disabled={busy || !canPickFolder}
-          className="flex h-11 items-center rounded-md bg-hornet px-4 text-sm font-bold text-ink hover:bg-amber disabled:opacity-50"
+          className="flex h-11 items-center rounded-md bg-hornet px-4 text-sm font-bold text-ink hover:bg-hornet-hover disabled:opacity-50"
           title={canPickFolder ? undefined : "Needs Chrome or Edge"}
         >
           Save all originals to a folder
@@ -163,7 +163,7 @@ export function OriginalsDownloader({ totalFiles, totalBytes }: { totalFiles: nu
         {bigForZip && " The .zip is built in memory, so for a library this size use the folder option or the rclone command below."}
       </p>
       {busy && (
-        <p role="status" className="font-mono text-sm text-amber">
+        <p role="status" className="font-label text-sm text-hornet">
           {progress.done} / {progress.total} files · {formatBytes(progress.bytes)}
         </p>
       )}

@@ -18,14 +18,14 @@ export default async function AdminPostsPage() {
         title="News & outreach"
         description="Articles for the News and Outreach pages. Drafts stay hidden until you publish them."
         actions={
-          <Link href="/admin/posts/new" className="flex h-11 items-center gap-2 rounded-md bg-hornet px-4 text-sm font-bold text-ink hover:bg-amber">
+          <Link href="/admin/posts/new" className="flex h-11 items-center gap-2 rounded-md bg-hornet px-4 text-sm font-bold text-ink hover:bg-hornet-hover">
             <Plus size={16} /> New post
           </Link>
         }
       />
       <div className="overflow-x-auto rounded-md border border-line bg-panel">
         <table className="w-full min-w-[640px] text-left text-sm">
-          <thead className="border-b border-line font-mono text-[11px] tracking-wider text-ash uppercase">
+          <thead className="border-b border-line font-label text-[11px] tracking-wider text-ash uppercase">
             <tr>
               <th className="px-5 py-3 font-normal">Title</th>
               <th className="px-5 py-3 font-normal">Section</th>
@@ -49,14 +49,14 @@ export default async function AdminPostsPage() {
                     {p.title}
                   </Link>
                 </td>
-                <td className="px-5 py-3.5 font-mono text-xs text-sand uppercase">{p.category}</td>
-                <td className="px-5 py-3.5 font-mono">{p.season_year ?? "—"}</td>
+                <td className="px-5 py-3.5 font-label text-xs text-sand uppercase">{p.category}</td>
+                <td className="px-5 py-3.5 font-label">{p.season_year ?? "—"}</td>
                 <td className="px-5 py-3.5 text-dust">{formatDate(p.published_at ?? p.created_at)}</td>
                 <td className="px-5 py-3.5">
                   {p.published ? (
-                    <span className="rounded bg-amber-bg px-2 py-0.5 font-mono text-[11px] text-amber">LIVE</span>
+                    <span className="rounded bg-rust px-2 py-0.5 font-label text-[11px] text-white">LIVE</span>
                   ) : (
-                    <span className="rounded border border-line-strong px-2 py-0.5 font-mono text-[11px] text-dust">DRAFT</span>
+                    <span className="rounded border border-line-strong px-2 py-0.5 font-label text-[11px] text-dust">DRAFT</span>
                   )}
                 </td>
               </tr>

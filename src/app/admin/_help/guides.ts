@@ -6,14 +6,14 @@
 
 export type Guide = {
   id: string;
-  group: "Start here" | "Season basics" | "Photos & posts" | "People & sponsors";
+  group: "Start here" | "Season basics" | "Photos & posts" | "People & sponsors" | "Site text";
   title: string;
   pages: string[];
   steps: string[];
   tips?: string[];
 };
 
-export const GROUPS: Guide["group"][] = ["Start here", "Season basics", "Photos & posts", "People & sponsors"];
+export const GROUPS: Guide["group"][] = ["Start here", "Season basics", "Photos & posts", "People & sponsors", "Site text"];
 
 export const GUIDES: Guide[] = [
   // ---- Start here ------------------------------------------------------------
@@ -85,7 +85,7 @@ export const GUIDES: Guide[] = [
     steps: [
       "Open the event. Each box shows what the public site shows. Under it, **The Blue Alliance says** shows TBA's value.",
       "Change any box (rank, awards, webcast link, anything) and click **Save event**.",
-      "That box turns amber with an **EDITED** badge. The site now shows your value, and syncing will never change it.",
+      "That box gets a rust outline and an **EDITED** badge. The site now shows your value, and syncing will never change it.",
       "To undo, click **Reset to TBA** under that box. **Reset all to TBA** at the top undoes every edit on the event.",
       "Matches work the same way: in **Matches**, click **Edit** on a match, change the score, teams, result or video, and click **Save match**.",
     ],
@@ -126,6 +126,22 @@ export const GUIDES: Guide[] = [
       "Open the season and click **+ Add an event by hand** under **Competitions & events**.",
       "Fill in the name, type, dates and location, then click **Add event**.",
       "You're taken to the event's page. Type in any results, and use **+ Add a match by hand** if you want matches listed.",
+    ],
+  },
+  {
+    id: "notebook",
+    group: "Season basics",
+    title: "Add the engineering notebook",
+    pages: ["/admin/seasons/"],
+    steps: [
+      "Open **Seasons, robots & events** and click **Edit** next to the season.",
+      "In **Season basics**, find **Engineering notebook**.",
+      "Click **Upload PDF** and pick the notebook. It can be up to 95 MB. Or, if it lives in Google Drive, paste its link into **Or a link instead**.",
+      "Click **Save**. A **Engineering notebook** button appears on that season's page, and the notebook is listed on the Team page.",
+    ],
+    tips: [
+      "If you use a Google Drive link, set sharing to **Anyone with the link** first, or visitors will see a request-access page.",
+      "If both a PDF and a link are filled in, the site uses the PDF. Click **Remove** to go back to the link.",
     ],
   },
   {
@@ -258,6 +274,34 @@ export const GUIDES: Guide[] = [
       "To rename tiers or change their order, use the **Tiers** box. Lower rank shows first and gets the big logos.",
     ],
     tips: ["When you start a new season, last season's sponsors are copied over. Update the lineup once you know who's renewing."],
+  },
+
+  // ---- Site text -------------------------------------------------------------
+  {
+    id: "mission-values",
+    group: "Site text",
+    title: "Change the mission or values",
+    pages: ["/admin/settings"],
+    steps: [
+      "Go to **Site text & links**.",
+      "Edit the words in **Mission statement** and click **Save** under it.",
+      "Below it, **Values** has a card for each value (the six FIRST Core Values to start). Change a **Name** or **Text**, then click **Save** under the cards.",
+      "To remove a value, clear its **Name**. To add one, fill in an empty card.",
+    ],
+    tips: ["Both show near the top of the Team page. Leave the mission blank to hide it."],
+  },
+  {
+    id: "strategic-plan",
+    group: "Site text",
+    title: "Update the Strategic Plan",
+    pages: ["/admin/settings"],
+    steps: [
+      "Go to **Site text & links** and scroll to **Strategic Plan**.",
+      "Click **Upload PDF** (or **Replace PDF**) and pick the new plan. Or paste a link to it into **Or a link instead**.",
+      "Update the **Short summary** if the plan's focus changed, and type when it was updated (like Fall 2026) into **Last updated**.",
+      "Click **Save**. The Team page shows the summary with a **Read the Strategic Plan** button.",
+    ],
+    tips: ["Clear both the PDF and the link to hide the section."],
   },
 ];
 

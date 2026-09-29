@@ -101,7 +101,7 @@ export async function updateSeason(year: number, _prev: ActionState, fd: FormDat
   return adminAction({ action: "update", entity: "season", entityId: year }, async () => {
     await run(
       `UPDATE seasons SET game_name = ?, summary = ?, status = ?, kickoff_date = ?, reveal_video_url = ?,
-         hero_media_id = ?, updated_at = strftime('%Y-%m-%dT%H:%M:%SZ', 'now')
+         hero_media_id = ?, notebook_media_id = ?, notebook_url = ?, updated_at = strftime('%Y-%m-%dT%H:%M:%SZ', 'now')
        WHERE year = ?`,
       str(fd, "game_name", 120),
       str(fd, "summary", 4000),
@@ -109,6 +109,8 @@ export async function updateSeason(year: number, _prev: ActionState, fd: FormDat
       date(fd, "kickoff_date"),
       url(fd, "reveal_video_url"),
       optionalInt(fd, "hero_media_id"),
+      optionalInt(fd, "notebook_media_id"),
+      url(fd, "notebook_url"),
       year,
     );
   });

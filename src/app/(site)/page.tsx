@@ -21,15 +21,15 @@ import type { TeamEvent } from "@/lib/types";
 function LiveBanner({ event }: { event: TeamEvent }) {
   const status = [event.rank, event.record, event.playoff_result].filter(Boolean).join(" · ");
   return (
-    <section aria-label="Live event" className="border-b border-hornet/40 bg-amber-bg">
+    <section aria-label="Live event" className="border-b border-hornet/40 bg-rust">
       <div className="mx-auto flex max-w-[1440px] flex-col gap-3 px-4 py-4 md:flex-row md:items-center md:justify-between md:px-8 xl:px-16">
         <p className="flex flex-wrap items-center gap-x-3 gap-y-1">
-          <span className="flex items-center gap-2 font-mono text-xs font-bold tracking-widest text-hornet">
+          <span className="flex items-center gap-2 font-label text-xs font-bold tracking-widest text-hornet">
             <span className="size-2 animate-pulse rounded-full bg-hornet" aria-hidden="true" />
             LIVE NOW
           </span>
           <span className="font-semibold">{event.name}</span>
-          {status && <span className="font-mono text-sm text-sand">{status}</span>}
+          {status && <span className="font-label text-sm text-sand">{status}</span>}
         </p>
         <div className="flex gap-2.5">
           {event.webcast_url && (
@@ -37,7 +37,7 @@ function LiveBanner({ event }: { event: TeamEvent }) {
               href={event.webcast_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex h-11 items-center rounded-md bg-hornet px-5 text-sm font-bold text-ink hover:bg-amber"
+              className="flex h-11 items-center rounded-md bg-hornet px-5 text-sm font-bold text-ink hover:bg-hornet-hover"
             >
               Watch live
             </a>
@@ -87,21 +87,21 @@ export default async function HomePage() {
         <div className="relative mx-auto flex max-w-[1440px] flex-col gap-10 px-4 pt-10 pb-12 md:px-8 lg:flex-row lg:gap-14 lg:pt-18 lg:pb-20 xl:px-16">
           <div className="flex flex-col gap-6 lg:w-[600px] lg:shrink-0 lg:pt-6 xl:w-[640px]">
             {hero.eyebrow && (
-              <p className="flex items-center gap-3 font-mono text-[11px] tracking-[0.12em] text-dust uppercase md:text-[13px]">
+              <p className="flex items-center gap-3 font-label text-[11px] tracking-[0.12em] text-dust uppercase md:text-[13px]">
                 <span className="size-2.5 shrink-0 rotate-45 bg-hornet" aria-hidden="true" />
                 {hero.eyebrow}
               </p>
             )}
-            <h1 className="font-display text-[88px] leading-[0.86] font-black tracking-tight uppercase sm:text-[120px] xl:text-[148px]">
+            {/* One word, capital R and H, per the branding guidelines. */}
+            <h1 className="font-display text-[68px] leading-[0.9] font-black tracking-tight sm:text-[104px] xl:text-[128px]">
               {hero.titleTop}
-              <br />
               <span className="text-hornet">{hero.titleBottom}</span>
             </h1>
             {hero.intro && <p className="max-w-[540px] text-[17px] leading-relaxed text-sand md:text-xl">{hero.intro}</p>}
             <div className="mt-2 flex flex-col gap-3 sm:flex-row">
               <Link
                 href="/team"
-                className="flex h-14 items-center justify-center gap-2.5 rounded-md bg-hornet px-7 text-[17px] font-bold text-ink hover:bg-amber"
+                className="flex h-14 items-center justify-center gap-2.5 rounded-md bg-hornet px-7 text-[17px] font-bold text-ink hover:bg-hornet-hover"
               >
                 Meet the team <ArrowRight size={18} />
               </Link>
@@ -183,7 +183,7 @@ export default async function HomePage() {
                   <span className="font-display text-[44px] leading-none font-extrabold text-hornet">
                     {String(i + 1).padStart(2, "0")}
                   </span>
-                  <span className="font-mono text-xs text-dust uppercase">{step.when}</span>
+                  <span className="font-label text-xs text-dust uppercase">{step.when}</span>
                 </div>
                 <h3 className="font-display text-[34px] leading-none font-bold uppercase">{step.title}</h3>
                 <p className="leading-relaxed text-sand">{step.body}</p>
@@ -202,7 +202,7 @@ export default async function HomePage() {
               label="The machines"
               title="A new robot every year"
               aside={
-                <Link href="/seasons" className="flex items-center gap-2 font-semibold text-hornet hover:text-amber">
+                <Link href="/seasons" className="flex items-center gap-2 font-semibold text-hornet hover:text-hornet-hover">
                   All seasons <ArrowRight size={16} />
                 </Link>
               }
@@ -264,7 +264,7 @@ export default async function HomePage() {
             aside={
               <Link
                 href="/sponsors#support"
-                className="flex h-13 items-center self-start rounded-md border-[1.5px] border-hornet px-6 font-bold text-hornet hover:border-amber hover:text-amber md:self-auto"
+                className="flex h-13 items-center self-start rounded-md border-[1.5px] border-hornet px-6 font-bold text-hornet hover:border-hornet hover:text-hornet-hover md:self-auto"
               >
                 Become a sponsor
               </Link>
@@ -288,7 +288,7 @@ export default async function HomePage() {
         </div>
         <div className="flex flex-col justify-between gap-8 rounded-md border border-line bg-panel p-7 md:p-12">
           <div className="flex flex-col gap-3.5">
-            <span className="eyebrow text-hornet">Sponsors · Mentors · Donors</span>
+            <span className="eyebrow eyebrow-bar text-bone">Sponsors · Mentors · Donors</span>
             <h2 className="font-display text-5xl leading-[0.95] font-black uppercase md:text-[64px]">Get in touch</h2>
             <p className="max-w-md text-[17px] leading-relaxed text-sand">{contact.intro}</p>
           </div>
@@ -297,7 +297,7 @@ export default async function HomePage() {
               Send a message
             </Link>
             {contact.email && (
-              <a href={`mailto:${contact.email}`} className="font-mono text-[15px] text-hornet hover:text-amber">
+              <a href={`mailto:${contact.email}`} className="font-label text-[15px] text-hornet hover:text-hornet-hover">
                 {contact.email}
               </a>
             )}

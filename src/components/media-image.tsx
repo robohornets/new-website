@@ -30,7 +30,7 @@ export function MediaImage({
   if (!src) {
     return (
       <div className={`hatch flex items-center justify-center ${className}`} role="img" aria-label={alt}>
-        {placeholder ? <span className="px-4 text-center font-mono text-xs text-ash">{placeholder}</span> : null}
+        {placeholder ? <span className="px-4 text-center font-label text-xs text-ash">{placeholder}</span> : null}
       </div>
     );
   }

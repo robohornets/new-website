@@ -26,7 +26,7 @@ export function SponsorWall({ sponsors, showEmpty = true }: { sponsors: SeasonSp
     <div className="flex flex-col gap-10">
       {tiers.map((tier, i) => (
         <div key={tier.name} className="flex flex-col gap-3.5">
-          <h3 className={`eyebrow text-xs ${i === 0 ? "text-amber" : "text-sand"}`}>{tier.name}</h3>
+          <h3 className={`eyebrow text-xs ${i === 0 ? "text-hornet" : "text-sand"}`}>{tier.name}</h3>
           <ul
             className={
               i === 0

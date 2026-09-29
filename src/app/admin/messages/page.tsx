@@ -51,10 +51,10 @@ export default async function AdminMessagesPage(props: PageProps<"/admin/message
                   <div className="flex flex-wrap items-baseline gap-3">
                     {!m.read_at && <span className="size-2 rounded-full bg-hornet" aria-label="Unread" />}
                     <span className="font-semibold">{m.name}</span>
-                    <a href={`mailto:${m.email}`} className="font-mono text-sm text-hornet hover:text-amber">
+                    <a href={`mailto:${m.email}`} className="font-label text-sm text-hornet hover:text-hornet-hover">
                       {m.email}
                     </a>
-                    <span className="rounded border border-line-strong px-2 py-0.5 font-mono text-[11px] text-sand uppercase">
+                    <span className="rounded border border-line-strong px-2 py-0.5 font-label text-[11px] text-sand uppercase">
                       {topicLabel.get(m.topic) ?? m.topic}
                     </span>
                   </div>
@@ -64,7 +64,7 @@ export default async function AdminMessagesPage(props: PageProps<"/admin/message
                 <div className="flex flex-wrap gap-2 border-t border-line pt-3">
                   <a
                     href={`mailto:${m.email}?subject=${encodeURIComponent("Re: your message to the RoboHornets")}`}
-                    className="flex h-10 items-center rounded-md bg-hornet px-4 text-sm font-bold text-ink hover:bg-amber"
+                    className="flex h-10 items-center rounded-md bg-hornet px-4 text-sm font-bold text-ink hover:bg-hornet-hover"
                   >
                     Reply
                   </a>

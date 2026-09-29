@@ -20,18 +20,16 @@ function isActive(pathname: string, href: string) {
   return href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`);
 }
 
-export function Logo({ compact = false }: { compact?: boolean }) {
+export function Logo() {
   return (
-    <Link href="/" className="flex items-center gap-3 text-bone" aria-label="RoboHornets home">
-      <span className="flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-bone md:size-13">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/images/robohornet.png" alt="" className="size-10 object-contain md:size-12" />
-      </span>
-      <span className="flex flex-col gap-0.5">
-        <span className="font-display text-[22px] leading-none font-extrabold tracking-wide md:text-[26px]">
-          ROBOHORNETS
-        </span>
-        {!compact && <span className="font-mono text-xs tracking-wider text-dust">FRC TEAM 1209</span>}
+    <Link href="/" className="flex items-center gap-4 text-bone" aria-label="RoboHornets home">
+      {/* The main logo from the branding guidelines. SVG, never mirrored or recolored. */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src="/brand/logo-lockup-on-dark.svg" alt="" width={518} height={251} className="h-12 w-auto md:h-16" />
+      <span className="hidden border-l border-line-strong pl-4 font-label text-xs leading-snug font-semibold tracking-wider text-dust uppercase xl:block">
+        FRC Team
+        <br />
+        1209
       </span>
     </Link>
   );
@@ -62,7 +60,7 @@ export function SiteHeader() {
         <div className="flex items-center gap-3">
           <Link
             href="/sponsors#support"
-            className="hidden h-11 items-center rounded-md bg-hornet px-5 text-[15px] font-bold text-ink hover:bg-amber sm:flex"
+            className="hidden h-11 items-center rounded-md bg-hornet px-5 text-[15px] font-bold text-ink hover:bg-hornet-hover sm:flex"
           >
             Support the team
           </Link>

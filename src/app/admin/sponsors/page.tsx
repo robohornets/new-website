@@ -47,7 +47,7 @@ export default async function AdminSponsorsPage(props: PageProps<"/admin/sponsor
               <input type="hidden" name="ids" value={sponsors.map((s) => s.id).join(",")} />
               <div className="overflow-x-auto">
                 <table className="w-full min-w-[560px] text-left text-sm">
-                  <thead className="font-mono text-[11px] tracking-wider text-ash uppercase">
+                  <thead className="font-label text-[11px] tracking-wider text-ash uppercase">
                     <tr>
                       <th className="py-2 pr-4 font-normal">Sponsor</th>
                       <th className="py-2 pr-4 font-normal">Tier</th>
@@ -103,7 +103,7 @@ export default async function AdminSponsorsPage(props: PageProps<"/admin/sponsor
                         // eslint-disable-next-line @next/next/no-img-element
                         <img src={mediaUrl(s.logo_key, 320) ?? ""} alt="" className="max-h-8 max-w-[72px] object-contain" />
                       ) : (
-                        <span className="font-mono text-[10px] text-ink/60">NO LOGO</span>
+                        <span className="font-label text-[10px] text-ink/60">NO LOGO</span>
                       )}
                     </span>
                     <span className="grow font-semibold">{s.name}</span>

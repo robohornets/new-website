@@ -62,7 +62,7 @@ export default async function AdminDashboard() {
             </Link>
             <Link
               href={`/admin/seasons/new?year=${nextYear}`}
-              className="flex h-11 items-center gap-2 rounded-md bg-hornet px-4 text-sm font-bold text-ink hover:bg-amber"
+              className="flex h-11 items-center gap-2 rounded-md bg-hornet px-4 text-sm font-bold text-ink hover:bg-hornet-hover"
             >
               <Plus size={16} /> Start {nextYear} season
             </Link>
@@ -83,7 +83,7 @@ export default async function AdminDashboard() {
             />
             <div className="flex grow flex-col gap-3">
               <div className="flex items-center gap-2">
-                <span className="rounded bg-amber-bg px-2 py-1 font-mono text-[11px] text-amber">LIVE ON SITE</span>
+                <span className="rounded bg-rust px-2 py-1 font-label text-[11px] text-white">LIVE ON SITE</span>
                 <span className="text-[13px] text-dust">{SEASON_STATUS_LABEL[season.status]}</span>
               </div>
               <div className="flex flex-wrap items-baseline gap-x-3">
@@ -96,7 +96,7 @@ export default async function AdminDashboard() {
               <div className="flex flex-col gap-1.5">
                 <div className="flex justify-between text-[13px]">
                   <span className="text-sand">Season page completeness</span>
-                  <span className="font-mono">
+                  <span className="font-label">
                     {done} / {checklist.length}
                   </span>
                 </div>
@@ -115,7 +115,7 @@ export default async function AdminDashboard() {
                     </li>
                   ))}
               </ul>
-              <Link href={`/admin/seasons/${season.year}`} className="mt-auto text-sm font-semibold text-hornet hover:text-amber">
+              <Link href={`/admin/seasons/${season.year}`} className="mt-auto text-sm font-semibold text-hornet hover:text-hornet-hover">
                 Edit {season.year} season
               </Link>
             </div>
@@ -124,7 +124,7 @@ export default async function AdminDashboard() {
             <span className="eyebrow text-[11px] text-ash">Media · R2 bucket</span>
             <span className="font-display text-5xl leading-none font-extrabold">{counts?.media ?? 0}</span>
             <span className="text-[13px] text-dust">files · {formatBytes(counts?.bytes ?? 0)} used</span>
-            <Link href="/admin/media" className="mt-auto text-sm font-semibold text-hornet hover:text-amber">
+            <Link href="/admin/media" className="mt-auto text-sm font-semibold text-hornet hover:text-hornet-hover">
               Upload photos
             </Link>
           </section>
@@ -147,7 +147,7 @@ export default async function AdminDashboard() {
       <section className="flex flex-col overflow-hidden rounded-md border border-line bg-panel">
         <div className="flex items-center justify-between border-b border-line px-6 py-4">
           <h2 className="font-display text-2xl font-bold uppercase">Contact messages</h2>
-          <Link href="/admin/messages" className="text-sm font-semibold text-hornet hover:text-amber">
+          <Link href="/admin/messages" className="text-sm font-semibold text-hornet hover:text-hornet-hover">
             Open inbox
           </Link>
         </div>
@@ -160,7 +160,7 @@ export default async function AdminDashboard() {
                 <Link href={`/admin/messages#m${m.id}`} className="grid grid-cols-[12px_1fr] gap-x-4 gap-y-1 px-6 py-3.5 text-sm hover:bg-raise/50 md:grid-cols-[12px_200px_130px_1fr_110px] md:items-center">
                   <span className={`size-2 rounded-full ${m.read_at ? "bg-line-strong" : "bg-hornet"}`} aria-label={m.read_at ? "Read" : "Unread"} />
                   <span className={m.read_at ? "" : "font-bold"}>{m.name}</span>
-                  <span className="col-start-2 font-mono text-xs text-sand uppercase md:col-start-auto">{m.topic}</span>
+                  <span className="col-start-2 font-label text-xs text-sand uppercase md:col-start-auto">{m.topic}</span>
                   <span className="col-start-2 truncate text-dust md:col-start-auto">{m.body}</span>
                   <span className="col-start-2 text-[13px] text-ash md:col-start-auto">{formatDateTime(m.created_at)}</span>
                 </Link>

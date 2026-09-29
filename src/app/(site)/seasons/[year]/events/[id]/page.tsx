@@ -63,7 +63,7 @@ export default async function EventPage(props: PageProps<"/seasons/[year]/events
   return (
     <>
       <Container className="flex flex-col gap-5 pt-12 pb-10 md:pt-18">
-        <nav aria-label="Breadcrumb" className="font-mono text-xs tracking-wider text-dust uppercase">
+        <nav aria-label="Breadcrumb" className="font-label text-xs tracking-wider text-dust uppercase">
           <Link href="/seasons" className="hover:text-bone">
             Seasons
           </Link>
@@ -73,7 +73,7 @@ export default async function EventPage(props: PageProps<"/seasons/[year]/events
           </Link>
         </nav>
         <h1 className="font-display text-5xl leading-[0.95] font-black uppercase md:text-7xl">{event.name}</h1>
-        <p className="font-mono text-sm text-dust">
+        <p className="font-label text-sm text-dust">
           {[dateRange(event), event.location].filter(Boolean).join(" · ")}
         </p>
         <div className="flex flex-wrap gap-3">
@@ -82,7 +82,7 @@ export default async function EventPage(props: PageProps<"/seasons/[year]/events
               href={event.webcast_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex h-12 items-center gap-2 rounded-md bg-hornet px-5 font-bold text-ink hover:bg-amber"
+              className="flex h-12 items-center gap-2 rounded-md bg-hornet px-5 font-bold text-ink hover:bg-hornet-hover"
             >
               Webcast <External size={16} />
             </a>
@@ -98,7 +98,7 @@ export default async function EventPage(props: PageProps<"/seasons/[year]/events
             </a>
           )}
           {event.website && (
-            <a href={event.website} target="_blank" rel="noopener noreferrer" className="flex h-12 items-center gap-2 px-2 font-semibold text-hornet hover:text-amber">
+            <a href={event.website} target="_blank" rel="noopener noreferrer" className="flex h-12 items-center gap-2 px-2 font-semibold text-hornet hover:text-hornet-hover">
               Event website <External size={16} />
             </a>
           )}
@@ -118,7 +118,7 @@ export default async function EventPage(props: PageProps<"/seasons/[year]/events
           {awards.length > 0 && (
             <ul className="mt-4 flex flex-wrap gap-2" aria-label="Awards">
               {awards.map((a) => (
-                <li key={a} className="rounded-full bg-amber-bg px-4 py-2 text-sm font-semibold text-amber">
+                <li key={a} className="rounded-full bg-rust px-4 py-2 text-sm font-semibold text-white">
                   {a}
                 </li>
               ))}
@@ -149,7 +149,7 @@ export default async function EventPage(props: PageProps<"/seasons/[year]/events
         <Container className="flex flex-col gap-6 py-14">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <h2 className="font-display text-4xl font-extrabold uppercase">Photos</h2>
-            <Link href={`/gallery/${album.slug}`} className="flex items-center gap-2 font-semibold text-hornet hover:text-amber">
+            <Link href={`/gallery/${album.slug}`} className="flex items-center gap-2 font-semibold text-hornet hover:text-hornet-hover">
               {album.title} <ArrowRight size={16} />
             </Link>
           </div>
@@ -189,7 +189,7 @@ function Teams({ list, year, color }: { list: string; year: number; color: "red"
               href={`https://www.thebluealliance.com/team/${t}/${year}`}
               target="_blank"
               rel="noopener noreferrer"
-              className={`inline-flex h-8 items-center rounded px-2 font-mono text-sm ${
+              className={`inline-flex h-8 items-center rounded px-2 font-label text-sm ${
                 us
                   ? "bg-hornet font-bold text-ink"
                   : color === "red"
@@ -215,13 +215,13 @@ function MatchTable({ title, matches, year }: { title: string; matches: Match[];
     <div className="flex flex-col gap-3">
       <h3 className="flex items-baseline gap-3 font-display text-2xl font-bold uppercase">
         {title}
-        <span className="font-mono text-sm font-normal text-dust normal-case">
+        <span className="font-label text-sm font-normal text-dust normal-case">
           {wins}-{losses}-{ties}
         </span>
       </h3>
       <div className="overflow-x-auto rounded-md border border-line">
         <table className="w-full min-w-[720px] text-left text-sm">
-          <thead className="bg-ink font-mono text-[11px] tracking-wider text-ash uppercase">
+          <thead className="bg-ink font-label text-[11px] tracking-wider text-ash uppercase">
             <tr>
               <th className="px-4 py-2.5 font-normal">Match</th>
               <th className="px-4 py-2.5 font-normal">Red alliance</th>
@@ -244,7 +244,7 @@ function MatchTable({ title, matches, year }: { title: string; matches: Match[];
                   <td className="px-4 py-3">
                     <Teams list={m.red_teams} year={year} color="red" />
                   </td>
-                  <td className="px-4 py-3 text-center font-mono whitespace-nowrap">
+                  <td className="px-4 py-3 text-center font-label whitespace-nowrap">
                     {scored ? (
                       <>
                         <span className={redWon ? "font-bold text-[#ff8f8f]" : "text-dust"}>{m.red_score}</span>
@@ -259,13 +259,13 @@ function MatchTable({ title, matches, year }: { title: string; matches: Match[];
                     <Teams list={m.blue_teams} year={year} color="blue" />
                   </td>
                   <td className="px-4 py-3">
-                    {m.result === "win" && <span className="rounded bg-amber-bg px-2 py-1 font-mono text-xs font-bold text-amber">WIN</span>}
-                    {m.result === "loss" && <span className="rounded bg-raise px-2 py-1 font-mono text-xs text-dust">LOSS</span>}
-                    {m.result === "tie" && <span className="rounded bg-raise px-2 py-1 font-mono text-xs text-sand">TIE</span>}
+                    {m.result === "win" && <span className="rounded bg-rust px-2 py-1 font-label text-xs font-bold text-white">WIN</span>}
+                    {m.result === "loss" && <span className="rounded bg-raise px-2 py-1 font-label text-xs text-dust">LOSS</span>}
+                    {m.result === "tie" && <span className="rounded bg-raise px-2 py-1 font-label text-xs text-sand">TIE</span>}
                   </td>
                   <td className="px-4 py-3 text-right">
                     {m.video_url && (
-                      <a href={m.video_url} target="_blank" rel="noopener noreferrer" className="font-semibold whitespace-nowrap text-hornet hover:text-amber">
+                      <a href={m.video_url} target="_blank" rel="noopener noreferrer" className="font-semibold whitespace-nowrap text-hornet hover:text-hornet-hover">
                         Video
                       </a>
                     )}

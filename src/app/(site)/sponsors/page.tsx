@@ -25,7 +25,7 @@ export default async function SponsorsPage() {
       <section id="support" className="border-t border-line bg-panel">
         <Container className="grid gap-10 py-16 md:py-24 lg:grid-cols-2">
           <div className="flex flex-col gap-4">
-            <span className="eyebrow text-hornet">Support the team</span>
+            <span className="eyebrow eyebrow-bar text-bone">Support the team</span>
             <h2 className="font-display text-5xl leading-[0.95] font-black uppercase md:text-7xl">Put your name on the robot</h2>
           </div>
           <div className="flex flex-col gap-6 text-lg leading-relaxed text-sand">
@@ -36,7 +36,7 @@ export default async function SponsorsPage() {
             <div className="flex flex-col gap-3 sm:flex-row">
               <Link
                 href="/contact?topic=sponsorship"
-                className="flex h-13 items-center justify-center rounded-md bg-hornet px-6 font-bold text-ink hover:bg-amber"
+                className="flex h-13 items-center justify-center rounded-md bg-hornet px-6 font-bold text-ink hover:bg-hornet-hover"
               >
                 Talk to us about sponsoring
               </Link>

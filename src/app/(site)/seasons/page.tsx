@@ -47,7 +47,7 @@ export default async function SeasonsPage() {
                     <div className="relative h-56">
                       <MediaImage mediaKey={photo} alt="" className="size-full" />
                       {s.is_current === 1 && (
-                        <span className="absolute top-4 left-4 rounded bg-amber-bg px-2 py-1 font-mono text-xs text-amber">
+                        <span className="absolute top-4 left-4 rounded bg-rust px-2 py-1 font-label text-xs text-white">
                           CURRENT
                         </span>
                       )}

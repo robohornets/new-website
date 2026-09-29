@@ -56,7 +56,7 @@ export function AdminSidebar({ email, unread }: { email: string; unread: number 
               }`}
             >
               {item.label}
-              {"badge" in item && unread > 0 && <span className="font-mono text-xs text-amber">{unread}</span>}
+              {"badge" in item && unread > 0 && <span className="font-label text-xs text-hornet">{unread}</span>}
             </Link>
           ))}
         </div>
@@ -87,7 +87,7 @@ export function AdminSidebar({ email, unread }: { email: string; unread: number 
           <span className="truncate text-[13px] font-semibold" title={email}>
             {email}
           </span>
-          <a href="/cdn-cgi/access/logout" className="text-xs text-hornet hover:text-amber">
+          <a href="/cdn-cgi/access/logout" className="text-xs text-hornet hover:text-hornet-hover">
             Sign out
           </a>
         </div>
@@ -99,10 +99,8 @@ export function AdminSidebar({ email, unread }: { email: string; unread: number 
 function Brand() {
   return (
     <Link href="/admin" className="flex items-center gap-3 px-2">
-      <span className="flex size-10 items-center justify-center overflow-hidden rounded-full bg-bone">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/images/robohornet.png" alt="" className="size-9 object-contain" />
-      </span>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src="/brand/hornet.svg" alt="" width={425} height={599} className="h-11 w-auto" />
       <span className="flex flex-col">
         <span className="font-display text-xl font-extrabold tracking-wide">1209 ADMIN</span>
         <span className="text-xs text-ash">btwrobotics.com</span>

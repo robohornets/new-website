@@ -1,6 +1,6 @@
 # btwrobotics.com
 
-The website for **FRC Team 1209, the RoboHornets** (Booker T. Washington High School, Tulsa).
+The website for **FRC Team 1209 - RoboHornets** (Booker T. Washington High School, Tulsa).
 
 - **Next.js 16 + TypeScript + Tailwind 4**, deployed as a **Cloudflare Worker** with [OpenNext](https://opennext.js.org/cloudflare)
 - **D1** (SQLite) holds every piece of site content
@@ -139,16 +139,43 @@ Everything is in **btwrobotics.com/admin**:
 | --- | --- | --- |
 | Before or at kickoff | **Seasons → Start new season** | Year, game name, kickoff date. Carries over returning students (skips anyone whose graduation year has passed), mentors and sponsors, and makes it the homepage's current season. |
 | Build season | **Seasons → (year)** | Add the robot: name, specs (`Label: value` per line), tags, GitHub link, photo. Set status to *Build season*. |
+| End of season | **Seasons → (year)** | Upload the engineering notebook PDF (or paste a link) under *Season basics*. |
 | Before events | nothing | Events 1209 registers for appear from The Blue Alliance on their own. Upcoming ones show on the homepage, with a **Watch live** banner during the event. |
 | During/after events | **Seasons → (year) → event** | Results and every match fill in automatically. Fix anything (it's marked **Edited**), add a write-up, highlight video or album, or hide an event/match. |
 | Anytime | **Team roster** | Add or remove people and set roles. Students show publicly as "First L." and their photos stay hidden unless *Show photo* is on. |
 | Anytime | **News & outreach**, **Gallery**, **Sponsors** | Posts (Markdown), photo albums (drag and drop many at once), sponsor tiers per season. |
+| When it changes | **Site text & links** | Mission, values and the Strategic Plan (PDF or link) on the Team page. |
 | Rarely | **Site text & links** | Homepage hero, stats, about text, socials, contact people, footer links, donate link. |
 | Always | **Messages** | Contact form submissions. |
 
 Older seasons stay browsable at `/seasons/<year>` with their robot, events, roster, sponsors and photos.
 
 ---
+
+## Branding
+
+The site follows the team's 2026 Branding Guidelines (Drive > Business > Media > Graphics).
+
+- **Name:** always "RoboHornets" (one word, capital R and H). The formal name is "FRC Team 1209 - RoboHornets", used in page titles and the footer.
+- **Colors** (`src/app/globals.css`): BTW Orange `#FC8C04` (`hornet`) is the primary color. Rusty Orange `#A53000` (`rust`) is
+  the accent, used only as a background behind white text (labels, badges) because it's too dark to read as text on the
+  dark background. White and black are secondary; the page background is a warm charcoal.
+- **Type:** Raleway for body text and labels (the guidelines' typeface); Big Shoulders for the big condensed headings.
+- **Section labels** are small spaced capitals with a short orange bar under them (`eyebrow eyebrow-bar`), like the guidelines deck.
+- **Logos** (never mirror or recolor them; use SVG when possible):
+
+| File | Used for | Source |
+| --- | --- | --- |
+| `public/brand/logo-lockup-on-dark.svg` | Header and footer | Main logo, white text, from the guidelines PDF |
+| `public/brand/logo-lockup-on-light.svg` | Anything on a white background | Main logo, black text, from the guidelines PDF |
+| `public/brand/hornet.svg` | Admin sidebar | Hornet on its own, from the guidelines PDF |
+| `public/images/robohornet.png` | Source for the favicon | Full-size hornet artwork |
+| `src/app/icon.png`, `src/app/apple-icon.png` | Browser tab and home-screen icons | Made from `robohornet.png` |
+| `src/app/opengraph-image.png` | Link previews (iMessage, Discord, social) | The dark lockup on charcoal |
+
+The SVGs were taken straight from the vector artwork in the guidelines PDF. To use the originals from the Drive
+instead, save them over these files with the same names. For the favicon, the guidelines call for the **simplified
+hornet** at small sizes: save its SVG as `src/app/icon.svg` and delete `src/app/icon.png`.
 
 ## How it's built
 
@@ -172,7 +199,7 @@ no ISR cache bucket is needed.
 
 Content is organised around **seasons**. Each FRC year is a row, and most other content hangs off it:
 
-- `seasons`: year (PK), game name, summary, status (`pre_kickoff` / `build` / `competition` / `offseason`), kickoff date, reveal video, hero photo, `is_current` (at most one)
+- `seasons`: year (PK), game name, summary, status (`pre_kickoff` / `build` / `competition` / `offseason`), kickoff date, reveal video, hero photo, engineering notebook (uploaded PDF and/or link), `is_current` (at most one)
 - `robots`: per season: name, kind (competition / kitbot / …), description, specs JSON, tags JSON, code and CAD links, photo
 - `events`: per season: name, kind, location, dates, website, webcast, Blue Alliance key, rank, record, alliance,
   playoff result, awards, plus admin-only extras (write-up, highlight video, album, hidden). `tba` holds the latest
@@ -185,7 +212,7 @@ Content is organised around **seasons**. Each FRC year is a row, and most other 
 - `posts`: news and outreach articles in Markdown (raw HTML is not rendered), optionally tied to a season
 - `albums` + `album_photos`: gallery albums, optionally tied to a season
 - `media`: every file uploaded to R2 (key, original filename, type, size, pixel width/height, alt text). Other tables point at it by id.
-- `site_settings`: key/value JSON for editable page text
+- `site_settings`: key/value JSON for editable page text, including the mission, values and Strategic Plan
 - `contacts`: people listed on the Contact page
 - `messages`: contact form submissions (the sender IP is stored only as a hash, for rate limiting)
 - `audit_log`: who changed what in the admin

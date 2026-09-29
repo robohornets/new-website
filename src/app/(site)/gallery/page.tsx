@@ -33,7 +33,7 @@ export default async function GalleryPage(props: PageProps<"/gallery">) {
               key={y}
               href={`/gallery?season=${y}`}
               aria-current={season === y ? "page" : undefined}
-              className={`flex h-11 items-center rounded-full px-5 font-mono text-sm ${
+              className={`flex h-11 items-center rounded-full px-5 font-label text-sm ${
                 season === y ? "bg-bone font-bold text-ink" : "border border-line-strong text-sand hover:border-bone"
               }`}
             >
@@ -57,7 +57,7 @@ export default async function GalleryPage(props: PageProps<"/gallery">) {
                       className="size-full transition-transform duration-300 group-hover:scale-[1.03]"
                     />
                   </div>
-                  <div className="flex items-center gap-2.5 font-mono text-xs tracking-wider text-dust uppercase">
+                  <div className="flex items-center gap-2.5 font-label text-xs tracking-wider text-dust uppercase">
                     {a.season_year && <span className="text-hornet">{a.season_year}</span>}
                     <span>{a.photo_count} photos</span>
                   </div>

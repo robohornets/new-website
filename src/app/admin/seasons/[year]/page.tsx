@@ -11,6 +11,7 @@ import { parseOverrides } from "@/lib/tba/fields";
 import type { Robot } from "@/lib/types";
 import { ActionButton, ActionForm } from "../../_components/action-form";
 import { AdminPageHeader, Grid, Panel, SelectField, TextArea, TextField } from "../../_components/fields";
+import { DocumentField } from "../../_components/document-field";
 import { MediaField, type MediaOption } from "../../_components/media-field";
 import { TbaSyncPanel } from "../../_components/tba-sync-panel";
 import {
@@ -121,6 +122,17 @@ export default async function AdminSeasonPage(props: PageProps<"/admin/seasons/[
             library={library}
             hint="Used as the homepage hero while this is the current season. Falls back to the robot photo."
           />
+          <DocumentField
+            name="notebook"
+            label="Engineering notebook"
+            current={
+              season.notebook_media_id && season.notebook_key
+                ? { id: season.notebook_media_id, r2_key: season.notebook_key, filename: season.notebook_filename ?? "Notebook.pdf" }
+                : null
+            }
+            currentUrl={season.notebook_url}
+            hint="Upload the PDF (up to 95 MB) or paste a link to it. Shown as a button on the season page and listed on the Team page."
+          />
         </ActionForm>
       </Panel>
 
@@ -131,7 +143,7 @@ export default async function AdminSeasonPage(props: PageProps<"/admin/seasons/[
               <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-4 py-3">
                 <span className="flex items-baseline gap-3">
                   <span className="font-display text-2xl font-extrabold uppercase">{r.name}</span>
-                  <span className="font-mono text-xs text-dust uppercase">{r.kind}</span>
+                  <span className="font-label text-xs text-dust uppercase">{r.kind}</span>
                 </span>
                 <span className="text-sm text-hornet group-open:hidden">Edit</span>
                 <span className="hidden text-sm text-dust group-open:inline">Close</span>
@@ -178,21 +190,21 @@ export default async function AdminSeasonPage(props: PageProps<"/admin/seasons/[
                   >
                     <span className="flex min-w-0 grow flex-col gap-0.5">
                       <span className="font-semibold">{e.name}</span>
-                      <span className="font-mono text-xs text-dust">
+                      <span className="font-label text-xs text-dust">
                         {formatDate(e.start_date) || "No date"}
                         {e.location ? ` · ${e.location}` : ""}
                       </span>
                     </span>
                     <span className="flex flex-wrap items-center gap-2 text-xs">
-                      {e.rank && <span className="font-mono text-amber">{e.rank}</span>}
+                      {e.rank && <span className="font-label text-hornet">{e.rank}</span>}
                       {e.playoff_result && <span className="text-sand">{e.playoff_result}</span>}
                       {e.tba ? (
-                        <span className="rounded border border-line-strong px-1.5 py-0.5 font-mono text-[10px] text-sand">TBA</span>
+                        <span className="rounded border border-line-strong px-1.5 py-0.5 font-label text-[10px] text-sand">TBA</span>
                       ) : (
-                        <span className="rounded border border-line-strong px-1.5 py-0.5 font-mono text-[10px] text-dust">BY HAND</span>
+                        <span className="rounded border border-line-strong px-1.5 py-0.5 font-label text-[10px] text-dust">BY HAND</span>
                       )}
-                      {edited > 0 && <span className="rounded bg-amber px-1.5 py-0.5 font-mono text-[10px] font-bold text-ink">{edited} EDITED</span>}
-                      {e.hidden === 1 && <span className="rounded bg-raise px-1.5 py-0.5 font-mono text-[10px] text-dust">HIDDEN</span>}
+                      {edited > 0 && <span className="rounded bg-rust px-1.5 py-0.5 font-label text-[10px] font-bold text-white">{edited} EDITED</span>}
+                      {e.hidden === 1 && <span className="rounded bg-raise px-1.5 py-0.5 font-label text-[10px] text-dust">HIDDEN</span>}
                     </span>
                     <span className="text-sm font-semibold text-hornet">Open</span>
                   </Link>

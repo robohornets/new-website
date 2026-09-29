@@ -49,20 +49,20 @@ export default async function AdminMediaPage(props: PageProps<"/admin/media">) {
                 ) : isVideo(m.r2_key) ? (
                   <video src={original} preload="metadata" muted className="size-full object-cover" />
                 ) : (
-                  <span className="font-mono text-xs text-dust">{m.content_type}</span>
+                  <span className="font-label text-xs text-dust">{m.content_type}</span>
                 )}
               </div>
               <div className="flex flex-col gap-0.5">
                 <span className="truncate text-sm font-semibold" title={m.filename}>
                   {m.filename}
                 </span>
-                <span className="font-mono text-[11px] text-ash">
+                <span className="font-label text-[11px] text-ash">
                   {formatBytes(m.size_bytes)}
                   {m.width && m.height ? ` · ${m.width}×${m.height}` : ""} · {formatDate(m.created_at)}
                 </span>
               </div>
               <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
-                <a href={downloadUrl(m.r2_key) ?? original} className="font-semibold text-hornet hover:text-amber">
+                <a href={downloadUrl(m.r2_key) ?? original} className="font-semibold text-hornet hover:text-hornet-hover">
                   Download original
                 </a>
                 <a href={original} target="_blank" rel="noopener noreferrer" className="text-dust hover:text-bone">

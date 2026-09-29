@@ -4,7 +4,7 @@ export function PageHeader({ label, title, intro, children }: { label: string; t
   return (
     <section className="border-b border-line">
       <div className="mx-auto flex max-w-[1440px] flex-col gap-5 px-4 pt-12 pb-12 md:px-8 md:pt-20 md:pb-16 xl:px-16">
-        <span className="eyebrow text-hornet">{label}</span>
+        <span className="eyebrow eyebrow-bar text-bone">{label}</span>
         <h1 className="font-display text-[64px] leading-[0.9] font-black uppercase md:text-[112px]">{title}</h1>
         {intro && <div className="max-w-2xl text-[17px] leading-relaxed text-sand md:text-lg">{intro}</div>}
         {children}

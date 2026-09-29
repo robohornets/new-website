@@ -45,13 +45,13 @@ export function HistoryImporter({ disabled }: { disabled?: boolean }) {
         </p>
       )}
       {log.length > 0 && (
-        <ul className="flex max-h-56 flex-col gap-1 overflow-y-auto rounded-md border border-line bg-ink p-3 font-mono text-xs" role="status">
+        <ul className="flex max-h-56 flex-col gap-1 overflow-y-auto rounded-md border border-line bg-ink p-3 font-label text-xs" role="status">
           {log.map((l) => (
             <li key={l.year} className={l.ok ? "text-sand" : "text-danger"}>
               {l.year}: {l.message}
             </li>
           ))}
-          {!busy && <li className="text-amber">Done. Safe to run again any time; it only fills in and updates.</li>}
+          {!busy && <li className="text-hornet">Done. Safe to run again any time; it only fills in and updates.</li>}
         </ul>
       )}
     </div>

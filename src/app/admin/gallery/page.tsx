@@ -32,7 +32,7 @@ export default async function AdminGalleryPage() {
               <MediaImage mediaKey={a.cover_key} alt="" className="h-40 w-full" placeholder="No photos yet" maxWidth={640} />
               <div className="flex flex-col gap-1 p-4">
                 <span className="font-semibold group-hover:text-hornet">{a.title}</span>
-                <span className="font-mono text-xs text-dust">
+                <span className="font-label text-xs text-dust">
                   {a.season_year ?? "No season"} · {a.photo_count} photos {a.published ? "" : "· HIDDEN"}
                 </span>
               </div>

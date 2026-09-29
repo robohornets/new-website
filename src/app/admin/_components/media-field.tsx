@@ -84,7 +84,7 @@ export function MediaField({
             // eslint-disable-next-line @next/next/no-img-element
             <img src={preview} alt="" className="size-full object-cover" />
           ) : (
-            <span className="font-mono text-[10px] text-ash">NONE</span>
+            <span className="font-label text-[10px] text-ash">NONE</span>
           )}
         </div>
         <div className="flex min-w-0 grow flex-col gap-2">

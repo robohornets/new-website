@@ -24,7 +24,7 @@ export default async function AdminExportPage() {
       >
         <a
           href="/admin/api/export"
-          className="flex h-11 items-center self-start rounded-md bg-hornet px-4 text-sm font-bold text-ink hover:bg-amber"
+          className="flex h-11 items-center self-start rounded-md bg-hornet px-4 text-sm font-bold text-ink hover:bg-hornet-hover"
         >
           Download content export
         </a>
@@ -49,7 +49,7 @@ export default async function AdminExportPage() {
                 className="flex h-11 items-center justify-between gap-3 rounded-md border border-line bg-ink px-3 text-sm hover:border-edge"
               >
                 <span>{t.label}</span>
-                <span className="font-mono text-[11px] text-ash">.csv</span>
+                <span className="font-label text-[11px] text-ash">.csv</span>
               </a>
             </li>
           ))}

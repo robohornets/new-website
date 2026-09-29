@@ -11,7 +11,7 @@ export function SeasonPicker({ basePath, years, current }: { basePath: string; y
           key={y}
           href={`${basePath}?season=${y}`}
           aria-current={y === current ? "page" : undefined}
-          className={`flex h-9 items-center rounded-md px-3 font-mono text-sm ${
+          className={`flex h-9 items-center rounded-md px-3 font-label text-sm ${
             y === current ? "bg-hornet font-bold text-ink" : "text-sand hover:bg-raise"
           }`}
         >

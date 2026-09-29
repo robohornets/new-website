@@ -17,7 +17,7 @@ import type {
 } from "./types";
 
 export const DEFAULT_SETTINGS: SiteSettings = {
-  hero: { eyebrow: "", titleTop: "Robo", titleBottom: "hornets", intro: "" },
+  hero: { eyebrow: "", titleTop: "Robo", titleBottom: "Hornets", intro: "" },
   stats: [],
   about: { heading: "", body: "", long: "" },
   build_steps: [],
@@ -26,6 +26,9 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   socials: [],
   friend_links: [],
   donate_url: "",
+  mission: "",
+  values: [],
+  strategic_plan: { summary: "", media_id: null, url: "", updated: "" },
 };
 
 export const getSettings = cache(async (): Promise<SiteSettings> => {
@@ -47,17 +50,24 @@ export const getSettings = cache(async (): Promise<SiteSettings> => {
 });
 
 const SEASON_COLUMNS = `s.year, s.game_name, s.summary, s.status, s.kickoff_date, s.reveal_video_url,
-  s.hero_media_id, m.r2_key AS hero_key, s.is_current`;
+  s.hero_media_id, m.r2_key AS hero_key, s.is_current,
+  s.notebook_media_id, nb.r2_key AS notebook_key, nb.filename AS notebook_filename, s.notebook_url`;
+const SEASON_JOINS = `LEFT JOIN media m ON m.id = s.hero_media_id LEFT JOIN media nb ON nb.id = s.notebook_media_id`;
+
+/** One file from the media library, e.g. the Strategic Plan PDF. */
+export const getMediaFile = cache(async (id: number | null | undefined) =>
+  id ? first<{ id: number; r2_key: string; filename: string }>("SELECT id, r2_key, filename FROM media WHERE id = ?", id) : null,
+);
 
 export const getSeasons = cache(async (): Promise<Season[]> =>
   all<Season>(
-    `SELECT ${SEASON_COLUMNS} FROM seasons s LEFT JOIN media m ON m.id = s.hero_media_id ORDER BY s.year DESC`,
+    `SELECT ${SEASON_COLUMNS} FROM seasons s ${SEASON_JOINS} ORDER BY s.year DESC`,
   ),
 );
 
 export const getCurrentSeason = cache(async (): Promise<Season | null> => {
   const current = await first<Season>(
-    `SELECT ${SEASON_COLUMNS} FROM seasons s LEFT JOIN media m ON m.id = s.hero_media_id
+    `SELECT ${SEASON_COLUMNS} FROM seasons s ${SEASON_JOINS}
      ORDER BY s.is_current DESC, s.year DESC LIMIT 1`,
   );
   return current;
@@ -65,7 +75,7 @@ export const getCurrentSeason = cache(async (): Promise<Season | null> => {
 
 export const getSeason = cache(async (year: number): Promise<Season | null> =>
   first<Season>(
-    `SELECT ${SEASON_COLUMNS} FROM seasons s LEFT JOIN media m ON m.id = s.hero_media_id WHERE s.year = ?`,
+    `SELECT ${SEASON_COLUMNS} FROM seasons s ${SEASON_JOINS} WHERE s.year = ?`,
     year,
   ),
 );

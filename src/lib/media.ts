@@ -36,6 +36,16 @@ export function downloadUrl(key: string | null | undefined): string | null {
 }
 
 /**
+ * Where a document button (Strategic Plan, engineering notebook) should go:
+ * the uploaded PDF if there is one, otherwise the pasted link.
+ */
+export function documentLink(key: string | null | undefined, link: string | null | undefined): { href: string; external: boolean } | null {
+  if (key) return { href: downloadUrl(key)!, external: false };
+  if (link) return { href: link, external: true };
+  return null;
+}
+
+/**
  * URL for displaying a file. Images get a resized copy at the nearest allowed
  * width; everything else (SVG, GIF, video, PDF) is served as the original.
  */
@@ -71,7 +81,8 @@ export const ALLOWED_UPLOAD_TYPES = [...IMAGE_UPLOAD_TYPES, ...VIDEO_UPLOAD_TYPE
 export const MAX_IMAGE_BYTES = 20 * 1024 * 1024;
 /** Workers accept request bodies up to 100 MB on the Free and Pro plans. */
 export const MAX_VIDEO_BYTES = 95 * 1024 * 1024;
-export const MAX_OTHER_BYTES = 25 * 1024 * 1024;
+/** PDFs, e.g. engineering notebooks full of photos. */
+export const MAX_OTHER_BYTES = 95 * 1024 * 1024;
 
 export function maxBytesFor(type: string): number {
   if (VIDEO_UPLOAD_TYPES.includes(type)) return MAX_VIDEO_BYTES;

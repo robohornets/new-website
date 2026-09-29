@@ -84,6 +84,12 @@ export const Upload = (p: IconProps) => (
   </Svg>
 );
 
+export const Download = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M12 4v12M6 10l6 6 6-6M4 20h16" />
+  </Svg>
+);
+
 export const SOCIAL_LABEL: Record<SocialPlatform, string> = {
   youtube: "YouTube",
   instagram: "Instagram",

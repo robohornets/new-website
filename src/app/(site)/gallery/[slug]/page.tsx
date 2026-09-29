@@ -18,7 +18,7 @@ export default async function AlbumPage(props: PageProps<"/gallery/[slug]">) {
   return (
     <>
       <Container className="flex flex-col gap-5 pt-12 pb-10 md:pt-20">
-        <nav aria-label="Breadcrumb" className="font-mono text-xs tracking-wider text-dust uppercase">
+        <nav aria-label="Breadcrumb" className="font-label text-xs tracking-wider text-dust uppercase">
           <Link href="/gallery" className="hover:text-bone">
             Gallery
           </Link>
@@ -33,7 +33,7 @@ export default async function AlbumPage(props: PageProps<"/gallery/[slug]">) {
         </nav>
         <h1 className="font-display text-5xl leading-[0.95] font-black uppercase md:text-7xl">{album.title}</h1>
         {album.description && <p className="max-w-2xl text-lg leading-relaxed text-sand">{album.description}</p>}
-        <span className="font-mono text-sm text-dust">{photos.length} photos</span>
+        <span className="font-label text-sm text-dust">{photos.length} photos</span>
       </Container>
       <Container className="pb-20">
         {photos.length === 0 ? (

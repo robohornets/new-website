@@ -38,7 +38,7 @@ export default async function AdminSeasonsPage() {
         actions={
           <Link
             href={`/admin/seasons/new?year=${nextYear}`}
-            className="flex h-11 items-center gap-2 rounded-md bg-hornet px-4 text-sm font-bold text-ink hover:bg-amber"
+            className="flex h-11 items-center gap-2 rounded-md bg-hornet px-4 text-sm font-bold text-ink hover:bg-hornet-hover"
           >
             <Plus size={16} /> Start {nextYear} season
           </Link>
@@ -56,7 +56,7 @@ export default async function AdminSeasonsPage() {
       </Panel>
       <div className="overflow-x-auto rounded-md border border-line bg-panel">
         <table className="w-full min-w-[720px] text-left text-sm">
-          <thead className="border-b border-line font-mono text-[11px] tracking-wider text-ash uppercase">
+          <thead className="border-b border-line font-label text-[11px] tracking-wider text-ash uppercase">
             <tr>
               <th className="px-5 py-3 font-normal">Year</th>
               <th className="px-5 py-3 font-normal">Game</th>
@@ -75,16 +75,16 @@ export default async function AdminSeasonsPage() {
                 <td className="px-5 py-3.5">
                   <span className="font-display text-2xl font-extrabold">{s.year}</span>
                   {s.is_current === 1 && (
-                    <span className="ml-2 rounded bg-amber-bg px-1.5 py-0.5 font-mono text-[10px] text-amber">CURRENT</span>
+                    <span className="ml-2 rounded bg-rust px-1.5 py-0.5 font-label text-[10px] text-white">CURRENT</span>
                   )}
                 </td>
                 <td className="px-5 py-3.5 font-semibold">{s.game_name || "—"}</td>
                 <td className="px-5 py-3.5 text-dust">{SEASON_STATUS_LABEL[s.status]}</td>
                 <td className="px-5 py-3.5 text-sand">{s.robots || "—"}</td>
-                <td className="px-5 py-3.5 font-mono">{s.events}</td>
-                <td className="px-5 py-3.5 font-mono">{s.roster}</td>
+                <td className="px-5 py-3.5 font-label">{s.events}</td>
+                <td className="px-5 py-3.5 font-label">{s.roster}</td>
                 <td className="px-5 py-3.5 text-right">
-                  <Link href={`/admin/seasons/${s.year}`} className="font-semibold text-hornet hover:text-amber">
+                  <Link href={`/admin/seasons/${s.year}`} className="font-semibold text-hornet hover:text-hornet-hover">
                     Edit
                   </Link>
                 </td>

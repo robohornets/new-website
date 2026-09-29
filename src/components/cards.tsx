@@ -20,7 +20,7 @@ export function SeasonStatusCard({
     >
       <div className="flex items-center justify-between">
         <span className="eyebrow text-xs text-dust">Current season</span>
-        <span className="rounded bg-amber-bg px-2 py-1 font-mono text-xs text-amber uppercase">
+        <span className="rounded bg-rust px-2 py-1 font-label text-xs text-white uppercase">
           {SEASON_STATUS_LABEL[season.status]}
         </span>
       </div>
@@ -58,7 +58,7 @@ export function RobotCard({ robot, gameName }: { robot: Robot; gameName?: string
           placeholder={`${robot.name} photo coming soon`}
           className="size-full"
         />
-        <span className="absolute top-4 left-4 rounded border border-line-strong bg-ink px-2.5 py-1 font-mono text-xs">
+        <span className="absolute top-4 left-4 rounded border border-line-strong bg-ink px-2.5 py-1 font-label text-xs">
           {robot.season_year}
           {gameName ? ` · ${gameName}` : ""}
         </span>
@@ -71,7 +71,7 @@ export function RobotCard({ robot, gameName }: { robot: Robot; gameName?: string
         {robot.tags.length > 0 && (
           <ul className="flex flex-wrap gap-2">
             {robot.tags.map((t) => (
-              <li key={t} className="rounded bg-raise px-2.5 py-1 font-mono text-xs text-sand">
+              <li key={t} className="rounded bg-raise px-2.5 py-1 font-label text-xs text-sand">
                 {t}
               </li>
             ))}
@@ -92,7 +92,7 @@ export function PostCard({ post }: { post: Post }) {
           className="size-full transition-transform duration-300 group-hover:scale-[1.03]"
         />
       </div>
-      <div className="flex items-center gap-2.5 font-mono text-xs tracking-wider uppercase">
+      <div className="flex items-center gap-2.5 font-label text-xs tracking-wider uppercase">
         <span className="text-hornet">{post.category}</span>
         {post.published_at && (
           <>
@@ -120,7 +120,7 @@ export function EventRow({ event }: { event: TeamEvent }) {
         className="group flex items-center gap-5 rounded-md border border-line bg-ink px-5 py-4.5 hover:border-edge"
       >
         <div className="flex w-16 shrink-0 flex-col items-center gap-0.5">
-          <span className="font-mono text-xs text-dust">{md?.month ?? "TBD"}</span>
+          <span className="font-label text-xs text-dust">{md?.month ?? "TBD"}</span>
           <span className="font-display text-[34px] leading-none font-extrabold">{md?.day ?? "–"}</span>
         </div>
         <div className="flex min-w-0 grow flex-col gap-1">
@@ -129,8 +129,8 @@ export function EventRow({ event }: { event: TeamEvent }) {
         </div>
         {(event.rank || event.awards || event.record || event.playoff_result) && (
           <div className="flex flex-col items-end gap-1 text-right">
-            {event.rank && <span className="font-mono text-sm font-bold text-amber">{event.rank}</span>}
-            {event.record && <span className="font-mono text-xs text-dust">{event.record}</span>}
+            {event.rank && <span className="font-label text-sm font-bold text-hornet">{event.rank}</span>}
+            {event.record && <span className="font-label text-xs text-dust">{event.record}</span>}
             {event.playoff_result && <span className="text-[13px] text-sand">{event.playoff_result}</span>}
             {event.awards && <span className="text-[13px] text-dust">{event.awards}</span>}
           </div>

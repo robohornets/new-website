@@ -54,7 +54,7 @@ export function FormStatus({ state }: { state: ActionState }) {
   }
   if (state.ok && state.message) {
     return (
-      <span role="status" key={state.at} className="text-sm text-amber">
+      <span role="status" key={state.at} className="text-sm text-hornet">
         {state.message}
       </span>
     );
@@ -63,7 +63,7 @@ export function FormStatus({ state }: { state: ActionState }) {
 }
 
 const VARIANTS = {
-  primary: "bg-hornet text-ink hover:bg-amber",
+  primary: "bg-hornet text-ink hover:bg-hornet-hover",
   secondary: "border border-line-strong text-bone hover:border-bone",
   danger: "border border-danger/60 text-danger hover:bg-danger/10",
 };

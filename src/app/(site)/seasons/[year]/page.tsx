@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { EventRow, PostCard } from "@/components/cards";
-import { ArrowRight, External } from "@/components/icons";
+import { ArrowRight, Download, External } from "@/components/icons";
 import { MediaImage } from "@/components/media-image";
 import { Container, EmptyState } from "@/components/page-header";
 import { RosterGrid } from "@/components/roster-grid";
@@ -18,7 +18,7 @@ import {
   getSeasons,
   getSeasonSponsors,
 } from "@/lib/data";
-import { mediaSrcSet, mediaUrl } from "@/lib/media";
+import { documentLink, mediaSrcSet, mediaUrl } from "@/lib/media";
 import { SEASON_STATUS_LABEL } from "@/lib/types";
 
 function parseYear(raw: string) {
@@ -55,6 +55,7 @@ export default async function SeasonPage(props: PageProps<"/seasons/[year]">) {
   const students = roster.filter((m) => m.kind === "student");
   const mentors = roster.filter((m) => m.kind === "mentor");
   const heroKey = season.hero_key ?? mainRobot?.photo_key ?? null;
+  const notebook = documentLink(season.notebook_key, season.notebook_url);
   const competitions = events.filter((e) => e.kind !== "outreach");
   const outreachEvents = events.filter((e) => e.kind === "outreach");
 
@@ -69,7 +70,7 @@ export default async function SeasonPage(props: PageProps<"/seasons/[year]">) {
               key={s.year}
               href={`/seasons/${s.year}`}
               aria-current={s.year === season.year ? "page" : undefined}
-              className={`flex h-11 shrink-0 items-center rounded-md px-4 font-mono text-sm ${
+              className={`flex h-11 shrink-0 items-center rounded-md px-4 font-label text-sm ${
                 s.year === season.year ? "bg-hornet font-bold text-ink" : "text-sand hover:bg-raise"
               }`}
             >
@@ -84,7 +85,7 @@ export default async function SeasonPage(props: PageProps<"/seasons/[year]">) {
         <div className="flex flex-col gap-7 lg:w-[520px] lg:shrink-0">
           <div className="flex items-center gap-2.5">
             {season.is_current === 1 && (
-              <span className="rounded bg-amber-bg px-2.5 py-1 font-mono text-xs tracking-wider text-amber">CURRENT SEASON</span>
+              <span className="rounded bg-rust px-2.5 py-1 font-label text-xs tracking-wider text-white">CURRENT SEASON</span>
             )}
             <span className="eyebrow text-dust">{SEASON_STATUS_LABEL[season.status]}</span>
           </div>
@@ -94,6 +95,15 @@ export default async function SeasonPage(props: PageProps<"/seasons/[year]">) {
           </h1>
           {season.summary && <p className="text-lg leading-relaxed whitespace-pre-line text-sand">{season.summary}</p>}
           <div className="flex flex-wrap gap-3">
+            {notebook && (
+              <a
+                href={notebook.href}
+                {...(notebook.external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+                className="flex h-13 items-center gap-2 rounded-md bg-hornet px-5 font-bold text-ink hover:bg-hornet-hover"
+              >
+                Engineering notebook {notebook.external ? <External size={16} /> : <Download size={16} />}
+              </a>
+            )}
             {mainRobot?.code_url && (
               <a
                 href={mainRobot.code_url}
@@ -109,7 +119,7 @@ export default async function SeasonPage(props: PageProps<"/seasons/[year]">) {
                 href={season.reveal_video_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex h-13 items-center gap-2 rounded-md px-5 font-semibold text-hornet hover:text-amber"
+                className="flex h-13 items-center gap-2 rounded-md px-5 font-semibold text-hornet hover:text-hornet-hover"
               >
                 Game reveal video <External size={16} />
               </a>
@@ -142,7 +152,7 @@ export default async function SeasonPage(props: PageProps<"/seasons/[year]">) {
             <dl>
               {mainRobot.specs.map((s) => (
                 <div key={s.label} className="flex justify-between gap-6 border-b border-line py-4">
-                  <dt className="font-mono text-[13px] tracking-wider text-dust uppercase">{s.label}</dt>
+                  <dt className="font-label text-[13px] tracking-wider text-dust uppercase">{s.label}</dt>
                   <dd className="text-right font-semibold">{s.value}</dd>
                 </div>
               ))}
@@ -166,7 +176,7 @@ export default async function SeasonPage(props: PageProps<"/seasons/[year]">) {
             href={`https://www.thebluealliance.com/team/1209/${season.year}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-auto flex items-center gap-2 font-semibold text-hornet hover:text-amber"
+            className="mt-auto flex items-center gap-2 font-semibold text-hornet hover:text-hornet-hover"
           >
             Full match history on The Blue Alliance <External size={16} />
           </a>
@@ -182,10 +192,10 @@ export default async function SeasonPage(props: PageProps<"/seasons/[year]">) {
                 <MediaImage mediaKey={r.photo_key} alt="" className="size-24 shrink-0 rounded" sizes="96px" maxWidth={320} />
                 <div className="flex flex-col gap-1.5">
                   <span className="font-display text-3xl leading-none font-extrabold uppercase">{r.name}</span>
-                  <span className="font-mono text-xs text-dust uppercase">{r.kind}</span>
+                  <span className="font-label text-xs text-dust uppercase">{r.kind}</span>
                   {r.description && <p className="text-sm text-sand">{r.description}</p>}
                   {r.code_url && (
-                    <a href={r.code_url} target="_blank" rel="noopener noreferrer" className="text-sm font-semibold text-hornet hover:text-amber">
+                    <a href={r.code_url} target="_blank" rel="noopener noreferrer" className="text-sm font-semibold text-hornet hover:text-hornet-hover">
                       Code on GitHub
                     </a>
                   )}
@@ -253,7 +263,7 @@ export default async function SeasonPage(props: PageProps<"/seasons/[year]">) {
             {albums.length > 0 && (
               <Link
                 href={albums.length === 1 ? `/gallery/${albums[0].slug}` : `/gallery?season=${season.year}`}
-                className="flex items-center gap-2 font-semibold text-hornet hover:text-amber"
+                className="flex items-center gap-2 font-semibold text-hornet hover:text-hornet-hover"
               >
                 {albums.length === 1 ? `Open album · ${albums[0].photo_count} photos` : `${albums.length} albums`}
                 <ArrowRight size={16} />

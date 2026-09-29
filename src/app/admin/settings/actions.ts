@@ -1,6 +1,6 @@
 "use server";
 
-import { adminAction, FormError, int, parsePairs, str, url, type ActionState } from "@/lib/admin";
+import { adminAction, FormError, int, optionalInt, parsePairs, str, url, type ActionState } from "@/lib/admin";
 import { run } from "@/lib/db";
 import type { SiteSettings, Social, SocialPlatform } from "@/lib/types";
 
@@ -14,7 +14,7 @@ function build(section: Section, fd: FormData): unknown {
       return {
         eyebrow: str(fd, "eyebrow", 120),
         titleTop: str(fd, "titleTop", 20) || "Robo",
-        titleBottom: str(fd, "titleBottom", 20) || "hornets",
+        titleBottom: str(fd, "titleBottom", 20) || "Hornets",
         intro: str(fd, "intro", 600),
       };
     case "stats":
@@ -53,6 +53,23 @@ function build(section: Section, fd: FormData): unknown {
       });
     case "donate_url":
       return url(fd, "donate_url") ?? "";
+    case "mission":
+      return str(fd, "mission", 800);
+    case "values": {
+      const values = [];
+      for (let i = 0; i < 8; i++) {
+        const title = str(fd, `title_${i}`, 40);
+        if (title) values.push({ title, body: str(fd, `body_${i}`, 200) });
+      }
+      return values;
+    }
+    case "strategic_plan":
+      return {
+        summary: str(fd, "summary", 1200),
+        media_id: optionalInt(fd, "plan_media_id"),
+        url: url(fd, "plan_url") ?? "",
+        updated: str(fd, "updated", 40),
+      };
   }
 }
 

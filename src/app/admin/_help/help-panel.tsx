@@ -36,7 +36,7 @@ function GuideCard({ guide, defaultOpen }: { guide: Guide; defaultOpen?: boolean
     <details open={defaultOpen} className="group rounded-md border border-line bg-panel">
       <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 font-semibold">
         {guide.title}
-        <span aria-hidden="true" className="font-mono text-dust group-open:rotate-45">
+        <span aria-hidden="true" className="font-label text-dust group-open:rotate-45">
           +
         </span>
       </summary>
@@ -44,7 +44,7 @@ function GuideCard({ guide, defaultOpen }: { guide: Guide; defaultOpen?: boolean
         <ol className="flex flex-col gap-2.5">
           {guide.steps.map((s, i) => (
             <li key={i} className="flex gap-3">
-              <span className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full bg-raise font-mono text-xs text-hornet">
+              <span className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full bg-raise font-label text-xs text-hornet">
                 {i + 1}
               </span>
               <span>
@@ -54,8 +54,8 @@ function GuideCard({ guide, defaultOpen }: { guide: Guide; defaultOpen?: boolean
           ))}
         </ol>
         {guide.tips?.map((t, i) => (
-          <p key={i} className="rounded-md bg-amber-bg px-3 py-2 text-sm text-sand">
-            <span className="font-mono text-xs font-bold text-amber">TIP </span>
+          <p key={i} className="rounded-md bg-rust px-3 py-2 text-sm text-sand">
+            <span className="font-label text-xs font-bold text-hornet">TIP </span>
             <Rich text={t} />
           </p>
         ))}
@@ -188,7 +188,7 @@ export function HelpButton() {
       type="button"
       onClick={() => open("page")}
       aria-haspopup="dialog"
-      className="flex h-11 items-center gap-2 rounded-full border-2 border-hornet bg-amber-bg pr-4 pl-1.5 font-bold text-bone hover:bg-hornet hover:text-ink"
+      className="flex h-11 items-center gap-2 rounded-full border-2 border-hornet bg-rust pr-4 pl-1.5 font-bold text-bone hover:bg-hornet hover:text-ink"
     >
       <span className="flex size-7 items-center justify-center rounded-full bg-hornet font-display text-lg text-ink" aria-hidden="true">
         ?
@@ -205,7 +205,7 @@ export function HelpStartCard() {
     <button
       type="button"
       onClick={() => open("all")}
-      className="flex w-full flex-col gap-4 rounded-md border-2 border-hornet bg-amber-bg p-6 text-left hover:bg-amber-bg/70 sm:flex-row sm:items-center"
+      className="flex w-full flex-col gap-4 rounded-md border-2 border-hornet bg-rust p-6 text-left hover:bg-raise sm:flex-row sm:items-center"
     >
       <span className="flex size-16 shrink-0 items-center justify-center rounded-full bg-hornet font-display text-4xl font-black text-ink" aria-hidden="true">
         ?

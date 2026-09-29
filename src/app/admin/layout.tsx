@@ -34,7 +34,7 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
 function AccessRequired({ configured }: { configured: boolean }) {
   return (
     <main className="flex min-h-dvh flex-col items-center justify-center gap-5 px-4 text-center">
-      <span className="eyebrow text-hornet">1209 Admin</span>
+      <span className="eyebrow eyebrow-bar text-bone">1209 Admin</span>
       <h1 className="font-display text-5xl font-black uppercase">Sign in required</h1>
       {configured ? (
         <p className="max-w-md text-sand">
@@ -47,7 +47,7 @@ function AccessRequired({ configured }: { configured: boolean }) {
           and <span className="font-mono text-bone">CF_ACCESS_AUD</span> to the Worker (see the README).
         </p>
       )}
-      <Link href="/" className="font-semibold text-hornet hover:text-amber">
+      <Link href="/" className="font-semibold text-hornet hover:text-hornet-hover">
         Back to the site
       </Link>
     </main>

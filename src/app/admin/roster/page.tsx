@@ -62,7 +62,7 @@ export default async function AdminRosterPage(props: PageProps<"/admin/roster">)
                   <Link href={`/admin/people/${m.id}`} className="font-semibold hover:text-hornet">
                     {m.first_name} {m.last_name}
                   </Link>
-                  <span className={`font-mono text-[11px] uppercase ${m.kind === "mentor" ? "text-mentor" : "text-ash"}`}>{m.kind}</span>
+                  <span className={`font-label text-[11px] uppercase ${m.kind === "mentor" ? "text-mentor" : "text-ash"}`}>{m.kind}</span>
                 </div>
                 <ActionForm action={updateRosterEntry.bind(null, m.entry_id)} className="grow" submitLabel="Save" submitVariant="secondary">
                   <div className="grid items-end gap-3 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_90px_auto]">

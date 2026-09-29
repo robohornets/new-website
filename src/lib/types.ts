@@ -30,6 +30,11 @@ export type Season = {
   hero_media_id: number | null;
   hero_key: string | null;
   is_current: number;
+  /** Engineering notebook: an uploaded PDF, a link, or both. */
+  notebook_media_id: number | null;
+  notebook_key: string | null;
+  notebook_filename: string | null;
+  notebook_url: string | null;
 };
 
 export type Spec = { label: string; value: string };
@@ -213,6 +218,9 @@ export type ContactSettings = { email: string; address: string; mapsUrl: string;
 export type SocialPlatform = "youtube" | "instagram" | "tiktok" | "x" | "github" | "facebook" | "threads";
 export type Social = { platform: SocialPlatform; url: string };
 export type LinkItem = { label: string; url: string };
+export type CoreValue = { title: string; body: string };
+/** A PDF in R2 (media_id), a link somewhere else (url), or both. */
+export type StrategicPlan = { summary: string; media_id: number | null; url: string; updated: string };
 
 export type SiteSettings = {
   hero: HeroSettings;
@@ -224,4 +232,7 @@ export type SiteSettings = {
   socials: Social[];
   friend_links: LinkItem[];
   donate_url: string;
+  mission: string;
+  values: CoreValue[];
+  strategic_plan: StrategicPlan;
 };

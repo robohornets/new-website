@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Big_Shoulders, Instrument_Sans, JetBrains_Mono } from "next/font/google";
+import { Big_Shoulders, JetBrains_Mono, Raleway } from "next/font/google";
 import "./globals.css";
 
 const display = Big_Shoulders({
@@ -11,8 +11,9 @@ const display = Big_Shoulders({
   fallback: ["Arial Narrow", "sans-serif"],
 });
 
-const sans = Instrument_Sans({
-  variable: "--font-instrument",
+// The branding guidelines' body and label typeface.
+const sans = Raleway({
+  variable: "--font-raleway",
   subsets: ["latin"],
 });
 
@@ -25,13 +26,13 @@ const mono = JetBrains_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL("https://btwrobotics.com"),
   title: {
-    default: "RoboHornets · FRC Team 1209",
-    template: "%s · RoboHornets 1209",
+    default: "FRC Team 1209 - RoboHornets",
+    template: "%s | FRC Team 1209 - RoboHornets",
   },
   description:
     "Team 1209, the RoboHornets, is the FIRST Robotics Competition team from Booker T. Washington High School in Tulsa, Oklahoma.",
   openGraph: {
-    siteName: "RoboHornets · FRC Team 1209",
+    siteName: "FRC Team 1209 - RoboHornets",
     type: "website",
   },
 };

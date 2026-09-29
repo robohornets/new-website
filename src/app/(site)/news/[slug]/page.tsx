@@ -28,7 +28,7 @@ export default async function PostPage(props: PageProps<"/news/[slug]">) {
   return (
     <article>
       <Container size="narrow" className="flex flex-col gap-6 pt-12 pb-10 md:pt-20">
-        <nav aria-label="Breadcrumb" className="font-mono text-xs tracking-wider text-dust uppercase">
+        <nav aria-label="Breadcrumb" className="font-label text-xs tracking-wider text-dust uppercase">
           <Link href={back.href} className="hover:text-bone">
             {back.label}
           </Link>
@@ -43,7 +43,7 @@ export default async function PostPage(props: PageProps<"/news/[slug]">) {
         </nav>
         <h1 className="font-display text-5xl leading-[0.95] font-black uppercase md:text-7xl">{post.title}</h1>
         {post.published_at && (
-          <time dateTime={post.published_at} className="font-mono text-sm text-dust">
+          <time dateTime={post.published_at} className="font-label text-sm text-dust">
             {formatDate(post.published_at, { month: "long" })}
           </time>
         )}

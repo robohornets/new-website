@@ -59,7 +59,7 @@ export default async function AdminAlbumPage(props: PageProps<"/admin/gallery/[i
                     <img src={mediaUrl(p.r2_key, 640) ?? ""} alt={p.alt} loading="lazy" className="h-44 w-full rounded object-cover" />
                   )}
                   {album.cover_media_id === p.media_id && (
-                    <span className="absolute top-2 left-2 rounded bg-ink/90 px-2 py-0.5 font-mono text-[10px] text-amber">COVER</span>
+                    <span className="absolute top-2 left-2 rounded bg-ink/90 px-2 py-0.5 font-label text-[10px] text-hornet">COVER</span>
                   )}
                 </div>
                 <ActionForm action={updateAlbumPhoto.bind(null, id, p.media_id)} submitLabel="Save" submitVariant="secondary">
@@ -67,7 +67,7 @@ export default async function AdminAlbumPage(props: PageProps<"/admin/gallery/[i
                   <TextField label="Caption" name="caption" defaultValue={p.caption} />
                   <TextField label="Order" name="sort_order" type="number" defaultValue={p.sort_order} />
                 </ActionForm>
-                <a href={downloadUrl(p.r2_key) ?? ""} className="text-sm font-semibold text-hornet hover:text-amber">
+                <a href={downloadUrl(p.r2_key) ?? ""} className="text-sm font-semibold text-hornet hover:text-hornet-hover">
                   Download original · {p.filename}
                 </a>
                 <div className="flex flex-wrap gap-2 border-t border-line pt-3">

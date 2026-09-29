@@ -1,6 +1,13 @@
 @import "tailwindcss";
 
-/* "Pit Lane" tokens, matching the design canvas. */
+/*
+ * Colors follow the 2026 RoboHornets Branding Guidelines:
+ *   BTW Orange  #FC8C04  primary  → hornet
+ *   Rusty Orange #A53000 accent   → rust (label/badge backgrounds with white text;
+ *                                   too dark to use as text on the dark background)
+ *   White / Black        secondary
+ * The warm charcoal neutrals are the site's dark background and surfaces.
+ */
 @theme {
   --color-ink: #0f0e0c;
   --color-ink-deep: #0a0908;
@@ -13,14 +20,18 @@
   --color-sand: #d9d1c4;
   --color-dust: #b3aa9b;
   --color-ash: #8a8173;
-  --color-hornet: #ff7a1a;
-  --color-amber: #ffb020;
-  --color-amber-bg: #2b2013;
+  --color-hornet: #fc8c04;
+  /* BTW Orange lightened slightly, for the hover state of orange buttons only. */
+  --color-hornet-hover: #fda234;
+  --color-rust: #a53000;
   --color-mentor: #8fb8ff;
   --color-danger: #ff6b5e;
 
   --font-display: var(--font-big-shoulders), "Arial Narrow", sans-serif;
-  --font-sans: var(--font-instrument), system-ui, sans-serif;
+  --font-sans: var(--font-raleway), system-ui, sans-serif;
+  /* Small caps labels, dates and numbers: Raleway, like the guidelines deck. */
+  --font-label: var(--font-raleway), system-ui, sans-serif;
+  /* Only for code, keys and file paths. */
   --font-mono: var(--font-jetbrains), ui-monospace, monospace;
 }
 
@@ -36,7 +47,13 @@ body {
   background: var(--color-ink);
   color: var(--color-bone);
   font-family: var(--font-sans);
+  /* Raleway defaults to old-style figures; years, ranks and scores read better lining. */
+  font-variant-numeric: lining-nums;
   -webkit-font-smoothing: antialiased;
+}
+
+.font-label {
+  font-variant-numeric: lining-nums tabular-nums;
 }
 
 ::selection {
@@ -45,7 +62,7 @@ body {
 }
 
 :focus-visible {
-  outline: 2px solid var(--color-amber);
+  outline: 2px solid var(--color-hornet);
   outline-offset: 2px;
 }
 
@@ -61,11 +78,25 @@ body {
   clip-path: polygon(0 0, 88% 0, 100% 12%, 100% 100%, 12% 100%, 0 88%);
 }
 
+/* Section labels, as in the guidelines deck: bold, widely spaced caps. */
 @utility eyebrow {
-  font-family: var(--font-mono);
-  font-size: 13px;
-  letter-spacing: 0.12em;
+  font-family: var(--font-label);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
   text-transform: uppercase;
+}
+
+/* The short BTW Orange bar the deck puts under section labels. */
+@utility eyebrow-bar {
+  &::after {
+    content: "";
+    display: block;
+    width: 28px;
+    height: 3px;
+    margin-top: 8px;
+    background: var(--color-hornet);
+  }
 }
 
 /* Post bodies rendered from Markdown. */
@@ -91,7 +122,7 @@ body {
 .prose-hive h2 { font-size: 2em; }
 .prose-hive h3 { font-size: 1.5em; }
 .prose-hive a { color: var(--color-hornet); text-decoration: underline; text-underline-offset: 3px; }
-.prose-hive a:hover { color: var(--color-amber); }
+.prose-hive a:hover { color: var(--color-hornet-hover); }
 .prose-hive strong { color: var(--color-bone); }
 .prose-hive ul { list-style: disc; padding-left: 1.4em; }
 .prose-hive ol { list-style: decimal; padding-left: 1.4em; }

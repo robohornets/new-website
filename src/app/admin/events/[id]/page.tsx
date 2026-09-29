@@ -111,13 +111,13 @@ export default async function AdminEventPage(props: PageProps<"/admin/events/[id
       />
 
       {overrides.length > 0 && (
-        <div className="flex flex-col gap-3 rounded-md border border-amber/50 bg-amber-bg/40 p-4 text-sm sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-3 rounded-md border border-rust bg-rust/15 p-4 text-sm sm:flex-row sm:items-center sm:justify-between">
           <span>
-            <strong className="text-amber">{overrides.length} field{overrides.length === 1 ? " uses" : "s use"} your own value</strong>{" "}
+            <strong className="text-hornet">{overrides.length} field{overrides.length === 1 ? " uses" : "s use"} your own value</strong>{" "}
             instead of The Blue Alliance&apos;s: {overrides.map((f) => EVENT_TBA_FIELDS.find((x) => x.name === f)?.label ?? f).join(", ")}.
           </span>
           <form action={resetAllEventFields.bind(null, id)}>
-            <button type="submit" className="flex h-10 items-center rounded-md border border-amber/60 px-4 text-sm font-semibold text-amber hover:bg-amber/10">
+            <button type="submit" className="flex h-10 items-center rounded-md border border-rust px-4 text-sm font-semibold text-hornet hover:bg-rust/20">
               Reset all to TBA
             </button>
           </form>
@@ -261,20 +261,20 @@ function MatchItem({ match: m }: { match: Match }) {
   const overrides = parseOverrides(m.overrides);
   const values = m as unknown as Record<string, string | number | null>;
   const scored = m.red_score !== null && m.blue_score !== null;
-  const resultColor = m.result === "win" ? "text-amber" : m.result === "loss" ? "text-dust" : "text-sand";
+  const resultColor = m.result === "win" ? "text-hornet" : m.result === "loss" ? "text-dust" : "text-sand";
   return (
     <li>
       <details className="group rounded-md border border-line bg-ink">
         <summary className="flex cursor-pointer list-none flex-wrap items-center gap-x-4 gap-y-1 px-4 py-2.5 text-sm">
           <span className="w-32 font-semibold">{matchLabel(m)}</span>
-          <span className="font-mono text-xs text-dust">
+          <span className="font-label text-xs text-dust">
             <span className="text-[#ff8f8f]">{m.red_teams || "—"}</span> vs <span className="text-[#8fb8ff]">{m.blue_teams || "—"}</span>
           </span>
-          <span className="font-mono">{scored ? `${m.red_score}–${m.blue_score}` : "—"}</span>
-          {m.result && <span className={`font-mono text-xs uppercase ${resultColor}`}>{m.result}</span>}
-          {m.video_url && <span className="font-mono text-[10px] text-dust">VIDEO</span>}
-          {overrides.length > 0 && <span className="rounded bg-amber px-1.5 py-0.5 font-mono text-[10px] font-bold text-ink">EDITED</span>}
-          {m.hidden === 1 && <span className="rounded bg-raise px-1.5 py-0.5 font-mono text-[10px] text-dust">HIDDEN</span>}
+          <span className="font-label">{scored ? `${m.red_score}–${m.blue_score}` : "—"}</span>
+          {m.result && <span className={`font-label text-xs uppercase ${resultColor}`}>{m.result}</span>}
+          {m.video_url && <span className="font-label text-[10px] text-dust">VIDEO</span>}
+          {overrides.length > 0 && <span className="rounded bg-rust px-1.5 py-0.5 font-label text-[10px] font-bold text-white">EDITED</span>}
+          {m.hidden === 1 && <span className="rounded bg-raise px-1.5 py-0.5 font-label text-[10px] text-dust">HIDDEN</span>}
           <span className="ml-auto text-hornet group-open:hidden">Edit</span>
         </summary>
         <div className="flex flex-col gap-3 border-t border-line p-3">

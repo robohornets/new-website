@@ -70,7 +70,7 @@ export function ContactForm({ defaultTopic }: { defaultTopic: MessageTopic }) {
       <button
         type="submit"
         disabled={pending}
-        className="flex h-13 items-center justify-center self-start rounded-md bg-hornet px-7 font-bold text-ink hover:bg-amber disabled:opacity-60"
+        className="flex h-13 items-center justify-center self-start rounded-md bg-hornet px-7 font-bold text-ink hover:bg-hornet-hover disabled:opacity-60"
       >
         {pending ? "Sending…" : "Send message"}
       </button>

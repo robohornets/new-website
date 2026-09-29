@@ -29,7 +29,7 @@ export default async function ContactPage(props: PageProps<"/contact">) {
                   <span className="text-lg font-semibold">{c.name}</span>
                   {c.role && <span className="text-sm text-dust">{c.role}</span>}
                   {c.email && (
-                    <a href={`mailto:${c.email}`} className="flex items-center gap-2 font-mono text-[15px] text-hornet hover:text-amber">
+                    <a href={`mailto:${c.email}`} className="flex items-center gap-2 font-label text-[15px] text-hornet hover:text-hornet-hover">
                       <Mail size={16} /> {c.email}
                     </a>
                   )}
