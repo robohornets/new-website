@@ -511,7 +511,7 @@ function MemberFields({ member: m, subteams, year }: { member?: RosterMember; su
             <input name="graduation_year" type="number" defaultValue={m?.graduation_year ?? ""} placeholder={String(year + 1)} className={inputClass} />
           </Field>
         </div>
-        <Field label="Short bio">
+        <Field label="Short bio" hint="Public: anyone can read it by clicking their card on the Team page. Leave blank to keep their card plain.">
           <textarea name="bio" rows={2} defaultValue={m?.bio} maxLength={1000} className={`${inputClass} h-auto py-2.5`} />
         </Field>
       </Section>

@@ -237,6 +237,8 @@ export const GUIDES: Guide[] = [
       "Students always appear on the site as their first name and last initial (Alex M.). You can type the full last name; it's never shown.",
       "Student photos are hidden unless **Show photo on the public site** is ticked. Only tick it if you have permission.",
       "Mentors and teacher sponsors are shown with their full name and photo.",
+      "A **Short bio** is public: clicking someone's card on the Team page shows it. Leave it blank if they'd rather not.",
+      "People without a photo (or with it hidden) show their initials on a colored circle instead.",
     ],
   },
   {

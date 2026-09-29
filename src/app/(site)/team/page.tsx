@@ -3,7 +3,7 @@ import Link from "next/link";
 import { ArrowRight, Download, External } from "@/components/icons";
 import { Container, EmptyState, PageHeader } from "@/components/page-header";
 import { RosterGrid } from "@/components/roster-grid";
-import { getCurrentSeason, getMediaFile, getRoster, getSeasons, getSettings } from "@/lib/data";
+import { getCurrentSeason, getMediaFile, getRoster, getSeasons, getSettings, getSubteams } from "@/lib/data";
 import { documentLink } from "@/lib/media";
 
 export const metadata: Metadata = {
@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 };
 
 export default async function TeamPage() {
-  const [settings, season, seasons] = await Promise.all([getSettings(), getCurrentSeason(), getSeasons()]);
+  const [settings, season, seasons, subteams] = await Promise.all([getSettings(), getCurrentSeason(), getSeasons(), getSubteams()]);
   const [roster, planFile] = await Promise.all([
     season ? getRoster(season.year) : [],
     getMediaFile(settings.strategic_plan.media_id),
@@ -152,7 +152,7 @@ export default async function TeamPage() {
             </Link>
           )}
         </div>
-        {students.length > 0 ? <RosterGrid members={students} /> : <EmptyState>This season&apos;s roster is on its way.</EmptyState>}
+        {students.length > 0 ? <RosterGrid members={students} subteams={subteams} /> : <EmptyState>This season&apos;s roster is on its way.</EmptyState>}
         {mentors.length > 0 && (
           <div className="flex flex-col gap-6 pt-6">
             <h3 className="font-display text-4xl font-extrabold uppercase">Mentors &amp; teacher sponsors</h3>

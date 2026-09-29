@@ -46,7 +46,7 @@ export default async function PersonPage(props: PageProps<"/admin/people/[id]">)
             />
             <TextField label="Graduation year" name="graduation_year" type="number" defaultValue={person.graduation_year} />
           </Grid>
-          <TextArea label="Short bio" name="bio" rows={3} defaultValue={person.bio} />
+          <TextArea label="Short bio" name="bio" rows={3} defaultValue={person.bio} hint="Public: anyone can read it by clicking their card on the Team page." />
           <MediaField name="photo_media_id" label="Photo" current={library.find((m) => m.id === person.photo_media_id) ?? null} library={library} />
           <Checkbox label="Show photo on the public site" name="show_photo" defaultChecked={person.show_photo === 1} />
         </EditForm>

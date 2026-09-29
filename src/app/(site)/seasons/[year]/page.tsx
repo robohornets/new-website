@@ -18,6 +18,7 @@ import {
   getSeasonPhotos,
   getSeasons,
   getSeasonSponsors,
+  getSubteams,
 } from "@/lib/data";
 import { documentLink, mediaSrcSet, mediaUrl } from "@/lib/media";
 import { SEASON_STATUS_LABEL } from "@/lib/types";
@@ -42,7 +43,7 @@ export default async function SeasonPage(props: PageProps<"/seasons/[year]">) {
   const season = year ? await getSeason(year) : null;
   if (!season) notFound();
 
-  const [seasons, robots, events, roster, sponsors, photos, albums, posts] = await Promise.all([
+  const [seasons, robots, events, roster, sponsors, photos, albums, posts, subteams] = await Promise.all([
     getSeasons(),
     getRobots(season.year),
     getEvents(season.year),
@@ -51,6 +52,7 @@ export default async function SeasonPage(props: PageProps<"/seasons/[year]">) {
     getSeasonPhotos(season.year, 4),
     getAlbums(season.year),
     getPosts({ seasonYear: season.year, limit: 3 }),
+    getSubteams(),
   ]);
   const [mainRobot, ...otherRobots] = robots;
   const students = roster.filter((m) => m.kind === "student");
@@ -200,7 +202,7 @@ export default async function SeasonPage(props: PageProps<"/seasons/[year]">) {
         <section className="border-t border-line">
           <Container className="flex flex-col gap-10 py-16 md:py-24">
             <h2 className="font-display text-5xl leading-[0.95] font-extrabold uppercase md:text-7xl">The {season.year} crew</h2>
-            {students.length > 0 && <RosterGrid members={students} />}
+            {students.length > 0 && <RosterGrid members={students} subteams={subteams} />}
             {mentors.length > 0 && (
               <div className="flex flex-col gap-6">
                 <h3 className="font-display text-3xl font-extrabold uppercase">Mentors</h3>
