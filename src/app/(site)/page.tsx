@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { EventRow, PostCard, RobotCard, SeasonStatusCard } from "@/components/cards";
+import { LiveMatchCards } from "@/components/live-match-card";
 import { ArrowRight } from "@/components/icons";
 import { MediaImage } from "@/components/media-image";
 import { SectionHeading } from "@/components/section-heading";
@@ -15,6 +16,7 @@ import {
   getStudentCount,
   getUpcomingEvents,
 } from "@/lib/data";
+import { getLiveMatches } from "@/lib/live-match";
 import { formatDate, MEMBER_COUNT_TOKEN, roundedCount } from "@/lib/format";
 import type { TeamEvent } from "@/lib/types";
 
@@ -56,7 +58,7 @@ function LiveBanner({ event }: { event: TeamEvent }) {
 }
 
 export default async function HomePage() {
-  const [settings, season, featured, posts, sponsors, upcoming, live, studentCount] = await Promise.all([
+  const [settings, season, featured, posts, sponsors, upcoming, live, studentCount, liveMatches] = await Promise.all([
     getSettings(),
     getCurrentSeason(),
     getFeaturedRobots(3),
@@ -65,6 +67,7 @@ export default async function HomePage() {
     getUpcomingEvents(3),
     getLiveEvents(),
     getStudentCount(),
+    getLiveMatches(),
   ]);
   const seasonRobots = season ? await getRobots(season.year) : [];
   const { hero, about, build_steps, join, contact } = settings;
@@ -83,9 +86,13 @@ export default async function HomePage() {
 
   return (
     <>
-      {live.map((e) => (
-        <LiveBanner key={e.id} event={e} />
-      ))}
+      {/* Competitions on The Blue Alliance get the live match card; anything else the plain banner. */}
+      {liveMatches.length > 0 && <LiveMatchCards initial={liveMatches} />}
+      {live
+        .filter((e) => !liveMatches.some((m) => m.event.id === e.id))
+        .map((e) => (
+          <LiveBanner key={e.id} event={e} />
+        ))}
 
       {/* HERO */}
       <section className="relative overflow-hidden">

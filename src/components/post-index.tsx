@@ -1,9 +1,10 @@
 import Link from "next/link";
+import type { ReactNode } from "react";
 import { PostCard } from "./cards";
 import { Container, EmptyState, PageHeader } from "./page-header";
 import type { Post, PostCategory } from "@/lib/types";
 
-export function PostIndex({ category, posts, intro }: { category: PostCategory; posts: Post[]; intro: string }) {
+export function PostIndex({ category, posts, intro, banner }: { category: PostCategory; posts: Post[]; intro: string; banner?: ReactNode }) {
   const tabs: { href: string; label: string; key: PostCategory }[] = [
     { href: "/news", label: "News", key: "news" },
     { href: "/outreach", label: "Outreach", key: "outreach" },
@@ -26,6 +27,7 @@ export function PostIndex({ category, posts, intro }: { category: PostCategory; 
           ))}
         </nav>
       </PageHeader>
+      {banner}
       <Container className="py-16 md:py-24">
         {posts.length === 0 ? (
           <EmptyState>Nothing posted here yet.</EmptyState>

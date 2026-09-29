@@ -86,6 +86,10 @@ export type TeamEvent = {
   /** JSON array of field names an admin has overridden. */
   overrides: string;
   tba_synced_at: string | null;
+  /** Outreach events: how long it ran (everyone logged starts with this). */
+  outreach_hours: number | null;
+  /** Outreach events: rough count of the public we reached. */
+  people_reached: number | null;
 };
 
 export type Match = {

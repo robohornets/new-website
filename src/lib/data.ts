@@ -130,7 +130,7 @@ export const getEvent = cache(async (id: number): Promise<TeamEvent | null> =>
 );
 
 // "Today" in Tulsa, for SQLite: UTC minus 5 hours (6 in winter) is close enough.
-const TODAY = "date('now', '-5 hours')";
+export const TODAY = "date('now', '-5 hours')";
 
 export const getUpcomingEvents = cache(async (limit = 3): Promise<TeamEvent[]> =>
   all<TeamEvent>(

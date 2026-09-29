@@ -102,8 +102,11 @@ export type TbaMatch = {
   };
   winning_alliance: string;
   time: number | null;
+  /** TBA's running estimate, which drifts as the event runs ahead or behind. */
+  predicted_time?: number | null;
   actual_time: number | null;
-  videos: { type: string; key: string }[];
+  /** Not in /matches/simple. */
+  videos?: { type: string; key: string }[];
 };
 
 export type TbaAward = { name: string; award_type: number; event_key: string; year: number };

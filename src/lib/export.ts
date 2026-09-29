@@ -14,6 +14,7 @@ export const EXPORT_TABLES: { name: string; label: string; omit?: string[] }[] =
   { name: "events", label: "Events & results" },
   { name: "matches", label: "Matches" },
   { name: "people", label: "People" },
+  { name: "outreach_attendance", label: "Outreach hours (who went)" },
   { name: "roster_entries", label: "Roster (per season)" },
   { name: "subteams", label: "Subteams" },
   { name: "roster_extra_subteams", label: "Roster extra subteams" },

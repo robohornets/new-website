@@ -140,14 +140,15 @@ Everything is in **btwrobotics.com/admin**:
 | Before or at kickoff | **Seasons → Start new season** | Year, game name, kickoff date. Carries over returning students (skips anyone whose graduation year has passed), mentors and sponsors, and makes it the homepage's current season. |
 | Build season | **Seasons → (year)** | Add the robot: name, specs (`Label: value` per line), tags, GitHub link, photo. Set status to *Build season*. |
 | End of season | **Seasons → (year)** | Upload the engineering notebook PDF (or paste a link) under *Season basics*. |
-| Before events | nothing | Events 1209 registers for appear from The Blue Alliance on their own. Upcoming ones show on the homepage, with a **Watch live** banner during the event. |
+| Before events | nothing | Events 1209 registers for appear from The Blue Alliance on their own. Upcoming ones show on the homepage. During the event a **LIVE NOW** card above the hero shows our next match (predicted time, partners and opponents), rank, record and last result, refreshing every minute. |
 | During/after events | **Seasons → (year) → event** | Results and every match fill in automatically. Fix anything (it's marked **Edited**), add a write-up, highlight video or album, or hide an event/match. |
 | Recruiting | **Join requests** | Switch the form on, share the `/join` link, then add students to the roster with one click (or decline). Switch it off when you're done. |
-| Anytime | **Team roster** | Each person is a card: **Edit** opens a popup for their details, subteams and photo (add, replace, remove, or hide from the site); **Remove** takes them off the season. **Add person** and **Manage subteams** are at the top, with search and filters by subteam, class or leadership. Students show publicly as "First L." and their photos stay hidden unless *Show photo* is on. On the Team page people are grouped into Leadership and then their main subteam, as compact cards with their photo or initials; a bio, if filled in, opens when the card is clicked. |
+| Anytime | **Team roster** | Each person is a card: **Edit** opens a popup for their details, subteams and photo (add, replace, remove, or hide from the site); **Remove** takes them off the season. **Add person** and **Manage subteams** are at the top, with search and filters by subteam, class or leadership. Students show publicly as "First L." and their photos stay hidden unless *Show photo* is on. On the Team page students are grouped by main subteam (leaders first, showing their role), as compact cards with their photo or initials; a bio, if filled in, opens when the card is clicked. |
 | Anytime | **News & outreach**, **Gallery**, **Sponsors** | Posts (Markdown), photo albums (drag and drop many at once), sponsor tiers per season. |
 | When it changes | **Site text & links** | Mission, values and the Strategic Plan (PDF or link) on the Team page. |
 | Anytime | Google Calendar | Meetings and events added to the team's public Google Calendar show on the Team page within about 10 minutes (the calendar is set under **Site text & links → Calendar**). |
 | Rarely | **Site text & links** | Homepage hero, stats (`{members}` shows this season's student count, rounded down to the nearest 10), about text, socials, contact people, footer links, donate link. |
+| After each outreach event | **Outreach hours** | Add the event (or open it), tick who went and save. Everyone gets the event's length unless you type their own hours. The Outreach page shows the season's totals (hours, events, people reached); per-person hours and CSVs are admin-only. |
 | After kickoff | **Scouting** | Build this year's scouting form (copy last year's or start from the example), then tick **Open /scouting** and share the link. |
 | Always | **Messages** | Contact form submissions. |
 
@@ -211,6 +212,7 @@ Content is organised around **seasons**. Each FRC year is a row, and most other 
   TBA values and `overrides` lists the fields an admin changed; syncing only writes fields not in that list.
 - `matches`: per event: round, teams on each alliance, scores, our side, result, video, hidden, with the same
   `tba`/`overrides` pair
+- `outreach_attendance`: who went to each outreach event (an event with kind `outreach`) and their hours, or NULL for the event's own `outreach_hours`. `events.people_reached` is the rough head count.
 - `tba_cache`: the last ETag for each TBA request, so unchanged data is skipped
 - `people` + `roster_entries`: a person exists once; a roster entry puts them on a season with a role, main subteam and leadership flag. This is how the roster carries over year to year.
 - `subteams` + `roster_extra_subteams`: the subteam list admins edit (private ones can't be picked on the join form), and any extra subteams a roster entry is on
@@ -286,6 +288,24 @@ works while **Open /scouting** is on in the admin, and uses the current season's
 - **The Blue Alliance**: team lists, rankings, OPRs, team info, match lists and robot photos come through
   `tbaCachedJson` (`src/lib/tba/cache.ts`), which keeps each response in `tba_json_cache` for a few minutes and then
   revalidates with an ETag. Without a TBA key, scouts can still type team numbers.
+
+### Outreach hours
+
+Outreach events are ordinary `events` rows with kind `outreach` (they also list on their season's page). The admin
+**Outreach hours** tab (`src/app/admin/outreach`) adds them and saves attendance together with the event, from the
+save bar. Totals are in `src/lib/outreach.ts`: a person's hours are `COALESCE(attendance.hours, events.outreach_hours)`,
+and an event counts once it has started or has anyone logged. The public `/outreach` page only gets
+`getPublicOutreachTotals()` (hours, events, people reached for the latest season with any), never names.
+CSV downloads are at `/admin/api/outreach-export?season=YYYY&part=people|log`.
+
+### Live match card
+
+While a non-outreach event with a Blue Alliance key is on (by its dates, Tulsa time), the homepage shows
+`LiveMatchCards` (`src/components/live-match-card.tsx`) above the hero instead of the plain live banner. The data
+comes from `getLiveMatches()` (`src/lib/live-match.ts`): TBA's `/team/{key}/event/{event}/matches/simple` and
+`/status` through `tbaCachedJson` with a 60-second max age, so TBA is asked at most once a minute however many people
+are watching. Without a TBA key it uses the matches the sync job saved. The card polls `GET /api/live-match` every
+minute while the tab is visible and removes itself when the list comes back empty.
 
 ### Calendar
 

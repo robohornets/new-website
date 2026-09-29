@@ -101,8 +101,9 @@ function upcoming(items: CalendarItem[], limit: number): CalendarItem[] {
  * load either way.
  */
 export async function getUpcomingCalendar(id: string, { limit = 50 }: { limit?: number } = {}): Promise<CalendarItem[] | null> {
+  // Outside the try: Next marks the page as per-request by throwing here.
+  await getEnv();
   try {
-    await getEnv();
     const url = calendarLinks(id).ics;
     const saved = await readSaved(url);
     if (saved && (Date.now() - Date.parse(saved.fetchedAt)) / 1000 < MAX_AGE_SECONDS) return upcoming(saved.items, limit);

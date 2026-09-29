@@ -6,14 +6,14 @@
 
 export type Guide = {
   id: string;
-  group: "Start here" | "Season basics" | "Photos & posts" | "People & sponsors" | "Site text" | "Scouting";
+  group: "Start here" | "Season basics" | "Photos & posts" | "People & sponsors" | "Outreach" | "Site text" | "Scouting";
   title: string;
   pages: string[];
   steps: string[];
   tips?: string[];
 };
 
-export const GROUPS: Guide["group"][] = ["Start here", "Season basics", "Photos & posts", "People & sponsors", "Site text", "Scouting"];
+export const GROUPS: Guide["group"][] = ["Start here", "Season basics", "Photos & posts", "People & sponsors", "Outreach", "Site text", "Scouting"];
 
 export const GUIDES: Guide[] = [
   // ---- Start here ------------------------------------------------------------
@@ -92,6 +92,20 @@ export const GUIDES: Guide[] = [
       "Matches work the same way: in **Matches**, click **Edit** on a match, change the score, teams, result or video, and click **Save changes**.",
     ],
     tips: ["Typing TBA's exact value back into a box also removes the override."],
+  },
+  {
+    id: "competition-day",
+    group: "Season basics",
+    title: "What the homepage shows during a competition",
+    pages: ["/admin/events", "/admin/seasons"],
+    steps: [
+      "While an event with a Blue Alliance key is on, a **LIVE NOW** card sits above the homepage's hero. You don't need to do anything.",
+      "It shows our **Next match** (with the time The Blue Alliance predicts and how long until it starts), who's on our alliance and who we're against, our rank and record, and the **Last match** result.",
+      "It checks for news every minute by itself, so people can leave the homepage open all day.",
+      "**Watch live** uses the event's webcast link. If it's missing or wrong, fix **Webcast link** on the event's page.",
+      "Once we're knocked out (or win), it says so. The card goes away on its own after the event's last day.",
+    ],
+    tips: ["Events without a Blue Alliance key (a scrimmage, a demo) get a plain LIVE NOW banner instead, with no matches."],
   },
   {
     id: "event-extras",
@@ -377,6 +391,37 @@ export const GUIDES: Guide[] = [
       "Click **Save changes** in the bar at the bottom. The Team page shows the summary with a **Read the Strategic Plan** button.",
     ],
     tips: ["Clear both the PDF and the link to hide the section."],
+  },
+
+  // ---- Outreach ---------------------------------------------------------------
+  {
+    id: "outreach-log",
+    group: "Outreach",
+    title: "Log who went to an outreach event",
+    pages: ["/admin/outreach", "/admin/events"],
+    steps: [
+      "Go to **Outreach hours** and check the season at the top.",
+      "New event? Fill in **Add an outreach event** (name, date, **How long (hours)**, and **People reached** if you know it) and click **Add and log who went**. For one that's already listed, click it.",
+      "Under **Who went**, tick everyone who helped. Students and mentors from this season's roster are listed. **Find someone** narrows the list, and **Tick everyone** / **Clear all** work on whoever is shown.",
+      "Everyone ticked gets the event's **How long**. For someone who left early or stayed late, type their own hours in the box next to their name (1.5 or 1:30 both work).",
+      "Add a sentence under **What we did** if you like, then click **Save changes** in the bar at the bottom.",
+    ],
+    tips: [
+      "Change **How long** later and everyone without their own hours changes with it.",
+      "You can log people before an event happens; it only counts toward the totals once it has started.",
+    ],
+  },
+  {
+    id: "outreach-totals",
+    group: "Outreach",
+    title: "See and share outreach totals",
+    pages: ["/admin/outreach"],
+    steps: [
+      "The four numbers at the top of **Outreach hours** are the season's volunteer hours, outreach events, people reached and how many team members helped.",
+      "The Outreach page on the site shows the latest season's hours, events and people reached. It never shows anyone's name or their own hours.",
+      "**Hours by person** lists everyone's total, most hours first. It's only in the admin.",
+      "**Download totals (CSV)** gives one line per person; **Download full log (CSV)** gives one line per person per event. Both open in Excel or Google Sheets, handy for service-hour forms, letters of recommendation and the Impact Award.",
+    ],
   },
 
   // ---- Scouting ---------------------------------------------------------------

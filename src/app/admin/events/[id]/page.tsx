@@ -125,6 +125,18 @@ export default async function AdminEventPage(props: PageProps<"/admin/events/[id
         </div>
       )}
 
+      {event.kind === "outreach" && (
+        <div className="flex flex-col gap-3 rounded-md border border-line-strong bg-raise p-4 text-sm sm:flex-row sm:items-center sm:justify-between">
+          <span>This is an outreach event. Log who went, how long and how many people we reached on its outreach page.</span>
+          <Link
+            href={`/admin/outreach/${id}`}
+            className="flex h-10 shrink-0 items-center rounded-md bg-hornet px-4 text-sm font-bold text-ink hover:bg-hornet-hover"
+          >
+            Log outreach hours
+          </Link>
+        </div>
+      )}
+
       <EditForm action={updateEvent.bind(null, id)}>
         <Panel
           title="Results & details"
