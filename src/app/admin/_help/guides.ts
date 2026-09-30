@@ -332,11 +332,12 @@ export const GUIDES: Guide[] = [
     pages: ["/admin/sponsors"],
     steps: [
       "Go to **Sponsors** and pick the season at the top.",
-      "In the lineup table, pick each sponsor's tier, or **Not this season** for anyone who isn't sponsoring this year.",
-      "Click **Save changes** in the bar at the bottom.",
+      "Each sponsor in **All sponsors** shows their tier for that season (or **Not in** that year). Click a sponsor to open it.",
+      "Pick their tier in the **tier** box, or **Not this season** if they aren't sponsoring this year. **Order within tier** decides who comes first among sponsors in the same tier.",
+      "Click **Save changes** in the bar at the bottom. You can change several sponsors and save them all at once.",
       "To rename tiers or change their order, use the **Tiers** box. Lower rank shows first and gets the big logos.",
     ],
-    tips: ["When you start a new season, last season's sponsors are copied over. Update the lineup once you know who's renewing."],
+    tips: ["When you start a new season, last season's sponsors are copied over. Update their tiers once you know who's renewing."],
   },
 
   // ---- Site text -------------------------------------------------------------

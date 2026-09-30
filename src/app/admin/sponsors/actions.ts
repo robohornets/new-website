@@ -23,9 +23,31 @@ export async function createSponsor(year: number | null, _prev: ActionState, fd:
   });
 }
 
-export async function updateSponsor(id: number, _prev: ActionState, fd: FormData): Promise<ActionState> {
+/** The sponsor's details, and (when a season is picked) their tier that season. */
+export async function updateSponsor(id: number, year: number | null, _prev: ActionState, fd: FormData): Promise<ActionState> {
   return adminAction({ action: "update", entity: "sponsor", entityId: id }, async () => {
-    await run("UPDATE sponsors SET name = ?, url = ?, description = ?, logo_media_id = ? WHERE id = ?", ...sponsorFields(fd), id);
+    const statements: [string, ...(string | number | null)[]][] = [
+      ["UPDATE sponsors SET name = ?, url = ?, description = ?, logo_media_id = ? WHERE id = ?", ...sponsorFields(fd), id],
+    ];
+    // No tier box without a season or tiers; leave their seasons alone then.
+    if (year && fd.has("tier_id")) {
+      const tier = optionalInt(fd, "tier_id");
+      if (tier) {
+        const exists = await first("SELECT 1 FROM sponsor_tiers WHERE id = ?", tier);
+        if (!exists) throw new FormError("That tier no longer exists. Reload the page and pick again.");
+        statements.push([
+          `INSERT INTO sponsor_seasons (sponsor_id, season_year, tier_id, sort_order) VALUES (?, ?, ?, ?)
+           ON CONFLICT(sponsor_id, season_year) DO UPDATE SET tier_id = excluded.tier_id, sort_order = excluded.sort_order`,
+          id,
+          year,
+          tier,
+          int(fd, "sort_order", 0),
+        ]);
+      } else {
+        statements.push(["DELETE FROM sponsor_seasons WHERE sponsor_id = ? AND season_year = ?", id, year]);
+      }
+    }
+    await batch(statements);
   });
 }
 
@@ -33,31 +55,6 @@ export async function deleteSponsor(id: number, _prev: ActionState): Promise<Act
   return adminAction({ action: "delete", entity: "sponsor", entityId: id }, async () => {
     await run("DELETE FROM sponsors WHERE id = ?", id);
     return "Sponsor deleted.";
-  });
-}
-
-/** Replaces which sponsors (and tiers) are listed for a season. */
-export async function saveLineup(year: number, _prev: ActionState, fd: FormData): Promise<ActionState> {
-  return adminAction({ action: "lineup", entity: "sponsor_seasons", entityId: year }, async () => {
-    const ids = str(fd, "ids", 10_000)
-      .split(",")
-      .map(Number)
-      .filter((n) => Number.isInteger(n) && n > 0);
-    const statements: [string, ...(string | number | null)[]][] = [["DELETE FROM sponsor_seasons WHERE season_year = ?", year]];
-    for (const id of ids) {
-      const tier = int(fd, `tier_${id}`, 0);
-      if (tier > 0) {
-        statements.push([
-          "INSERT INTO sponsor_seasons (sponsor_id, season_year, tier_id, sort_order) VALUES (?, ?, ?, ?)",
-          id,
-          year,
-          tier,
-          int(fd, `order_${id}`, 0),
-        ]);
-      }
-    }
-    await batch(statements);
-    return `${year} sponsors saved.`;
   });
 }
 
