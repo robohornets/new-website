@@ -301,6 +301,28 @@ function SavedToast() {
   );
 }
 
+// Browsers tidy some values on the way into a box, so the box can show
+// something slightly different from what the page sent. A textarea turns
+// "\r\n" into "\n" (and forms send line breaks as "\r\n", so that's how they
+// get saved); a date box shows nothing for a date it can't read; a text box
+// drops line breaks. Compare against the tidied value, or those pages would
+// say "Save your changes" before anything was touched.
+const tidied = new Map<string, string>();
+function shownDefault(el: HTMLInputElement | HTMLTextAreaElement): string {
+  if (el instanceof HTMLTextAreaElement) return el.defaultValue.replace(/\r\n?/g, "\n");
+  const key = `${el.type}\0${el.defaultValue}`;
+  let shown = tidied.get(key);
+  if (shown === undefined) {
+    const probe = document.createElement("input");
+    probe.type = el.type;
+    probe.value = el.defaultValue;
+    shown = probe.value;
+    if (tidied.size > 2000) tidied.clear();
+    tidied.set(key, shown);
+  }
+  return shown;
+}
+
 /**
  * Whether any field differs from what the server rendered. Plain inputs keep
  * that in defaultValue / defaultChecked / defaultSelected, which React updates
@@ -314,7 +336,8 @@ export function hasChanges(form: HTMLFormElement): boolean {
     if (el.disabled || !el.name) continue;
     const saved = el.dataset.default;
     if (saved !== undefined) {
-      if (el.value !== saved) return true;
+      // The Markdown editor is a textarea too: same line-break tidying.
+      if (el.value !== (el instanceof HTMLTextAreaElement ? saved.replace(/\r\n?/g, "\n") : saved)) return true;
       continue;
     }
     if (el instanceof HTMLSelectElement) {
@@ -330,7 +353,7 @@ export function hasChanges(form: HTMLFormElement): boolean {
       if (el.checked !== el.defaultChecked) return true;
     } else if (el instanceof HTMLInputElement && (el.type === "file" || el.type === "submit" || el.type === "button")) {
       continue;
-    } else if (el.value !== el.defaultValue) {
+    } else if (el.value !== shownDefault(el)) {
       return true;
     }
   }

@@ -50,7 +50,8 @@ export async function adminAction(
 // ---- FormData helpers -------------------------------------------------------
 
 export function str(fd: FormData, key: string, max = 2000): string {
-  return String(fd.get(key) ?? "").trim().slice(0, max);
+  // Forms send line breaks as \r\n; store plain \n.
+  return String(fd.get(key) ?? "").replace(/\r\n?/g, "\n").trim().slice(0, max);
 }
 
 export function required(fd: FormData, key: string, label: string, max = 2000): string {
