@@ -79,13 +79,22 @@ export const ALLOWED_UPLOAD_TYPES = [...IMAGE_UPLOAD_TYPES, ...VIDEO_UPLOAD_TYPE
 
 /** Cloudflare Images can only transform inputs up to 20 MB. */
 export const MAX_IMAGE_BYTES = 20 * 1024 * 1024;
-/** Workers accept request bodies up to 100 MB on the Free and Pro plans. */
+/** Through the Worker: request bodies are capped at 100 MB on the Free and Pro plans. */
 export const MAX_VIDEO_BYTES = 95 * 1024 * 1024;
 /** PDFs, e.g. engineering notebooks full of photos. */
 export const MAX_OTHER_BYTES = 95 * 1024 * 1024;
+/** Straight from the browser to R2 (src/lib/direct-upload.ts) there's no body cap. */
+export const MAX_DIRECT_VIDEO_BYTES = 1024 * 1024 * 1024;
+export const MAX_DIRECT_OTHER_BYTES = 500 * 1024 * 1024;
 
-export function maxBytesFor(type: string): number {
-  if (VIDEO_UPLOAD_TYPES.includes(type)) return MAX_VIDEO_BYTES;
+/** The largest file of this type that can be uploaded, directly to R2 or through the Worker. */
+export function maxBytesFor(type: string, direct = false): number {
   if (type.startsWith("image/")) return MAX_IMAGE_BYTES;
-  return MAX_OTHER_BYTES;
+  if (VIDEO_UPLOAD_TYPES.includes(type)) return direct ? MAX_DIRECT_VIDEO_BYTES : MAX_VIDEO_BYTES;
+  return direct ? MAX_DIRECT_OTHER_BYTES : MAX_OTHER_BYTES;
+}
+
+/** "95 MB", "1 GB" */
+export function formatLimit(bytes: number): string {
+  return bytes >= 1024 ** 3 ? `${Math.round(bytes / 1024 ** 3)} GB` : `${Math.round(bytes / 1024 ** 2)} MB`;
 }

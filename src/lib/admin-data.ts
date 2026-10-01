@@ -1,5 +1,7 @@
 import "server-only";
+import { getEnv } from "./cf";
 import { all, first } from "./db";
+import { directUploadsConfigured } from "./upload";
 
 export type MediaOption = { id: number; r2_key: string; filename: string };
 
@@ -44,4 +46,9 @@ export async function resolveSeasonParam(raw: string | string[] | undefined): Pr
   const wanted = Number(Array.isArray(raw) ? raw[0] : raw);
   if (years.includes(wanted)) return { year: wanted, years };
   return { year: (await getCurrentYear()) ?? years[0] ?? null, years };
+}
+
+/** Whether uploads go straight to R2 (so videos can be up to 1 GB). */
+export async function directUploadsEnabled(): Promise<boolean> {
+  return directUploadsConfigured(await getEnv());
 }

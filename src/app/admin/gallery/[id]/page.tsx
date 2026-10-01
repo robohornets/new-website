@@ -1,16 +1,15 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getSeasonYears } from "@/lib/admin-data";
+import { directUploadsEnabled, getSeasonYears } from "@/lib/admin-data";
 import { all, first } from "@/lib/db";
-import { downloadUrl, isVideo, mediaUrl, originalUrl } from "@/lib/media";
 import type { Album } from "@/lib/types";
 import { ActionButton } from "../../_components/action-form";
 import { EditForm } from "../../_components/unsaved";
 import { BulkUploader } from "../../_components/bulk-uploader";
 import { AdminPageHeader, Checkbox, Grid, Panel, SelectField, TextArea, TextField } from "../../_components/fields";
-import { SortableGrid } from "../../_components/sortable";
-import { deleteAlbum, removeAlbumPhoto, saveAlbumPhotoOrder, setAlbumCover, updateAlbum, updateAlbumPhoto } from "../actions";
+import { PhotosEditor } from "../../_components/photos-editor";
+import { deleteAlbum, updateAlbum } from "../actions";
 import { requireAdminPage } from "@/lib/auth";
 
 export const metadata: Metadata = { title: "Edit album" };
@@ -20,13 +19,14 @@ export default async function AdminAlbumPage(props: PageProps<"/admin/gallery/[i
   const id = Number((await props.params).id);
   const album = Number.isInteger(id) ? await first<Album>("SELECT * FROM albums WHERE id = ?", id) : null;
   if (!album) notFound();
-  const [photos, years] = await Promise.all([
+  const [photos, years, direct] = await Promise.all([
     all<{ media_id: number; r2_key: string; alt: string; filename: string; caption: string; sort_order: number }>(
       `SELECT ap.media_id, m.r2_key, m.content_type, m.alt, m.filename, ap.caption, ap.sort_order
        FROM album_photos ap JOIN media m ON m.id = ap.media_id WHERE ap.album_id = ? ORDER BY ap.sort_order, m.created_at`,
       id,
     ),
     getSeasonYears(),
+    directUploadsEnabled(),
   ]);
 
   return (
@@ -44,53 +44,16 @@ export default async function AdminAlbumPage(props: PageProps<"/admin/gallery/[i
         }
       />
 
-      <BulkUploader albumId={id} label="Add photos to this album" />
+      <BulkUploader albumId={id} label="Add photos and videos to this album" direct={direct} />
 
       <Panel
         title="Photos"
-        description="The site shows them in this order. Drag a photo by ⠿ (or use ◀ ▶) and save. Alt text describes the photo for screen readers; captions show under it."
+        description="The site shows them in this order. Drag a photo by ⠿ (or use ◀ ▶) and save. Click a photo to add a description, make it the cover or remove it."
       >
         {photos.length === 0 ? (
           <p className="text-sm text-dust">No photos yet. Upload some above.</p>
         ) : (
-          <SortableGrid
-            action={saveAlbumPhotoOrder.bind(null, id)}
-            className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4"
-            items={photos.map((p, i) => ({
-              id: p.media_id,
-              label: p.alt || `photo ${i + 1}`,
-              node: (
-                <div className="flex h-full flex-col gap-3 rounded-md border border-line bg-ink p-3">
-                  <div className="relative">
-                    {isVideo(p.r2_key) ? (
-                      <video src={originalUrl(p.r2_key) ?? ""} preload="metadata" muted controls className="h-44 w-full rounded bg-panel object-cover" />
-                    ) : (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={mediaUrl(p.r2_key, 640) ?? ""} alt={p.alt} loading="lazy" className="h-44 w-full rounded object-cover" />
-                    )}
-                    {album.cover_media_id === p.media_id && (
-                      <span className="absolute top-2 left-2 rounded bg-ink/90 px-2 py-0.5 font-label text-[10px] text-hornet">COVER</span>
-                    )}
-                  </div>
-                  <EditForm action={updateAlbumPhoto.bind(null, id, p.media_id)}>
-                    <TextField label="Alt text" name="alt" defaultValue={p.alt} placeholder="Drive team celebrating in the pits" />
-                    <TextField label="Caption" name="caption" defaultValue={p.caption} />
-                  </EditForm>
-                  <a href={downloadUrl(p.r2_key) ?? ""} className="text-sm font-semibold text-hornet hover:text-hornet-hover">
-                    Download original · {p.filename}
-                  </a>
-                  <div className="flex flex-wrap gap-2 border-t border-line pt-3">
-                    {album.cover_media_id !== p.media_id && !isVideo(p.r2_key) && (
-                      <ActionButton action={setAlbumCover.bind(null, id, p.media_id)}>Make cover</ActionButton>
-                    )}
-                    <ActionButton action={removeAlbumPhoto.bind(null, id, p.media_id)} variant="danger" confirm="Remove this photo from the album? It stays in the media library.">
-                      Remove
-                    </ActionButton>
-                  </div>
-                </div>
-              ),
-            }))}
-          />
+          <PhotosEditor albumId={id} coverId={album.cover_media_id} photos={photos} />
         )}
       </Panel>
 

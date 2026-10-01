@@ -1,29 +1,22 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { specsToText } from "@/lib/admin";
 import { getMediaOptions, getTbaStatus } from "@/lib/admin-data";
 import { getEnv } from "@/lib/cf";
 import { getEvents, getRobots, getSeason } from "@/lib/data";
 import { formatDate } from "@/lib/format";
 import { tbaConfigured } from "@/lib/tba/client";
 import { parseOverrides } from "@/lib/tba/fields";
-import type { Robot } from "@/lib/types";
-import { ActionButton, ActionForm } from "../../_components/action-form";
+import { ActionButton } from "../../_components/action-form";
 import { EditForm } from "../../_components/unsaved";
 import { AdminPageHeader, Grid, Panel, SelectField, TextArea, TextField } from "../../_components/fields";
 import { DocumentField } from "../../_components/document-field";
-import { MediaField, type MediaOption } from "../../_components/media-field";
+import { MediaField } from "../../_components/media-field";
 import { TbaSyncPanel } from "../../_components/tba-sync-panel";
-import {
-  createEvent,
-  createRobot,
-  deleteRobot,
-  deleteSeason,
-  makeCurrentSeason,
-  updateRobot,
-  updateSeason,
-} from "../actions";
+import { createEvent, deleteSeason, makeCurrentSeason, updateSeason } from "../actions";
+import { createRobot } from "../../robots/actions";
+import { AddButton, Badge, LinkRow, RowContent } from "../../_components/items";
+import { MediaImage } from "@/components/media-image";
 import { requireAdminPage } from "@/lib/auth";
 
 export async function generateMetadata(props: PageProps<"/admin/seasons/[year]">): Promise<Metadata> {
@@ -121,7 +114,7 @@ export default async function AdminSeasonPage(props: PageProps<"/admin/seasons/[
             label="Season photo"
             current={heroMedia}
             library={library}
-            hint="Used as the homepage hero while this is the current season. Falls back to the robot photo."
+            hint="A team or game photo for the homepage (while this is the current season) and the Seasons list. The season page itself leads with the robot's photo slideshow."
           />
           <DocumentField
             name="notebook"
@@ -137,33 +130,28 @@ export default async function AdminSeasonPage(props: PageProps<"/admin/seasons/[
         </EditForm>
       </Panel>
 
-      <Panel title="Robots" description="The first competition robot is featured on the homepage and season page.">
-        <div id="robots" className="flex flex-col gap-3">
-          <details open={robots.length === 0} className="rounded-md border border-dashed border-edge">
-            <summary className="list-none px-4 py-3 font-semibold text-hornet">+ Add {robots.length ? "another" : "a"} robot</summary>
-            <div className="border-t border-line p-4">
-              <RobotForm library={library} year={year} />
-            </div>
-          </details>
+      <Panel
+        title="Robots"
+        description="The first competition robot is featured on the homepage and leads the season page with its photo slideshow. Click a robot for its photos, specs and links."
+        actions={
+          <AddButton label="Add robot" title="Add a robot" description="Name it now; add photos, specs and links on its page." action={createRobot.bind(null, year)} size="sm">
+            <TextField label="Name" name="name" required placeholder="Roomba" />
+            <SelectField label="Type" name="kind" defaultValue={robots.some((r) => r.kind === "competition") ? "prototype" : "competition"} options={ROBOT_KINDS} />
+          </AddButton>
+        }
+      >
+        <div id="robots" className="flex flex-col gap-2">
+          {robots.length === 0 && <p className="text-sm text-dust">No robots yet. Add the {year} robot with the button above.</p>}
           {robots.map((r) => (
-            <details key={r.id} className="group rounded-md border border-line bg-ink">
-              <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-4 py-3">
-                <span className="flex items-baseline gap-3">
-                  <span className="font-display text-2xl font-extrabold uppercase">{r.name}</span>
-                  <span className="font-label text-xs text-dust uppercase">{r.kind}</span>
-                </span>
-                <span className="text-sm text-hornet group-open:hidden">Edit</span>
-                <span className="hidden text-sm text-dust group-open:inline">Close</span>
-              </summary>
-              <div className="flex flex-col gap-4 border-t border-line p-4">
-                <RobotForm robot={r} library={library} />
-                <div className="border-t border-line pt-4">
-                  <ActionButton action={deleteRobot.bind(null, r.id)} variant="danger" confirm={`Delete ${r.name}? This can't be undone.`}>
-                    Delete robot
-                  </ActionButton>
-                </div>
-              </div>
-            </details>
+            <LinkRow key={r.id} href={`/admin/robots/${r.id}`}>
+              <RowContent
+                opens="page"
+                media={<MediaImage mediaKey={r.photo_key} alt="" className="size-12 rounded" sizes="48px" maxWidth={320} placeholder="" />}
+                title={r.name}
+                meta={ROBOT_KINDS.find((k) => k.value === r.kind)?.label}
+                badges={!r.photo_key ? <Badge tone="muted">No photos</Badge> : undefined}
+              />
+            </LinkRow>
           ))}
         </div>
       </Panel>
@@ -171,55 +159,47 @@ export default async function AdminSeasonPage(props: PageProps<"/admin/seasons/[
       <Panel
         title="Competitions & events"
         description="Events 1209 is registered for come in from The Blue Alliance on their own, with rank, record, awards and every match. Click an event to fix anything or add a write-up."
+        actions={
+          <AddButton label="Add event" title="Add an event by hand" description="For events The Blue Alliance doesn't list, like scrimmages, demos or outreach." action={createEvent.bind(null, year)} submitLabel="Add event">
+            <TextField label="Event name" name="name" required />
+            <Grid>
+              <SelectField label="Type" name="kind" defaultValue="offseason" options={EVENT_KINDS} />
+              <TextField label="Location" name="location" placeholder="Tulsa, OK" />
+              <TextField label="Start date" name="start_date" type="date" />
+              <TextField label="End date" name="end_date" type="date" />
+            </Grid>
+          </AddButton>
+        }
       >
         <div id="events" className="flex flex-col gap-4">
           <TbaSyncPanel year={year} status={tbaStatus} connected={tbaConnected} />
-          <details className="rounded-md border border-dashed border-edge">
-            <summary className="list-none px-4 py-3 font-semibold text-hornet">+ Add an event by hand</summary>
-            <div className="flex flex-col gap-3 border-t border-line p-4">
-              <p className="text-sm text-dust">For events The Blue Alliance doesn&apos;t list, like scrimmages, demos or outreach.</p>
-              <NewEventForm year={year} />
-            </div>
-          </details>
           {events.length === 0 && (
             <p className="text-sm text-dust">
-              No events yet.{" "}
-              {tbaConnected ? "Click Sync above to pull them from The Blue Alliance, or add one by hand above." : "Add one by hand above."}
+              No events yet. {tbaConnected ? "Click Sync above to pull them from The Blue Alliance, or add one by hand." : "Add one by hand with the button above."}
             </p>
           )}
-          <ul className="flex flex-col gap-2">
+          <div className="flex flex-col gap-2">
             {events.map((e) => {
               const edited = parseOverrides(e.overrides).length;
               return (
-                <li key={e.id}>
-                  <Link
-                    href={`/admin/events/${e.id}`}
-                    className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-md border border-line bg-ink px-4 py-3 hover:border-edge"
-                  >
-                    <span className="flex min-w-0 grow flex-col gap-0.5">
-                      <span className="font-semibold">{e.name}</span>
-                      <span className="font-label text-xs text-dust">
-                        {formatDate(e.start_date) || "No date"}
-                        {e.location ? ` · ${e.location}` : ""}
-                      </span>
-                    </span>
-                    <span className="flex flex-wrap items-center gap-2 text-xs">
-                      {e.rank && <span className="font-label text-hornet">{e.rank}</span>}
-                      {e.playoff_result && <span className="text-sand">{e.playoff_result}</span>}
-                      {e.tba ? (
-                        <span className="rounded border border-line-strong px-1.5 py-0.5 font-label text-[10px] text-sand">TBA</span>
-                      ) : (
-                        <span className="rounded border border-line-strong px-1.5 py-0.5 font-label text-[10px] text-dust">BY HAND</span>
-                      )}
-                      {edited > 0 && <span className="rounded bg-rust px-1.5 py-0.5 font-label text-[10px] font-bold text-white">{edited} EDITED</span>}
-                      {e.hidden === 1 && <span className="rounded bg-raise px-1.5 py-0.5 font-label text-[10px] text-dust">HIDDEN</span>}
-                    </span>
-                    <span className="text-sm font-semibold text-hornet">Open</span>
-                  </Link>
-                </li>
+                <LinkRow key={e.id} href={`/admin/events/${e.id}`}>
+                  <RowContent
+                    opens="page"
+                    title={e.name}
+                    meta={`${formatDate(e.start_date) || "No date"}${e.location ? ` · ${e.location}` : ""}${e.rank ? ` · ${e.rank}` : ""}`}
+                    badges={
+                      <>
+                        {e.kind === "outreach" && <Badge>Outreach</Badge>}
+                        <Badge tone={e.tba ? "plain" : "muted"}>{e.tba ? "TBA" : "By hand"}</Badge>
+                        {edited > 0 && <Badge tone="accent">{edited} edited</Badge>}
+                        {e.hidden === 1 && <Badge tone="muted">Hidden</Badge>}
+                      </>
+                    }
+                  />
+                </LinkRow>
               );
             })}
-          </ul>
+          </div>
         </div>
       </Panel>
 
@@ -233,68 +213,5 @@ export default async function AdminSeasonPage(props: PageProps<"/admin/seasons/[
         </ActionButton>
       </Panel>
     </>
-  );
-}
-
-function RobotForm({ robot, library, year }: { robot?: Robot; library: MediaOption[]; year?: number }) {
-  const fields = (
-    <>
-      <Grid cols={3}>
-        <TextField label="Name" name="name" defaultValue={robot?.name} required />
-        <SelectField label="Type" name="kind" defaultValue={robot?.kind ?? "competition"} options={ROBOT_KINDS} />
-        <TextField label="Order" name="sort_order" type="number" defaultValue={robot?.sort_order ?? 0} hint="Lower shows first." />
-      </Grid>
-      <TextArea label="Description" name="description" rows={3} defaultValue={robot?.description} />
-      <Grid>
-        <TextArea
-          label="Specs"
-          name="specs"
-          rows={5}
-          mono
-          defaultValue={robot ? specsToText(robot.specs) : ""}
-          placeholder={"Drivetrain: Swerve, 8 × Kraken X60\nAutonomous: PathPlanner"}
-          hint="One per line, as Label: value"
-        />
-        <div className="flex flex-col gap-4">
-          <TextField label="Tags" name="tags" defaultValue={robot?.tags.join(", ")} hint="Comma separated, e.g. Swerve, Elevator" />
-          <TextField label="Code link" name="code_url" type="url" defaultValue={robot?.code_url} placeholder="https://github.com/robohornets/…" />
-          <TextField label="CAD link" name="cad_url" type="url" defaultValue={robot?.cad_url} />
-        </div>
-      </Grid>
-      <MediaField
-        name="photo_media_id"
-        label="Robot photo"
-        current={library.find((m) => m.id === robot?.photo_media_id) ?? null}
-        library={library}
-      />
-    </>
-  );
-  return robot ? (
-    <EditForm action={updateRobot.bind(null, robot.id)}>{fields}</EditForm>
-  ) : (
-    <ActionForm action={createRobot.bind(null, year!)} submitLabel="Add robot" resetOnSuccess>
-      {fields}
-    </ActionForm>
-  );
-}
-
-function NewEventForm({ year }: { year: number }) {
-  return (
-    <ActionForm action={createEvent.bind(null, year)} submitLabel="Add event">
-      <Grid cols={3}>
-        <TextField label="Event name" name="name" required className="md:col-span-2" />
-        <SelectField label="Type" name="kind" defaultValue="offseason" options={EVENT_KINDS} />
-        <TextField label="Location" name="location" placeholder="Tulsa, OK" />
-        <TextField label="Start date" name="start_date" type="date" />
-        <TextField label="End date" name="end_date" type="date" />
-      </Grid>
-      <TextField
-        label="Blue Alliance key (optional)"
-        name="tba_key"
-        placeholder="2027okok"
-        hint="Only if the event is on TBA but hasn't shown up yet. It's the last part of the event's TBA web address."
-        className="md:max-w-sm"
-      />
-    </ActionForm>
   );
 }

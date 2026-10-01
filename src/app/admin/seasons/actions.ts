@@ -10,17 +10,14 @@ import {
   oneOf,
   optional,
   optionalInt,
-  parseList,
-  parseSpecs,
   str,
   url,
   type ActionState,
 } from "@/lib/admin";
 import { batch, first, run } from "@/lib/db";
-import type { EventKind, RobotKind, SeasonStatus } from "@/lib/types";
+import type { EventKind, SeasonStatus } from "@/lib/types";
 
 const STATUSES: SeasonStatus[] = ["pre_kickoff", "build", "competition", "offseason"];
-const ROBOT_KINDS: RobotKind[] = ["competition", "kitbot", "offseason", "prototype"];
 const EVENT_KINDS: EventKind[] = ["regional", "district", "championship", "offseason", "outreach", "other"];
 
 function yearFrom(fd: FormData) {
@@ -144,54 +141,6 @@ export async function deleteSeason(year: number, _prev: ActionState): Promise<Ac
   });
   if (result.ok) redirect("/admin/seasons");
   return result;
-}
-
-// ---- Robots -----------------------------------------------------------------
-
-function robotFields(fd: FormData) {
-  const name = str(fd, "name", 120);
-  if (!name) throw new FormError("Give the robot a name.");
-  return [
-    name,
-    oneOf(fd, "kind", ROBOT_KINDS, "competition"),
-    str(fd, "description", 2000),
-    JSON.stringify(parseSpecs(str(fd, "specs", 4000))),
-    JSON.stringify(parseList(str(fd, "tags", 400))),
-    url(fd, "code_url"),
-    url(fd, "cad_url"),
-    optionalInt(fd, "photo_media_id"),
-    int(fd, "sort_order", 0),
-  ] as const;
-}
-
-export async function createRobot(year: number, _prev: ActionState, fd: FormData): Promise<ActionState> {
-  return adminAction({ action: "create", entity: "robot", entityId: year }, async () => {
-    await run(
-      `INSERT INTO robots (name, kind, description, specs, tags, code_url, cad_url, photo_media_id, sort_order, season_year)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      ...robotFields(fd),
-      year,
-    );
-    return "Robot added.";
-  });
-}
-
-export async function updateRobot(id: number, _prev: ActionState, fd: FormData): Promise<ActionState> {
-  return adminAction({ action: "update", entity: "robot", entityId: id }, async () => {
-    await run(
-      `UPDATE robots SET name = ?, kind = ?, description = ?, specs = ?, tags = ?, code_url = ?, cad_url = ?,
-         photo_media_id = ?, sort_order = ? WHERE id = ?`,
-      ...robotFields(fd),
-      id,
-    );
-  });
-}
-
-export async function deleteRobot(id: number, _prev: ActionState): Promise<ActionState> {
-  return adminAction({ action: "delete", entity: "robot", entityId: id }, async () => {
-    await run("DELETE FROM robots WHERE id = ?", id);
-    return "Robot removed.";
-  });
 }
 
 // ---- Events -----------------------------------------------------------------

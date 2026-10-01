@@ -51,7 +51,8 @@ export async function deleteAlbum(id: number, _prev: ActionState): Promise<Actio
 export async function updateAlbumPhoto(albumId: number, mediaId: number, _prev: ActionState, fd: FormData): Promise<ActionState> {
   return adminAction(null, async () => {
     // Their order is saved separately (saveAlbumPhotoOrder), from the drag handles.
-    await run("UPDATE album_photos SET caption = ? WHERE album_id = ? AND media_id = ?", str(fd, "caption", 300), albumId, mediaId);
+    // "caption" is shown as the photo's Description.
+    await run("UPDATE album_photos SET caption = ? WHERE album_id = ? AND media_id = ?", str(fd, "caption", 1000), albumId, mediaId);
     await run("UPDATE media SET alt = ? WHERE id = ?", str(fd, "alt", 300), mediaId);
   });
 }

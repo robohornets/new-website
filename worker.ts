@@ -7,13 +7,14 @@
 import { default as nextHandler } from "./.open-next/worker.js";
 import { verifyAccessToken } from "./src/lib/access";
 import { tbaConfigured } from "./src/lib/tba/client";
-import { handleUpload } from "./src/lib/upload";
+import { routeUpload, UPLOAD_PATHS } from "./src/lib/upload";
 import { runScheduledSync, saveSyncStatus } from "./src/lib/tba/sync";
 
 /**
- * POST /admin/api/upload, answered here without Next.js. Sending a request
- * through Next costs more CPU than storing the file, and the Workers Free
- * plan allows 10 ms of CPU per request; big gallery uploads kept hitting it.
+ * Uploads (POST /admin/api/upload, /start and /finish), answered here without
+ * Next.js. Sending a request through Next costs more CPU than storing the
+ * file, and the Workers Free plan allows 10 ms of CPU per request; big
+ * gallery uploads kept hitting it. See src/lib/upload.ts.
  */
 async function upload(request: Request, env: CloudflareEnv): Promise<Response> {
   // Only the admin pages themselves may upload (Next checks this for its own forms).
@@ -23,12 +24,12 @@ async function upload(request: Request, env: CloudflareEnv): Promise<Response> {
   }
   const email = await verifyAccessToken(env, request.headers.get("cf-access-jwt-assertion"));
   if (!email) return Response.json({ error: "Not signed in to the admin." }, { status: 401 });
-  return handleUpload(request, env, email);
+  return routeUpload(request, env, email);
 }
 
 export default {
   async fetch(request, env, ctx) {
-    if (request.method === "POST" && new URL(request.url).pathname === "/admin/api/upload") return upload(request, env);
+    if (request.method === "POST" && UPLOAD_PATHS.includes(new URL(request.url).pathname)) return upload(request, env);
     return nextHandler.fetch(request, env, ctx);
   },
 

@@ -4,7 +4,7 @@ import { MediaImage } from "@/components/media-image";
 import { ShowMore } from "@/components/show-more";
 import { Container, EmptyState, PageHeader } from "@/components/page-header";
 import { all } from "@/lib/db";
-import { getSeasons } from "@/lib/data";
+import { getSeasons, ROBOT_PHOTO } from "@/lib/data";
 
 export const metadata: Metadata = {
   title: "Seasons",
@@ -15,7 +15,7 @@ export default async function SeasonsPage() {
   const [seasons, robots] = await Promise.all([
     getSeasons(),
     all<{ season_year: number; name: string; photo_key: string | null }>(
-      `SELECT r.season_year, r.name, m.r2_key AS photo_key FROM robots r
+      `SELECT r.season_year, r.name, ${ROBOT_PHOTO} AS photo_key FROM robots r
        LEFT JOIN media m ON m.id = r.photo_media_id ORDER BY r.season_year, (r.kind = 'competition') DESC, r.sort_order, r.id`,
     ),
   ]);

@@ -51,6 +51,10 @@
 		"CF_ACCESS_AUD": "2ad31c4d1d3df9e3711402f47a218712d9d8148f95ae1d92c7ac1bee55500a02",
 		// The Blue Alliance team to sync. The API key is a secret:
 		//   npx wrangler secret put TBA_API_KEY
-		"TBA_TEAM_KEY": "frc1209"
+		"TBA_TEAM_KEY": "frc1209",
+		// Direct uploads to R2 (1 GB videos). Also needs the secrets R2_ACCESS_KEY_ID
+		// and R2_SECRET_ACCESS_KEY; see "Direct uploads" in the README.
+		"R2_ACCOUNT_ID": "bf0f37839f565aba35f34152a14d23eb",
+		"R2_BUCKET_NAME": "btwrobotics-media"
 	}
 }

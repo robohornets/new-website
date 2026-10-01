@@ -88,8 +88,20 @@ function toRobot(row: RobotRow): Robot {
   return { ...row, specs: parseJson(row.specs, []), tags: parseJson(row.tags, []) };
 }
 
+/**
+ * A robot's main photo: its album's cover (or first photo), else the single
+ * photo robots had before albums. Needs the robot as `r` and the old photo
+ * joined as `m`.
+ */
+export const ROBOT_PHOTO = `COALESCE(
+  (SELECT mi.r2_key FROM albums ra JOIN media mi ON mi.id = COALESCE(ra.cover_media_id,
+     (SELECT ap.media_id FROM album_photos ap JOIN media x ON x.id = ap.media_id
+      WHERE ap.album_id = ra.id AND x.content_type LIKE 'image/%' ORDER BY ap.sort_order LIMIT 1))
+   WHERE ra.id = r.album_id),
+  m.r2_key)`;
+
 const ROBOT_COLUMNS = `r.id, r.season_year, r.name, r.kind, r.description, r.specs, r.tags, r.code_url,
-  r.cad_url, r.photo_media_id, m.r2_key AS photo_key, r.sort_order`;
+  r.cad_url, r.photo_media_id, r.album_id, ${ROBOT_PHOTO} AS photo_key, r.sort_order`;
 
 export const getRobots = cache(async (year: number): Promise<Robot[]> => {
   const rows = await all<RobotRow>(
@@ -98,6 +110,11 @@ export const getRobots = cache(async (year: number): Promise<Robot[]> => {
     year,
   );
   return rows.map(toRobot);
+});
+
+export const getRobot = cache(async (id: number): Promise<Robot | null> => {
+  const row = await first<RobotRow>(`SELECT ${ROBOT_COLUMNS} FROM robots r LEFT JOIN media m ON m.id = r.photo_media_id WHERE r.id = ?`, id);
+  return row ? toRobot(row) : null;
 });
 
 /** The main robot of each season, newest first. */

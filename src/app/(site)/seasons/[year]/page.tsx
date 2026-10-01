@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { EventRow } from "@/components/cards";
+import type { LightboxItem } from "@/components/lightbox";
+import { RobotSlideshow } from "@/components/robot-slideshow";
 import { ArrowRight, Download, External } from "@/components/icons";
 import { MediaImage } from "@/components/media-image";
 import { Container, EmptyState } from "@/components/page-header";
@@ -10,6 +12,7 @@ import { SeasonSwitcher } from "@/components/season-switcher";
 import { SponsorWall } from "@/components/sponsor-wall";
 import {
   getAlbums,
+  getAlbumPhotos,
   getEventMatchSummary,
   getEvents,
   getRobots,
@@ -20,7 +23,7 @@ import {
   getSeasonSponsors,
   getSubteams,
 } from "@/lib/data";
-import { documentLink, mediaSrcSet, mediaUrl } from "@/lib/media";
+import { documentLink, isVideo, mediaSrcSet, mediaUrl } from "@/lib/media";
 import { SEASON_STATUS_LABEL } from "@/lib/types";
 
 function parseYear(raw: string) {
@@ -57,7 +60,14 @@ export default async function SeasonPage(props: PageProps<"/seasons/[year]">) {
   const [mainRobot, ...otherRobots] = robots;
   const students = roster.filter((m) => m.kind === "student");
   const mentors = roster.filter((m) => m.kind === "mentor");
-  const heroKey = season.hero_key ?? mainRobot?.photo_key ?? null;
+  // The robot's photos lead its season page; the season photo only stands in until there are some.
+  const albumPhotos = mainRobot?.album_id ? (await getAlbumPhotos(mainRobot.album_id)).filter((p) => !isVideo(p.r2_key)) : [];
+  const slides: LightboxItem[] = albumPhotos.length
+    ? albumPhotos.map((p) => ({ id: p.media_id, mediaKey: p.r2_key, video: false, alt: p.alt, description: p.caption, width: p.width, height: p.height }))
+    : mainRobot?.photo_key
+      ? [{ id: 0, mediaKey: mainRobot.photo_key, video: false, alt: "", description: "", width: null, height: null }]
+      : [];
+  const heroKey = season.hero_key ?? null;
   const notebook = documentLink(season.notebook_key, season.notebook_url);
   const competitions = events.filter((e) => e.kind !== "outreach");
   const outreachEvents = events.filter((e) => e.kind === "outreach");
@@ -118,17 +128,21 @@ export default async function SeasonPage(props: PageProps<"/seasons/[year]">) {
           </div>
         </div>
         <div className="relative h-[320px] grow overflow-hidden rounded-md border border-line md:h-[560px]">
-          <MediaImage
-            mediaKey={heroKey}
-            alt={mainRobot ? `${mainRobot.name}, the ${season.year} robot` : `${season.year} season`}
-            placeholder={mainRobot ? `${mainRobot.name} photo coming soon` : "Photo coming soon"}
-            className="size-full"
-            loading="eager"
-          />
+          {slides.length > 0 ? (
+            <RobotSlideshow slides={slides} label={mainRobot ? `${mainRobot.name}, the ${season.year} robot` : `${season.year} season`} />
+          ) : (
+            <MediaImage
+              mediaKey={heroKey}
+              alt={mainRobot ? `${mainRobot.name}, the ${season.year} robot` : `${season.year} season`}
+              placeholder={mainRobot ? `${mainRobot.name} photo coming soon` : "Photo coming soon"}
+              className="size-full"
+              loading="eager"
+            />
+          )}
           {mainRobot && (
-            <div className="absolute bottom-6 left-6 flex items-baseline gap-3.5 rounded-md border border-line-strong bg-ink px-5 py-4">
+            <div className="pointer-events-none absolute bottom-3 left-3 flex items-baseline gap-3 rounded-md border border-line-strong bg-ink px-4 py-3 md:bottom-6 md:left-6 md:gap-3.5 md:px-5 md:py-4">
               <span className="eyebrow text-xs text-dust">Robot</span>
-              <span className="font-display text-4xl leading-none font-black uppercase md:text-[44px]">{mainRobot.name}</span>
+              <span className="font-display text-3xl leading-none font-black uppercase md:text-[44px]">{mainRobot.name}</span>
             </div>
           )}
         </div>

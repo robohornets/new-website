@@ -72,6 +72,54 @@ export const Hex = (p: IconProps) => (
   </Svg>
 );
 
+export const ChevronLeft = (p: IconProps) => (
+  <Svg strokeWidth={2.5} {...p}>
+    <path d="M15 5l-7 7 7 7" />
+  </Svg>
+);
+
+export const ChevronRight = (p: IconProps) => (
+  <Svg strokeWidth={2.5} {...p}>
+    <path d="M9 5l7 7-7 7" />
+  </Svg>
+);
+
+export const Pencil = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M4 20h4L19 9l-4-4L4 16v4zM13.5 6.5l4 4" />
+  </Svg>
+);
+
+export const Expand = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M14 4h6v6M10 20H4v-6M20 4l-7 7M4 20l7-7" />
+  </Svg>
+);
+
+export const Pause = (p: IconProps) => (
+  <Svg strokeWidth={2.5} {...p}>
+    <path d="M8 5v14M16 5v14" />
+  </Svg>
+);
+
+export const Play = (p: IconProps) => (
+  <Svg {...p} fill="currentColor" stroke="none">
+    <path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z" />
+  </Svg>
+);
+
+export const FileIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M14 3H6v18h12V7l-4-4zM14 3v4h4" />
+  </Svg>
+);
+
+export const LinkIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M10 14a4 4 0 0 0 5.66 0l3-3a4 4 0 0 0-5.66-5.66l-1 1M14 10a4 4 0 0 0-5.66 0l-3 3a4 4 0 0 0 5.66 5.66l1-1" />
+  </Svg>
+);
+
 export const Trash = (p: IconProps) => (
   <Svg {...p}>
     <path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3" />

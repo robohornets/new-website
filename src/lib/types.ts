@@ -51,7 +51,11 @@ export type Robot = {
   tags: string[];
   code_url: string | null;
   cad_url: string | null;
+  /** The robot's photo before albums; still shown when it has no album. */
   photo_media_id: number | null;
+  /** The album its photos come from (the season page slideshow). */
+  album_id: number | null;
+  /** Its main photo: the album's cover or first photo, else photo_media_id. */
   photo_key: string | null;
   sort_order: number;
   game_name?: string;
