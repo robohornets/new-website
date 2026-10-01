@@ -52,13 +52,13 @@ function where(f: MediaFilters): { sql: string; params: (string | number)[] } {
   const params: (string | number)[] = [];
   const kinds = (f.kinds ?? []).filter((k) => k in KIND_SQL);
   if (kinds.length) parts.push(`(${kinds.map((k) => KIND_SQL[k]).join(" OR ")})`);
-  const q = (f.q ?? "").trim().slice(0, 100);
+  // instr rather than LIKE: D1 refuses LIKE patterns over 50 characters.
+  const q = (f.q ?? "").trim().slice(0, 100).toLowerCase();
   if (q) {
-    const like = `%${q.replace(/[\\%_]/g, (c) => `\\${c}`)}%`;
-    parts.push(`(m.filename LIKE ? ESCAPE '\\' OR m.alt LIKE ? ESCAPE '\\'
+    parts.push(`(instr(lower(m.filename), ?) > 0 OR instr(lower(m.alt), ?) > 0
       OR EXISTS (SELECT 1 FROM album_photos ap JOIN albums a ON a.id = ap.album_id
-                 WHERE ap.media_id = m.id AND (a.title LIKE ? ESCAPE '\\' OR ap.caption LIKE ? ESCAPE '\\')))`);
-    params.push(like, like, like, like);
+                 WHERE ap.media_id = m.id AND (instr(lower(a.title), ?) > 0 OR instr(lower(ap.caption), ?) > 0)))`);
+    params.push(q, q, q, q);
   }
   if (f.albumId) {
     parts.push("EXISTS (SELECT 1 FROM album_photos ap WHERE ap.media_id = m.id AND ap.album_id = ?)");

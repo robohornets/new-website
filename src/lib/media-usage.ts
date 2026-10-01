@@ -30,7 +30,7 @@ const USAGE_QUERIES = [
   `SELECT x.media_id AS media_id, 'resource' AS kind, x.id AS ref_id, x.title AS name, NULL AS extra, x.season_year AS year FROM resources x WHERE x.media_id IN ${IDS}`,
   `SELECT po.cover_media_id AS media_id, 'post' AS kind, po.id AS ref_id, po.title AS name, NULL AS extra, NULL AS year FROM posts po WHERE po.cover_media_id IN ${IDS} AND po.event_id IS NULL`,
   `SELECT CAST(json_extract(st.value, '$.media_id') AS INTEGER) AS media_id, 'plan' AS kind, NULL AS ref_id, NULL AS name, NULL AS extra, NULL AS year FROM site_settings st WHERE st.key = 'strategic_plan' AND CAST(json_extract(st.value, '$.media_id') AS INTEGER) IN ${IDS}`,
-  `SELECT m.id AS media_id, 'event_video' AS kind, e.id AS ref_id, e.name AS name, e.kind AS extra, e.season_year AS year FROM media m JOIN events e ON e.highlight_video_url LIKE '%' || m.r2_key WHERE m.id IN ${IDS}`,
+  `SELECT m.id AS media_id, 'event_video' AS kind, e.id AS ref_id, e.name AS name, e.kind AS extra, e.season_year AS year FROM media m JOIN events e ON instr(e.highlight_video_url, m.r2_key) > 0 WHERE m.id IN ${IDS}`,
 ];
 
 function describe(r: Row): MediaUse {
@@ -92,5 +92,5 @@ export const USED_SQL = `(
   OR EXISTS (SELECT 1 FROM resources x WHERE x.media_id = m.id)
   OR EXISTS (SELECT 1 FROM posts po WHERE po.cover_media_id = m.id AND po.event_id IS NULL)
   OR EXISTS (SELECT 1 FROM site_settings st WHERE st.key = 'strategic_plan' AND CAST(json_extract(st.value, '$.media_id') AS INTEGER) = m.id)
-  OR EXISTS (SELECT 1 FROM events e WHERE e.highlight_video_url LIKE '%' || m.r2_key)
+  OR EXISTS (SELECT 1 FROM events e WHERE instr(e.highlight_video_url, m.r2_key) > 0)
 )`;

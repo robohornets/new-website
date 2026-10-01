@@ -401,6 +401,11 @@ resources) and, ticking several, to add photos to an album: clicking an album's 
 on the box still uploads them straight in. `AlbumPicker` / `AlbumField` choose a whole album from cards with covers
 (**Photos come from** on robots and events).
 
+**D1 limits that local development doesn't enforce.** Live D1 refuses `LIKE` / `GLOB` patterns longer than 50
+characters (`LIKE or GLOB pattern too complex`), so match text from data or from what someone typed with
+`instr(haystack, needle) > 0` instead, as the media search and the where-used checks do. It also caps how many
+SELECTs one `UNION` can join; run separate queries in one `batch()` instead.
+
 **Where a file is used** (`src/lib/media-usage.ts`) is worked out from every column that points at media (albums and
 the robots and events using them, covers, robots, seasons, sponsors, people, resources, the Strategic Plan, event
 videos). The Media library shows it on each file and in its delete confirmation, and the "Not used anywhere" filter

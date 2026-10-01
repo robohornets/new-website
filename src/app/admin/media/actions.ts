@@ -89,7 +89,7 @@ export async function mergeMedia(keepId: number, removeIds: number[]): Promise<A
           k,
           c.id,
         ],
-        ["UPDATE events SET highlight_video_url = replace(highlight_video_url, ?, ?) WHERE highlight_video_url LIKE '%' || ?", c.r2_key, keep.r2_key, c.r2_key],
+        ["UPDATE events SET highlight_video_url = replace(highlight_video_url, ?, ?) WHERE instr(highlight_video_url, ?) > 0", c.r2_key, keep.r2_key, c.r2_key],
         ["UPDATE media SET alt = ? WHERE id = ? AND alt = ''", c.alt, k],
         ["DELETE FROM media WHERE id = ?", c.id],
       );

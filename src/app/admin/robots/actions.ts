@@ -64,12 +64,13 @@ export async function updateRobot(id: number, _prev: ActionState, fd: FormData):
     if (before.album_id && (moved || name !== before.name)) {
       await run(
         `UPDATE albums SET season_year = ?, title = CASE WHEN title = ? THEN ? ELSE title END
-         WHERE id = ? AND slug LIKE ?`,
+         WHERE id = ? AND substr(slug, -length(?)) = ?`,
         year,
         robotAlbumTitle(before.season_year, before.name),
         robotAlbumTitle(year, name),
         before.album_id,
-        `%-robot-${id}`,
+        `-robot-${id}`,
+        `-robot-${id}`,
       );
     }
     if (moved) return `Moved to the ${seasonLabel(year)} season.`;
