@@ -9,6 +9,7 @@ import { cleanForm, EMPTY_FORM, STARTER_FORM } from "@/lib/scouting";
 import { cachedNicknames, getScoutingForm } from "@/lib/scouting-data";
 import { isScoutingPublished } from "@/lib/season-extras";
 import { CopyLink } from "../_components/copy-link";
+import { Badge, LinkRow, RowContent } from "../_components/items";
 import { AdminPageHeader, Checkbox, Panel } from "../_components/fields";
 import { SeasonPicker } from "../_components/season-picker";
 import { EditForm } from "../_components/unsaved";
@@ -131,41 +132,18 @@ export default async function AdminScoutingPage(props: PageProps<"/admin/scoutin
         }
       >
         {teams.length > 0 && (
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[560px] text-left text-sm">
-              <thead className="border-b border-line font-label text-[11px] tracking-wider text-ash uppercase">
-                <tr>
-                  <th className="py-2 pr-4 font-normal">Team</th>
-                  <th className="py-2 pr-4 font-normal">Robot sheet</th>
-                  <th className="py-2 pr-4 font-normal">Reports</th>
-                  <th className="py-2 pr-4 font-normal">Last change</th>
-                  <th className="py-2 font-normal">
-                    <span className="sr-only">Open</span>
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {teams.map((t) => (
-                  <tr key={t.team_number} className="border-b border-line/60 last:border-0">
-                    <td className="py-2.5 pr-4">
-                      <span className="font-label font-bold">{t.team_number}</span>
-                      {names.get(t.team_number) && <span className="ml-2 text-sand">{names.get(t.team_number)}</span>}
-                    </td>
-                    <td className="py-2.5 pr-4 text-dust">{t.robot ? "Yes" : "—"}</td>
-                    <td className="py-2.5 pr-4 font-label">
-                      {t.reports}
-                      {t.deleted > 0 && <span className="ml-2 font-sans text-xs text-ash">({t.deleted} deleted)</span>}
-                    </td>
-                    <td className="py-2.5 pr-4 text-dust">{formatDateTime(t.last)}</td>
-                    <td className="py-2.5 text-right">
-                      <Link href={`/admin/scouting/${t.team_number}?season=${year}`} className="font-semibold text-hornet hover:text-hornet-hover">
-                        Open
-                      </Link>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div className="flex flex-col gap-2">
+            {teams.map((t) => (
+              <LinkRow key={t.team_number} href={`/admin/scouting/${t.team_number}?season=${year}`}>
+                <RowContent
+                  opens="page"
+                  media={<span className="block w-14 font-display text-2xl leading-none font-extrabold tabular-nums">{t.team_number}</span>}
+                  title={names.get(t.team_number) || `Team ${t.team_number}`}
+                  meta={`${t.robot ? "Robot sheet" : "No robot sheet"} · ${t.reports} ${t.reports === 1 ? "report" : "reports"} · changed ${formatDateTime(t.last)}`}
+                  badges={t.deleted > 0 ? <Badge tone="muted">{t.deleted} deleted</Badge> : undefined}
+                />
+              </LinkRow>
+            ))}
           </div>
         )}
       </Panel>

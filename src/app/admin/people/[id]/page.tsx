@@ -6,7 +6,7 @@ import { all, first } from "@/lib/db";
 import type { Person } from "@/lib/types";
 import { ActionButton } from "../../_components/action-form";
 import { EditForm } from "../../_components/unsaved";
-import { AdminPageHeader, Checkbox, Grid, Panel, SelectField, TextArea, TextField } from "../../_components/fields";
+import { AdminPageHeader, Checkbox, DeletePanel, Grid, Panel, SelectField, TextArea, TextField } from "../../_components/fields";
 import { MediaField } from "../../_components/media-field";
 import { deletePerson, updatePerson } from "../../roster/actions";
 import { requireAdminPage } from "@/lib/auth";
@@ -51,11 +51,11 @@ export default async function PersonPage(props: PageProps<"/admin/people/[id]">)
           <Checkbox label="Show photo on the public site" name="show_photo" defaultChecked={person.show_photo === 1} />
         </EditForm>
       </Panel>
-      <Panel title="Danger zone">
+      <DeletePanel title="Delete this person" description="Removes them from every season's roster and their outreach hours. This can't be undone; to take them off one season, use Remove on the roster instead.">
         <ActionButton action={deletePerson.bind(null, id)} variant="danger" confirm="Delete this person from every season? This can't be undone.">
           Delete person
         </ActionButton>
-      </Panel>
+      </DeletePanel>
     </>
   );
 }

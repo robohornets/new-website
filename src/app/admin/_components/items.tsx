@@ -14,7 +14,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useId, useRef, useState, useTransition, type FormEvent, type ReactNode } from "react";
-import { ChevronRight, Pencil, Plus } from "@/components/icons";
+import { ChevronRight, Pencil, Plus, Trash } from "@/components/icons";
 import type { ActionState } from "@/lib/admin";
 import { Modal, useConfirm } from "./modal";
 import { hasChanges } from "./unsaved";
@@ -33,6 +33,9 @@ export const buttonStyles = {
 /** The look shared by every clickable row. */
 const rowClass =
   "group flex w-full min-w-0 items-center gap-4 rounded-md border border-line bg-ink px-4 py-3 text-left hover:border-edge focus-visible:border-hornet";
+
+const cardClass =
+  "group relative flex w-full min-w-0 flex-col gap-3 rounded-md border border-line bg-panel p-3 text-left hover:border-edge focus-visible:border-hornet";
 
 /** What goes inside a row: an optional thumbnail, a title, a line of detail, badges on the right. */
 export function RowContent({
@@ -61,6 +64,22 @@ export function RowContent({
         {opens === "page" ? <ChevronRight size={18} /> : <Pencil size={16} />}
       </span>
     </>
+  );
+}
+
+/** The delete button on a row of a tiny list (tiers, subteams), edited in place. */
+export function TrashButton({ label, onClick, disabled }: { label: string; onClick: () => void; disabled?: boolean }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      aria-label={label}
+      title={label}
+      className="flex size-10 shrink-0 items-center justify-center rounded-md text-dust hover:bg-danger/10 hover:text-danger disabled:opacity-40"
+    >
+      <Trash size={18} />
+    </button>
   );
 }
 
@@ -130,6 +149,8 @@ export function FormModal({
   }
 
   function submit(e: FormEvent<HTMLFormElement>) {
+    // Buttons with their own action inside the form ("Reset to TBA") run as normal.
+    if ((e.nativeEvent as SubmitEvent).submitter?.hasAttribute("formaction")) return;
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
     setError(null);
@@ -213,31 +234,62 @@ export function ModalItem({
   title,
   description,
   action,
+  submitLabel,
   destroy,
+  footer,
   size,
+  look = "row",
+  onOpen,
   children,
 }: {
   row: ReactNode;
   title: ReactNode;
   description?: ReactNode;
-  action: Action;
+  /** "card" for grids (media), "row" for lists. */
+  look?: "row" | "card";
+  /** Runs when the popup opens (e.g. marking a message read). */
+  onOpen?: Destroy;
+  /** Without an action the popup only shows `children`, with `footer` buttons and Close. */
+  action?: Action;
+  submitLabel?: string;
   destroy?: { label: string; confirm: string; action: Destroy };
+  footer?: ReactNode;
   size?: "sm" | "md" | "lg";
   children: ReactNode;
 }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
+  const opened = useRef(false);
   const { show, toast } = useToast();
+  const close = () => {
+    setOpen(false);
+    if (opened.current) {
+      opened.current = false;
+      router.refresh();
+    }
+  };
   return (
     <>
-      <button type="button" onClick={() => setOpen(true)} className={rowClass} aria-haspopup="dialog">
+      <button
+        type="button"
+        onClick={() => {
+          setOpen(true);
+          if (onOpen) {
+            opened.current = true;
+            void onOpen({ ok: false });
+          }
+        }}
+        className={look === "card" ? cardClass : rowClass}
+        aria-haspopup="dialog"
+      >
         {row}
       </button>
-      {open && (
+      {open && action && (
         <FormModal
           title={title}
           description={description}
           action={action}
+          submitLabel={submitLabel}
           destroy={destroy}
           size={size}
           onClose={() => setOpen(false)}
@@ -249,6 +301,25 @@ export function ModalItem({
         >
           {children}
         </FormModal>
+      )}
+      {open && !action && (
+        <Modal
+          open
+          onClose={close}
+          title={title}
+          description={description}
+          size={size}
+          footer={
+            <>
+              {footer}
+              <button type="button" onClick={close} className={buttonStyles.secondary}>
+                Close
+              </button>
+            </>
+          }
+        >
+          {children}
+        </Modal>
       )}
       {toast}
     </>
@@ -303,5 +374,35 @@ export function AddButton({
       )}
       {toast}
     </>
+  );
+}
+
+/** A trash button that asks, then runs a delete action (tiny lists like tiers). */
+export function TrashAction({ label, confirm, action }: { label: string; confirm: string; action: Destroy }) {
+  const ask = useConfirm();
+  const router = useRouter();
+  const [pending, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
+  return (
+    <span className="flex items-center gap-2">
+      {error && (
+        <span role="alert" className="text-xs text-danger">
+          {error}
+        </span>
+      )}
+      <TrashButton
+        label={label}
+        disabled={pending}
+        onClick={async () => {
+          if (!(await ask({ message: confirm, confirmLabel: "Delete", danger: true }))) return;
+          setError(null);
+          startTransition(async () => {
+            const result = await action({ ok: false });
+            if (result.ok) router.refresh();
+            else setError(result.error ?? "That didn't work.");
+          });
+        }}
+      />
+    </span>
   );
 }

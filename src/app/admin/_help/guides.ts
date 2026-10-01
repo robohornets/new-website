@@ -28,6 +28,7 @@ export const GUIDES: Guide[] = [
       "Change as many boxes on a page as you like. A bar pops up at the bottom saying **Save your changes**.",
       "Click **Save changes** in that bar to save everything at once, or **Revert** to put it all back. Nothing changes on the site until you save. (Ctrl+S or Cmd+S saves too.)",
       "Adding something new (like **Add to roster** or **Add sponsor**) and deleting still happen straight away with their own buttons.",
+      "Every list works the same way: click anything in it to open it. Rows with a ✎ open a popup; rows with a → open their own page. **+ Add …** is always at the top of the list, and **Delete** is always the last thing inside, in red, and asks first.",
       "If you try to leave a page with unsaved changes, the bar flashes red and shakes. Save or revert first.",
       "Click **View site** (top right of the dashboard) to check how it looks.",
     ],
@@ -55,16 +56,19 @@ export const GUIDES: Guide[] = [
   {
     id: "robot",
     group: "Season basics",
-    title: "Add the robot and its photo",
-    pages: ["/admin/seasons/"],
+    title: "Add the robot and its photos",
+    pages: ["/admin/seasons/", "/admin/robots"],
     steps: [
-      "Open **Seasons, robots & events** and click **Edit** next to the season.",
-      "Scroll to **Robots** and fill in the **+ Add a robot** box: name, type, and a short description.",
-      "Under **Specs**, put one fact per line as Label: value, for example Drivetrain: Swerve.",
-      "For **Robot photo**, click **Upload new** and pick a photo, or choose one already uploaded from **Or pick from library…**.",
-      "Click **Add robot**. To change it later, click **Edit** next to the robot's name, make changes, and click **Save changes** in the bar at the bottom.",
+      "Open **Seasons, robots & events** and click the season.",
+      "Under **Robots**, click **+ Add robot**, type its name, pick the type and click **Add robot**. Its page opens.",
+      "Under **Photos**, drop in as many photos as you like. The first upload makes an album for them (\"2026 robot: Roomba\"), which also shows in the Gallery. Already have them in an album? Pick it in **Photos come from** instead.",
+      "The photos are a slideshow at the top of the season page, in the order shown: drag them by **⠿** (or use **◀ ▶**) and save. Click a photo to describe it or **Make main photo** (used on the homepage and lists).",
+      "Under **Details**, fill in the description, tags, code and CAD links, and **Specs** (one per line as Label: value, for example Drivetrain: Swerve), then click **Save changes** in the bar at the bottom.",
     ],
-    tips: ["The first competition robot is the one featured on the homepage. Use **Order** (lower numbers first) to change which one comes first."],
+    tips: [
+      "The first competition robot is the one featured on the homepage and season page. Use **Order** (lower numbers first) to change which one comes first.",
+      "The code and CAD links are listed on the season's Resources tab automatically.",
+    ],
   },
   {
     id: "tba-results",
@@ -89,7 +93,7 @@ export const GUIDES: Guide[] = [
       "Change any box (rank, awards, webcast link, anything) and click **Save changes** in the bar at the bottom.",
       "That box gets a rust outline and an **EDITED** badge. The site now shows your value, and syncing will never change it.",
       "To undo, click **Reset to TBA** under that box. **Reset all to TBA** at the top undoes every edit on the event.",
-      "Matches work the same way: in **Matches**, click **Edit** on a match, change the score, teams, result or video, and click **Save changes**.",
+      "Matches work the same way: in **Matches**, click a match, change the score, teams, result or video, and click **Save**.",
     ],
     tips: ["Typing TBA's exact value back into a box also removes the override."],
   },
@@ -128,7 +132,7 @@ export const GUIDES: Guide[] = [
     pages: ["/admin/events"],
     steps: [
       "Open the event, tick **Hide this event from the site**, and click **Save changes**. It keeps syncing here but disappears from the public site.",
-      "To hide one match, click **Edit** on it, tick **Hide this match from the site**, and click **Save changes**.",
+      "To hide one match, click it, tick **Hide this match from the site**, and click **Save**.",
       "**Hide all** and **Show all** above the match list do every match at once.",
     ],
     tips: ["Don't delete events that come from TBA: they come back on the next sync. Hide them instead."],
@@ -139,9 +143,9 @@ export const GUIDES: Guide[] = [
     title: "Add an event that isn't on The Blue Alliance",
     pages: ["/admin/seasons/"],
     steps: [
-      "Open the season and click **+ Add an event by hand** under **Competitions & events**.",
+      "Open the season and click **+ Add event** under **Competitions & events**.",
       "Fill in the name, type, dates and location, then click **Add event**.",
-      "You're taken to the event's page. Type in any results, and use **+ Add a match by hand** if you want matches listed.",
+      "You're taken to the event's page. Type in any results, and use **+ Add match** if you want matches listed.",
     ],
   },
   {
@@ -150,7 +154,7 @@ export const GUIDES: Guide[] = [
     title: "Add the engineering notebook",
     pages: ["/admin/seasons/"],
     steps: [
-      "Open **Seasons, robots & events** and click **Edit** next to the season.",
+      "Open **Seasons, robots & events** and click the season.",
       "In **Season basics**, find **Engineering notebook**.",
       "Click **Upload PDF** and pick the notebook. It can be up to 95 MB. Or, if it lives in Google Drive, paste its link into **Or a link instead**.",
       "Click **Save changes** in the bar at the bottom. An **Engineering notebook** button appears on that season's page, and the notebook is listed on the Team page.",
@@ -173,6 +177,21 @@ export const GUIDES: Guide[] = [
     tips: ["It's safe to run again: it only fills in and updates, and never overwrites anything you've edited."],
   },
 
+  {
+    id: "resources",
+    group: "Season basics",
+    title: "Add resources for other teams",
+    pages: ["/admin/seasons/"],
+    steps: [
+      "Open the season. **Resources** lists what's on the season page's Resources tab.",
+      "Some are filled in for you (marked **Auto**): each robot's code and CAD links, the engineering notebook, the scouting data once it's public, and the Strategic Plan. Click one to go to where it's changed.",
+      "Click **+ Add resource** for anything else: a title, one sentence about it, and a link or an uploaded PDF. Then click **Add resource**.",
+      "Tick **Show on every season** for team documents like the branding guidelines; they show on every season's Resources tab.",
+      "Click a resource to change or delete it.",
+    ],
+    tips: ["Send judges and other teams the address of the tab itself, like btwrobotics.com/seasons/2026/resources."],
+  },
+
   // ---- Photos ----------------------------------------------------------------
   {
     id: "upload-photos",
@@ -180,25 +199,26 @@ export const GUIDES: Guide[] = [
     title: "Upload photos to an album",
     pages: ["/admin/gallery", "/admin/media"],
     steps: [
-      "Go to **Gallery**. In **New album**, type a title (for example the event name), pick the season, and click **Create album**.",
+      "Go to **Gallery**, click **+ New album**, type a title (for example the event name), pick the season, and click **Create album**.",
       "Drag photos from your computer into the dashed box, or click the box to choose them. You can pick lots at once.",
       "Wait for **Uploading 12 of 12…** to finish. The photos then appear below.",
-      "Photos straight from a phone are fine (up to 20 MB each, including iPhone HEIC). Short videos up to 95 MB work too.",
+      "Photos straight from a phone are fine (up to 20 MB each, including iPhone HEIC). Videos work too: they're converted to MP4 in your browser first so every browser can play them (keep the tab open while it says **Converting**).",
     ],
     tips: ["Each photo is kept exactly as uploaded. The site makes smaller copies automatically so pages load fast."],
   },
   {
     id: "photo-details",
     group: "Photos",
-    title: "Captions, alt text and the cover photo",
-    pages: ["/admin/gallery/"],
+    title: "Descriptions, alt text and the cover photo",
+    pages: ["/admin/gallery/", "/admin/robots"],
     steps: [
-      "Open the album. Under each photo you can fill in:",
+      "Open the album and click a photo. A popup opens with it large, and you can fill in:",
+      "**Description**: shown when someone opens the photo on the site. Optional; a sentence about what's happening is plenty.",
       "**Alt text**: one sentence describing the photo for people using screen readers, like Drive team celebrating after a win.",
-      "**Caption**: shown under the photo on the site.",
+      "Use **‹ ›** (or the arrow keys) to go to the next photo; what you typed is saved as you go.",
       "Then click **Save changes** in the bar at the bottom (you can do several photos first).",
-      "Click **Make cover** on the photo that should represent the album.",
-      "**Remove** takes a photo out of the album but keeps it in the Media library.",
+      "**Make cover** makes that photo represent the album.",
+      "**Remove from album** takes a photo out of the album but keeps it in the Media library.",
     ],
   },
   {
@@ -212,7 +232,7 @@ export const GUIDES: Guide[] = [
       "Click **Save changes** in the bar at the bottom, or **Revert** to put them back.",
       "Inside an album, photos work the same way: drag them by **⠿** (or use **◀ ▶**) and save. New uploads go at the end.",
     ],
-    tips: ["You can reorder photos and change captions at the same time; one **Save changes** saves both."],
+    tips: ["Drag photos into order, then click **Save changes** in the bar at the bottom. Descriptions are saved in their own popup."],
   },
   {
     id: "delete-file",
@@ -220,8 +240,8 @@ export const GUIDES: Guide[] = [
     title: "Delete a photo for good",
     pages: ["/admin/media"],
     steps: [
-      "Go to **Media library** and find the file.",
-      "Click **Delete file** and confirm. It's removed everywhere it was used.",
+      "Go to **Media library** and click the file.",
+      "Click **Delete file** at the bottom of the popup and confirm. It's removed everywhere it was used.",
     ],
     tips: ["This can't be undone. Click **Download original** first if you might want it later."],
   },
@@ -259,10 +279,10 @@ export const GUIDES: Guide[] = [
     title: "Change someone's details or remove them",
     pages: ["/admin/roster", "/admin/people"],
     steps: [
-      "On **Team roster**, click **Edit** on their card. A popup opens with everything about them.",
+      "On **Team roster**, click their card. A popup opens with everything about them.",
       "Change what you need: name, class, bio, role, main subteam, other subteams (**Also on**), **Leadership** or order. Then click **Save**.",
       "**Cancel** closes without saving (it asks first if you changed something).",
-      "**Remove** on a card takes them off this season only, after you confirm. Earlier seasons keep them.",
+      "**Remove from 2026** (the red button at the bottom of the popup) takes them off this season only, after you confirm. Earlier seasons keep them.",
     ],
     tips: ["Keep graduation years up to date: seniors are then left off automatically when you start a new season."],
   },
@@ -273,7 +293,7 @@ export const GUIDES: Guide[] = [
     pages: ["/admin/roster"],
     steps: [
       "Type in **Search by name** to find someone. The dropdowns next to it show only one subteam, one class, or only leadership. **Clear** shows everyone again.",
-      "To add a photo, click **Edit** on their card, then **Add photo** (or **Replace photo**) and pick a picture. **Remove photo** takes it off.",
+      "To add a photo, click their card, then **Add photo** (or **Replace photo**) and pick a picture. **Remove photo** takes it off.",
       "**Show photo on the public site** decides whether the photo appears on the Team page. Untick it to hide the photo but keep it here. Cards say **Photo hidden on the site** when it's off.",
       "Click **Save** in the popup.",
     ],
@@ -318,9 +338,9 @@ export const GUIDES: Guide[] = [
     pages: ["/admin/sponsors"],
     steps: [
       "Go to **Sponsors** and pick the season at the top.",
-      "In **Add a sponsor**, type the name and website.",
-      "For the **Logo**, click **Upload new**. A logo with a transparent background (PNG or SVG) looks best.",
-      "Pick their tier for this season (Titanium, Gold…) and click **Add sponsor**.",
+      "Click **+ Add sponsor**, then type the name and website.",
+      "Pick their tier for this season (Titanium, Gold…).",
+      "For the **Logo**, click **Upload new**. A logo with a transparent background (PNG or SVG) looks best. Then click **Add sponsor**.",
     ],
   },
   {
@@ -330,7 +350,7 @@ export const GUIDES: Guide[] = [
     pages: ["/admin/sponsors"],
     steps: [
       "Go to **Sponsors** and pick the season at the top.",
-      "Each sponsor in **All sponsors** shows their tier for that season (or **Not in** that year). Click a sponsor to open it.",
+      "Each sponsor in **Sponsors** shows their tier for that season (or **Not in** that year). Click a sponsor to open it.",
       "Pick their tier in the **tier** box, or **Not this season** if they aren't sponsoring this year. **Order within tier** decides who comes first among sponsors in the same tier.",
       "Click **Save changes** in the bar at the bottom. You can change several sponsors and save them all at once.",
       "To rename tiers or change their order, use the **Tiers** box. Lower rank shows first and gets the big logos.",
@@ -400,7 +420,7 @@ export const GUIDES: Guide[] = [
     pages: ["/admin/outreach", "/admin/events"],
     steps: [
       "Go to **Outreach hours** and check the season at the top.",
-      "New event? Fill in **Add an outreach event** (name, date, **How long (hours)**, and **People reached** if you know it) and click **Add and log who went**. For one that's already listed, click it.",
+      "New event? Click **+ Add outreach event**, fill in the name, date, **How long (hours)**, and **People reached** if you know it, and click **Add and log who went**. For one that's already listed, click it.",
       "Under **Who went**, tick everyone who helped. Students and mentors from this season's roster are listed. **Find someone** narrows the list, and **Tick everyone** / **Clear all** work on whoever is shown.",
       "Everyone ticked gets the event's **How long**. For someone who left early or stayed late, type their own hours in the box next to their name (1.5 or 1:30 both work).",
       "Add a sentence under **What we did** if you like, then click **Save changes** in the bar at the bottom.",
@@ -456,12 +476,24 @@ export const GUIDES: Guide[] = [
     ],
   },
   {
+    id: "scouting-publish",
+    group: "Scouting",
+    title: "Show scouting on the season page",
+    pages: ["/admin/scouting"],
+    steps: [
+      "On **Scouting**, check the season at the top, then look through the results at the bottom first: once it's public, everyone can read every note.",
+      "Under **On the season page**, tick **Show 2026 scouting on the season page** and click **Save changes**.",
+      "The season page gets a **Scouting** tab listing every team scouted, with their robot sheet and every match report. Scouts' names aren't shown, and there's no link to add more.",
+      "Untick it to take the tab down again.",
+    ],
+  },
+  {
     id: "scouting-results",
     group: "Scouting",
     title: "Look at results and fix mistakes",
     pages: ["/admin/scouting"],
     steps: [
-      "**Results** at the bottom of **Scouting** lists every team scouted this season. Click **Open** to see their robot sheet and all their reports.",
+      "**Results** at the bottom of **Scouting** lists every team scouted this season. Click a team to see their robot sheet and all their reports.",
       "Anyone on /scouting can edit or delete, so every change is kept. Open **Earlier versions** under an entry and click **Restore this version** to undo a change.",
       "Deleted entries are listed under **Deleted** with a **Restore** button.",
       "**Robots CSV** and **Match reports CSV** download everything as a spreadsheet, one column per question, for pick lists.",

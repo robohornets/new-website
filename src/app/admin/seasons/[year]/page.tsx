@@ -9,7 +9,7 @@ import { tbaConfigured } from "@/lib/tba/client";
 import { parseOverrides } from "@/lib/tba/fields";
 import { ActionButton } from "../../_components/action-form";
 import { EditForm } from "../../_components/unsaved";
-import { AdminPageHeader, Checkbox, Grid, Panel, SelectField, TextArea, TextField } from "../../_components/fields";
+import { AdminPageHeader, Checkbox, DeletePanel, Grid, Panel, SelectField, TextArea, TextField } from "../../_components/fields";
 import { DocumentField } from "../../_components/document-field";
 import { MediaField } from "../../_components/media-field";
 import { TbaSyncPanel } from "../../_components/tba-sync-panel";
@@ -264,15 +264,15 @@ export default async function AdminSeasonPage(props: PageProps<"/admin/seasons/[
         </div>
       </Panel>
 
-      <Panel title="Danger zone">
+      <DeletePanel title={`Delete the ${year} season`} description="Removes its robots, events, roster entries and resources. Albums and people are kept.">
         <ActionButton
           action={deleteSeason.bind(null, year)}
           variant="danger"
-          confirm={`Delete the entire ${year} season, including its robots, events and roster entries? Posts, albums and people are kept.`}
+          confirm={`Delete the entire ${year} season, including its robots, events and roster entries? Albums and people are kept.`}
         >
           Delete {year} season
         </ActionButton>
-      </Panel>
+      </DeletePanel>
     </>
   );
 }

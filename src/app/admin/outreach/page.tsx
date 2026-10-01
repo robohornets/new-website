@@ -5,7 +5,7 @@ import { requireAdminPage } from "@/lib/auth";
 import { formatDate } from "@/lib/format";
 import { formatHours, getOutreachEvents, getOutreachPeople, getOutreachTotals } from "@/lib/outreach";
 import { ShowMore } from "@/components/show-more";
-import { ActionForm } from "../_components/action-form";
+import { AddButton, Badge, LinkRow, RowContent } from "../_components/items";
 import { AdminPageHeader, Grid, Panel, TextField } from "../_components/fields";
 import { SeasonPicker } from "../_components/season-picker";
 import { createOutreachEvent } from "./actions";
@@ -50,32 +50,31 @@ export default async function AdminOutreachPage(props: PageProps<"/admin/outreac
     const past = e.happened === 1;
     return (
       <li key={e.id}>
-        <Link
-          href={`/admin/outreach/${e.id}`}
-          className="group flex flex-wrap items-center gap-x-5 gap-y-2 rounded-md border border-line bg-ink px-4 py-3 hover:border-edge"
-        >
-          <span className="w-28 shrink-0 font-label text-sm text-dust">{dates(e.start_date, e.end_date)}</span>
-          <span className="flex min-w-0 grow basis-48 flex-col">
-            <span className="font-semibold group-hover:text-hornet">
-              {e.name}
-              {e.hidden === 1 && <span className="ml-2 rounded bg-raise px-1.5 py-0.5 font-label text-[11px] text-dust">HIDDEN</span>}
-            </span>
-            {e.location && <span className="truncate text-sm text-dust">{e.location}</span>}
-          </span>
-          {e.attendees > 0 ? (
-            <span className="font-label text-sm text-sand">
-              <strong className="text-bone">{e.attendees}</strong> went · <strong className="text-bone">{formatHours(e.hours)}</strong> hrs
-              {e.people_reached ? (
-                <>
-                  {" "}
-                  · <strong className="text-bone">{e.people_reached.toLocaleString("en-US")}</strong> reached
-                </>
-              ) : null}
-            </span>
-          ) : (
-            <span className={`font-label text-sm ${past ? "text-hornet" : "text-ash"}`}>{past ? "Log who went →" : "Coming up"}</span>
-          )}
-        </Link>
+        <LinkRow href={`/admin/outreach/${e.id}`}>
+          <RowContent
+            opens="page"
+            title={e.name}
+            meta={`${dates(e.start_date, e.end_date)}${e.location ? ` · ${e.location}` : ""}`}
+            badges={
+              <>
+                {e.hidden === 1 && <Badge tone="muted">Hidden</Badge>}
+                {e.attendees > 0 ? (
+                  <span className="font-label text-sm text-sand">
+                    <strong className="text-bone">{e.attendees}</strong> went · <strong className="text-bone">{formatHours(e.hours)}</strong> hrs
+                    {e.people_reached ? (
+                      <>
+                        {" "}
+                        · <strong className="text-bone">{e.people_reached.toLocaleString("en-US")}</strong> reached
+                      </>
+                    ) : null}
+                  </span>
+                ) : (
+                  <span className={`font-label text-sm ${past ? "text-hornet" : "text-ash"}`}>{past ? "Log who went" : "Coming up"}</span>
+                )}
+              </>
+            }
+          />
+        </LinkRow>
       </li>
     );
   });
@@ -110,20 +109,25 @@ export default async function AdminOutreachPage(props: PageProps<"/admin/outreac
         <Stat label="Team members helped" value={totals.volunteers} />
       </div>
 
-      <Panel title="Add an outreach event" description="Demos, school visits, camps, community events: anything where we shared FIRST and STEM.">
-        <ActionForm action={createOutreachEvent.bind(null, year)} submitLabel="Add and log who went">
-          <Grid cols={3}>
-            <TextField label="Name" name="name" required placeholder="Demo at Central Library" className="md:col-span-2" />
-            <TextField label="Where" name="location" placeholder="Tulsa, OK" />
-            <TextField label="Date" name="start_date" type="date" />
-            <TextField label="How long (hours)" name="outreach_hours" placeholder="3" hint="What everyone who went gets by default." />
-            <TextField label="People reached" name="people_reached" placeholder="150" hint="A rough count is fine. You can add it later." />
-          </Grid>
-        </ActionForm>
-      </Panel>
-
       <Panel
         title={`${year} outreach events`}
+        actions={
+          <AddButton
+            label="Add outreach event"
+            title="Add an outreach event"
+            description="Demos, school visits, camps, community events: anything where we shared FIRST and STEM. You'll tick who went next."
+            action={createOutreachEvent.bind(null, year)}
+            submitLabel="Add and log who went"
+          >
+            <TextField label="Name" name="name" required placeholder="Demo at Central Library" />
+            <Grid>
+              <TextField label="Where" name="location" placeholder="Tulsa, OK" />
+              <TextField label="Date" name="start_date" type="date" />
+              <TextField label="How long (hours)" name="outreach_hours" placeholder="3" hint="What everyone who went gets by default." />
+              <TextField label="People reached" name="people_reached" placeholder="150" hint="A rough count is fine. You can add it later." />
+            </Grid>
+          </AddButton>
+        }
         description={
           <>
             Outreach events also show on the {year} season page. Competitions and other events are on{" "}
@@ -135,7 +139,7 @@ export default async function AdminOutreachPage(props: PageProps<"/admin/outreac
         }
       >
         {events.length === 0 ? (
-          <p className="text-sm text-dust">No outreach events in {year} yet. Add one above.</p>
+          <p className="text-sm text-dust">No outreach events in {year} yet. Add one with the button above.</p>
         ) : (
           <ShowMore items={eventRows} initial={8} noun="events" className="flex flex-col gap-2" />
         )}

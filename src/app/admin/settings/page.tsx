@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { SOCIAL_LABEL } from "@/components/icons";
 import { getContacts, getMediaFile, getSettings } from "@/lib/data";
-import type { SocialPlatform } from "@/lib/types";
-import { ActionButton, ActionForm } from "../_components/action-form";
+import type { Contact, SocialPlatform } from "@/lib/types";
+import { AddButton, ModalItem, RowContent } from "../_components/items";
 import { EditForm } from "../_components/unsaved";
 import { DocumentField } from "../_components/document-field";
 import { AdminPageHeader, Grid, Panel, TextArea, TextField } from "../_components/fields";
@@ -170,33 +170,41 @@ export default async function AdminSettingsPage() {
         </Panel>
       </Grid>
 
-      <Panel title="People on the Contact page">
-        <ActionForm action={createContact} submitLabel="Add person" submitVariant="secondary" resetOnSuccess>
-          <div className="grid gap-3 md:grid-cols-[1fr_1.4fr_1fr_80px]">
-            <TextField label="Name" name="name" />
-            <TextField label="Role" name="role" placeholder="Booster Club Treasurer" />
-            <TextField label="Email" name="email" type="email" />
-            <TextField label="Order" name="sort_order" type="number" defaultValue={contacts.length} />
-          </div>
-        </ActionForm>
-        <ul className="flex flex-col divide-y divide-line border-t border-line">
+      <Panel
+        title="People on the Contact page"
+        actions={
+          <AddButton label="Add person" title="Add a contact" action={createContact} size="sm">
+            <ContactFields order={contacts.length} />
+          </AddButton>
+        }
+      >
+        {contacts.length === 0 && <p className="text-sm text-dust">Nobody listed yet.</p>}
+        <div className="flex flex-col gap-2">
           {contacts.map((c) => (
-            <li key={c.id} className="flex flex-col gap-3 py-3 lg:flex-row lg:items-end">
-              <EditForm action={updateContact.bind(null, c.id)} className="grow">
-                <div className="grid gap-3 md:grid-cols-[1fr_1.4fr_1fr_80px]">
-                  <TextField label="Name" name="name" defaultValue={c.name} />
-                  <TextField label="Role" name="role" defaultValue={c.role} />
-                  <TextField label="Email" name="email" type="email" defaultValue={c.email} />
-                  <TextField label="Order" name="sort_order" type="number" defaultValue={c.sort_order} />
-                </div>
-              </EditForm>
-              <ActionButton action={deleteContact.bind(null, c.id)} variant="danger" confirm={`Remove ${c.name}?`}>
-                Remove
-              </ActionButton>
-            </li>
+            <ModalItem
+              key={c.id}
+              title={c.name}
+              size="sm"
+              action={updateContact.bind(null, c.id)}
+              destroy={{ label: "Remove", confirm: `Remove ${c.name} from the Contact page?`, action: deleteContact.bind(null, c.id) }}
+              row={<RowContent opens="popup" title={c.name} meta={[c.role, c.email].filter(Boolean).join(" · ")} />}
+            >
+              <ContactFields contact={c} />
+            </ModalItem>
           ))}
-        </ul>
+        </div>
       </Panel>
+    </>
+  );
+}
+
+function ContactFields({ contact, order = 0 }: { contact?: Contact; order?: number }) {
+  return (
+    <>
+      <TextField label="Name" name="name" defaultValue={contact?.name} required />
+      <TextField label="Role" name="role" defaultValue={contact?.role} placeholder="Booster Club Treasurer" />
+      <TextField label="Email" name="email" type="email" defaultValue={contact?.email} />
+      <TextField label="Order" name="sort_order" type="number" defaultValue={contact?.sort_order ?? order} hint="Lower shows first." />
     </>
   );
 }

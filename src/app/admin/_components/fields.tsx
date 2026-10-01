@@ -152,3 +152,19 @@ export function Grid({ children, cols = 2 }: { children: ReactNode; cols?: 2 | 3
   const c = { 2: "md:grid-cols-2", 3: "md:grid-cols-3", 4: "md:grid-cols-2 xl:grid-cols-4" }[cols];
   return <div className={`grid gap-4 ${c}`}>{children}</div>;
 }
+
+/**
+ * The last thing on a page for something big (a season, robot, event,
+ * album, person): "Delete this …", what deleting does, and the red button.
+ */
+export function DeletePanel({ title, description, children }: { title: string; description: ReactNode; children: ReactNode }) {
+  return (
+    <section className="flex flex-col gap-4 rounded-md border border-danger/30 bg-panel p-5 md:flex-row md:items-center md:justify-between md:p-6">
+      <div className="flex flex-col gap-1">
+        <h2 className="font-display text-2xl font-bold uppercase">{title}</h2>
+        <p className="text-sm text-dust">{description}</p>
+      </div>
+      <div className="shrink-0">{children}</div>
+    </section>
+  );
+}

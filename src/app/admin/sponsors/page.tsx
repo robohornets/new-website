@@ -3,7 +3,8 @@ import { getMediaOptions, resolveSeasonParam } from "@/lib/admin-data";
 import { all } from "@/lib/db";
 import { mediaUrl } from "@/lib/media";
 import type { Sponsor, SponsorTier } from "@/lib/types";
-import { ActionButton, ActionForm } from "../_components/action-form";
+import { ActionForm } from "../_components/action-form";
+import { AddButton, Badge, ModalItem, RowContent, TrashAction } from "../_components/items";
 import { EditForm } from "../_components/unsaved";
 import { AdminPageHeader, Grid, Panel, SelectField, TextArea, TextField } from "../_components/fields";
 import { MediaField } from "../_components/media-field";
@@ -47,81 +48,71 @@ export default async function AdminSponsorsPage(props: PageProps<"/admin/sponsor
     <>
       <AdminPageHeader
         title="Sponsors"
-        description="Sponsors are saved once and given a tier for each season they support (under Edit). The public site shows the current season's sponsors."
+        description="Sponsors are saved once and given a tier for each season they support (click a sponsor to change it). The public site shows the current season's sponsors."
       />
       <SeasonPicker basePath="/admin/sponsors" years={years} current={year} />
 
       <div className="grid grid-cols-1 items-start gap-6 xl:grid-cols-[1fr_400px]">
         <div className="flex min-w-0 flex-col gap-6">
-          <Panel title="Add a sponsor">
-            <ActionForm action={createSponsor.bind(null, year)} submitLabel="Add sponsor" resetOnSuccess>
-              <SponsorFields library={library} />
-              {year && tiers.length > 0 && (
-                <SelectField label={`${year} tier`} name="tier_id" options={[{ value: "", label: "Not this season" }, ...tierOptions]} />
-              )}
-            </ActionForm>
-          </Panel>
-          <Panel title="All sponsors" description={year ? `Tiers shown are for ${year}. Pick another season at the top to see or change its tiers.` : undefined}>
-            {sponsors.length === 0 && <p className="text-sm text-dust">No sponsors yet.</p>}
-            <ul className="flex flex-col gap-3">
+          <Panel
+            title="Sponsors"
+            description={year ? `Tiers shown are for ${year}. Pick another season at the top to see or change its tiers.` : undefined}
+            actions={
+              <AddButton label="Add sponsor" title="Add a sponsor" action={createSponsor.bind(null, year)} size="lg">
+                {year && tiers.length > 0 && (
+                  <SelectField label={`${year} tier`} name="tier_id" options={[{ value: "", label: "Not this season" }, ...tierOptions]} />
+                )}
+                <SponsorFields library={library} />
+              </AddButton>
+            }
+          >
+            {sponsors.length === 0 && <p className="text-sm text-dust">No sponsors yet. Add one with the button above.</p>}
+            <div className="flex flex-col gap-2">
               {listed.map((s) => {
                 const current = bySponsor.get(s.id);
                 const tier = current ? tierById.get(current.tier_id) : undefined;
                 return (
-                  <li key={s.id}>
-                    <details className="group rounded-md border border-line bg-ink">
-                      <summary className="flex cursor-pointer list-none items-center gap-4 px-4 py-3">
-                        <span className="flex h-10 w-20 shrink-0 items-center justify-center overflow-hidden rounded bg-bone">
-                          {s.logo_key ? (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img src={mediaUrl(s.logo_key, 320) ?? ""} alt="" className="max-h-8 max-w-[72px] object-contain" />
-                          ) : (
-                            <span className="font-label text-[10px] text-ink/60">NO LOGO</span>
-                          )}
-                        </span>
-                        <span className="min-w-0 grow truncate font-semibold">{s.name}</span>
-                        {year &&
-                          (tier ? (
-                            <span className="shrink-0 rounded bg-raise px-2 py-1 font-label text-xs font-bold tracking-wider text-bone uppercase">
-                              {tier.name}
-                            </span>
-                          ) : (
-                            <span className="shrink-0 font-label text-xs text-ash">Not in {year}</span>
-                          ))}
-                        <span className="w-8 shrink-0 text-right text-sm text-hornet group-open:hidden">Edit</span>
-                      </summary>
-                      <div className="flex flex-col gap-4 border-t border-line p-4">
-                        <EditForm action={updateSponsor.bind(null, s.id, year)}>
-                          {year && tiers.length > 0 && (
-                            <Grid>
-                              <SelectField
-                                label={`${year} tier`}
-                                name="tier_id"
-                                defaultValue={current?.tier_id ?? ""}
-                                options={[{ value: "", label: "Not this season" }, ...tierOptions]}
-                              />
-                              <TextField
-                                label="Order within tier"
-                                name="sort_order"
-                                type="number"
-                                defaultValue={current?.sort_order ?? 0}
-                                hint="Lower shows first."
-                              />
-                            </Grid>
-                          )}
-                          <SponsorFields sponsor={s} library={library} />
-                        </EditForm>
-                        <div className="border-t border-line pt-4">
-                          <ActionButton action={deleteSponsor.bind(null, s.id)} variant="danger" confirm={`Delete ${s.name} from every season?`}>
-                            Delete sponsor
-                          </ActionButton>
-                        </div>
-                      </div>
-                    </details>
-                  </li>
+                  <ModalItem
+                    key={s.id}
+                    title={s.name}
+                    size="lg"
+                    action={updateSponsor.bind(null, s.id, year)}
+                    destroy={{ label: "Delete sponsor", confirm: `Delete ${s.name} from every season?`, action: deleteSponsor.bind(null, s.id) }}
+                    row={
+                      <RowContent
+                        opens="popup"
+                        media={
+                          <span className="flex h-10 w-20 items-center justify-center overflow-hidden rounded bg-bone">
+                            {s.logo_key ? (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img src={mediaUrl(s.logo_key, 320) ?? ""} alt="" className="max-h-8 max-w-[72px] object-contain" />
+                            ) : (
+                              <span className="font-label text-[10px] text-ink/60">NO LOGO</span>
+                            )}
+                          </span>
+                        }
+                        title={s.name}
+                        meta={s.url ?? undefined}
+                        badges={year ? tier ? <Badge>{tier.name}</Badge> : <span className="font-label text-xs text-ash">Not in {year}</span> : undefined}
+                      />
+                    }
+                  >
+                    {year && tiers.length > 0 && (
+                      <Grid>
+                        <SelectField
+                          label={`${year} tier`}
+                          name="tier_id"
+                          defaultValue={current?.tier_id ?? ""}
+                          options={[{ value: "", label: "Not this season" }, ...tierOptions]}
+                        />
+                        <TextField label="Order within tier" name="sort_order" type="number" defaultValue={current?.sort_order ?? 0} hint="Lower shows first." />
+                      </Grid>
+                    )}
+                    <SponsorFields sponsor={s} library={library} />
+                  </ModalItem>
                 );
               })}
-            </ul>
+            </div>
           </Panel>
         </div>
 
@@ -133,18 +124,18 @@ export default async function AdminSponsorsPage(props: PageProps<"/admin/sponsor
                 <TextField label="Rank" name="rank" type="number" defaultValue={tiers.length} />
               </div>
             </ActionForm>
-            <ul className="flex flex-col gap-3 border-t border-line pt-4">
+            <ul className="flex flex-col gap-2 border-t border-line pt-4">
               {tiers.map((t) => (
-                <li key={t.id} className="flex flex-wrap items-end gap-2">
+                <li key={t.id} className="flex items-end gap-2">
                   <EditForm action={updateTier.bind(null, t.id)} className="grow">
                     <div className="grid grid-cols-[1fr_80px] gap-2">
                       <TextField label="Name" name="name" defaultValue={t.name} />
                       <TextField label="Rank" name="rank" type="number" defaultValue={t.rank} />
                     </div>
                   </EditForm>
-                  <ActionButton action={deleteTier.bind(null, t.id)} variant="danger" confirm={`Delete the ${t.name} tier?`}>
-                    Delete
-                  </ActionButton>
+                  <span className="pb-0.5">
+                    <TrashAction label={`Delete the ${t.name} tier`} confirm={`Delete the ${t.name} tier?`} action={deleteTier.bind(null, t.id)} />
+                  </span>
                 </li>
               ))}
             </ul>

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ShowMore } from "@/components/show-more";
 import { Plus } from "@/components/icons";
+import { Badge, LinkRow, RowContent } from "../_components/items";
 import { all } from "@/lib/db";
 import { SEASON_STATUS_LABEL, type SeasonStatus } from "@/lib/types";
 import { AdminPageHeader, Panel } from "../_components/fields";
@@ -55,48 +56,23 @@ export default async function AdminSeasonsPage() {
           <p className="text-sm text-dust">Connect The Blue Alliance first (add the TBA API key; see the README).</p>
         )}
       </Panel>
-      <div className="overflow-x-auto rounded-md border border-line bg-panel">
-        <table className="w-full min-w-[720px] text-left text-sm">
-          <thead className="border-b border-line font-label text-[11px] tracking-wider text-ash uppercase">
-            <tr>
-              <th className="px-5 py-3 font-normal">Year</th>
-              <th className="px-5 py-3 font-normal">Game</th>
-              <th className="px-5 py-3 font-normal">Status</th>
-              <th className="px-5 py-3 font-normal">Robots</th>
-              <th className="px-5 py-3 font-normal">Events</th>
-              <th className="px-5 py-3 font-normal">Roster</th>
-              <th className="px-5 py-3 font-normal">
-                <span className="sr-only">Actions</span>
-              </th>
-            </tr>
-          </thead>
-          <ShowMore
-            as="tbody"
-            noun="seasons"
-            columns={7}
-            items={seasons.map((s) => (
-              <tr key={s.year} className="border-b border-line/60 last:border-0">
-                <td className="px-5 py-3.5">
-                  <span className="font-display text-2xl font-extrabold">{s.year}</span>
-                  {s.is_current === 1 && (
-                    <span className="ml-2 rounded bg-rust px-1.5 py-0.5 font-label text-[10px] text-white">CURRENT</span>
-                  )}
-                </td>
-                <td className="px-5 py-3.5 font-semibold">{s.game_name || "—"}</td>
-                <td className="px-5 py-3.5 text-dust">{SEASON_STATUS_LABEL[s.status]}</td>
-                <td className="px-5 py-3.5 text-sand">{s.robots || "—"}</td>
-                <td className="px-5 py-3.5 font-label">{s.events}</td>
-                <td className="px-5 py-3.5 font-label">{s.roster}</td>
-                <td className="px-5 py-3.5 text-right">
-                  <Link href={`/admin/seasons/${s.year}`} className="font-semibold text-hornet hover:text-hornet-hover">
-                    Edit
-                  </Link>
-                </td>
-              </tr>
-            ))}
-          />
-        </table>
-      </div>
+      <ShowMore
+        noun="seasons"
+        className="flex flex-col gap-2"
+        items={seasons.map((s) => (
+          <li key={s.year}>
+            <LinkRow href={`/admin/seasons/${s.year}`}>
+              <RowContent
+                opens="page"
+                media={<span className="block w-16 font-display text-2xl leading-none font-extrabold">{s.year}</span>}
+                title={s.game_name || "No game name yet"}
+                meta={[SEASON_STATUS_LABEL[s.status], s.robots || "No robot", `${s.events} events`, `${s.roster} on the roster`].join(" · ")}
+                badges={s.is_current === 1 ? <Badge tone="accent">Current</Badge> : undefined}
+              />
+            </LinkRow>
+          </li>
+        ))}
+      />
     </>
   );
 }

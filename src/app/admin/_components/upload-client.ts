@@ -67,6 +67,8 @@ function pixelSize(file: File, type: string): Promise<{ width: number; height: n
 
 // ---- Videos ------------------------------------------------------------------------
 
+const VENDOR_MEDIABUNNY = "/vendor/mediabunny.mjs";
+
 /** Above this the converted video might not fit in a phone's memory; upload as is. */
 const MAX_CONVERT_BYTES = 700 * 1024 * 1024;
 
@@ -85,7 +87,11 @@ async function prepareVideo(file: File, onProgress: (p: number) => void): Promis
   }
   if (file.size > MAX_CONVERT_BYTES) return keep("it's too big to convert in the browser.");
 
-  const mb = await import("mediabunny");
+  // Loaded from public/vendor (scripts/copy-vendor.mjs) only when a video needs it, so it's in neither the
+  // admin's JavaScript nor the Worker.
+  // The address is built at run time so no bundler (Next's, or OpenNext's esbuild pass) tries to resolve it.
+  const src = new URL(VENDOR_MEDIABUNNY, location.origin).href;
+  const mb: typeof import("mediabunny") = await import(/* webpackIgnore: true */ /* turbopackIgnore: true */ src);
   const input = new mb.Input({ source: new mb.BlobSource(file), formats: mb.ALL_FORMATS });
   try {
     const video = await input.getPrimaryVideoTrack();

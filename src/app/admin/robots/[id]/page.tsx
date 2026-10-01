@@ -8,7 +8,7 @@ import { getRobot } from "@/lib/data";
 import { all, first } from "@/lib/db";
 import { ActionButton } from "../../_components/action-form";
 import { BulkUploader } from "../../_components/bulk-uploader";
-import { AdminPageHeader, Grid, Panel, SelectField, TextArea, TextField } from "../../_components/fields";
+import { AdminPageHeader, DeletePanel, Grid, Panel, SelectField, TextArea, TextField } from "../../_components/fields";
 import { PhotosEditor, type EditorPhoto } from "../../_components/photos-editor";
 import { EditForm } from "../../_components/unsaved";
 import { deleteRobot, ensureRobotAlbum, setRobotAlbum, updateRobot } from "../actions";
@@ -131,14 +131,11 @@ export default async function AdminRobotPage(props: PageProps<"/admin/robots/[id
         </EditForm>
       </Panel>
 
-      <Panel title="Delete this robot">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <p className="text-sm text-dust">Removes the robot from the {robot.season_year} season. Its photo album stays in the Gallery.</p>
-          <ActionButton action={deleteRobot.bind(null, robot.id)} variant="danger" confirm={`Delete ${robot.name}? Its photos stay in the Gallery.`}>
-            Delete robot
-          </ActionButton>
-        </div>
-      </Panel>
+      <DeletePanel title="Delete this robot" description={`Removes the robot from the ${robot.season_year} season. Its photo album stays in the Gallery.`}>
+        <ActionButton action={deleteRobot.bind(null, robot.id)} variant="danger" confirm={`Delete ${robot.name}? Its photos stay in the Gallery.`}>
+          Delete robot
+        </ActionButton>
+      </DeletePanel>
     </>
   );
 }

@@ -7,7 +7,7 @@ import type { Album } from "@/lib/types";
 import { ActionButton } from "../../_components/action-form";
 import { EditForm } from "../../_components/unsaved";
 import { BulkUploader } from "../../_components/bulk-uploader";
-import { AdminPageHeader, Checkbox, Grid, Panel, SelectField, TextArea, TextField } from "../../_components/fields";
+import { AdminPageHeader, Checkbox, DeletePanel, Grid, Panel, SelectField, TextArea, TextField } from "../../_components/fields";
 import { PhotosEditor } from "../../_components/photos-editor";
 import { deleteAlbum, updateAlbum } from "../actions";
 import { requireAdminPage } from "@/lib/auth";
@@ -75,11 +75,11 @@ export default async function AdminAlbumPage(props: PageProps<"/admin/gallery/[i
         </EditForm>
       </Panel>
 
-      <Panel title="Danger zone">
+      <DeletePanel title="Delete this album" description="Removes the album from the Gallery. The photos stay in the Media library.">
         <ActionButton action={deleteAlbum.bind(null, id)} variant="danger" confirm="Delete this album? The photos stay in the media library.">
           Delete album
         </ActionButton>
-      </Panel>
+      </DeletePanel>
     </>
   );
 }

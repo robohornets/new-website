@@ -6,7 +6,7 @@ import { getEvent, getRoster } from "@/lib/data";
 import { all } from "@/lib/db";
 import { formatHours } from "@/lib/outreach";
 import { ActionButton } from "../../_components/action-form";
-import { AdminPageHeader, Grid, Panel, TextArea, TextField } from "../../_components/fields";
+import { AdminPageHeader, DeletePanel, Grid, Panel, TextArea, TextField } from "../../_components/fields";
 import { EditForm } from "../../_components/unsaved";
 import { deleteOutreachEvent, saveOutreachEvent } from "../actions";
 import { AttendeePicker, type PickerPerson } from "./attendee-picker";
@@ -155,18 +155,11 @@ export default async function AdminOutreachEventPage(props: PageProps<"/admin/ou
       </EditForm>
 
       {!synced && (
-        <Panel title="Delete this event">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <p className="text-sm text-dust">Removes the event and everyone&apos;s hours for it. This can&apos;t be undone.</p>
-            <ActionButton
-              action={deleteOutreachEvent.bind(null, id)}
-              variant="danger"
-              confirm={`Delete “${event.name}” and the hours logged for it?`}
-            >
-              Delete event
-            </ActionButton>
-          </div>
-        </Panel>
+        <DeletePanel title="Delete this event" description="Removes the event and everyone's hours for it. This can't be undone.">
+          <ActionButton action={deleteOutreachEvent.bind(null, id)} variant="danger" confirm={`Delete “${event.name}” and the hours logged for it?`}>
+            Delete event
+          </ActionButton>
+        </DeletePanel>
       )}
     </>
   );

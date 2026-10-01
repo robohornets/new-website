@@ -5,8 +5,8 @@ import { all, first } from "@/lib/db";
 import { formatBytes, formatDate } from "@/lib/format";
 import { downloadUrl, isVideo, mediaUrl, originalUrl } from "@/lib/media";
 import type { Media } from "@/lib/types";
-import { ActionButton } from "../_components/action-form";
-import { EditForm } from "../_components/unsaved";
+import { ModalItem } from "../_components/items";
+import { Pencil } from "@/components/icons";
 import { BulkUploader } from "../_components/bulk-uploader";
 import { AdminPageHeader, TextField } from "../_components/fields";
 import { deleteMedia, updateMediaAlt } from "./actions";
@@ -41,41 +41,49 @@ export default async function AdminMediaPage(props: PageProps<"/admin/media">) {
         {items.map((m) => {
           const original = originalUrl(m.r2_key) ?? "";
           const isImage = m.content_type.startsWith("image/");
+          const preview = (big: boolean) =>
+            isImage ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={mediaUrl(m.r2_key, big ? 960 : 640) ?? original} alt={m.alt} loading="lazy" className={big ? "max-h-full max-w-full object-contain" : "size-full object-cover"} />
+            ) : isVideo(m.r2_key) ? (
+              <video src={original} preload="metadata" muted controls={big} className={big ? "max-h-full max-w-full" : "size-full object-cover"} />
+            ) : (
+              <span className="font-label text-xs text-dust">{m.content_type}</span>
+            );
+          const meta = `${formatBytes(m.size_bytes)}${m.width && m.height ? ` · ${m.width}×${m.height}` : ""} · ${formatDate(m.created_at)}`;
           return (
-            <li key={m.id} className="flex flex-col gap-3 rounded-md border border-line bg-panel p-3">
-              <div className="hatch flex h-40 items-center justify-center overflow-hidden rounded">
-                {isImage ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={mediaUrl(m.r2_key, 640) ?? original} alt={m.alt} loading="lazy" className="size-full object-cover" />
-                ) : isVideo(m.r2_key) ? (
-                  <video src={original} preload="metadata" muted className="size-full object-cover" />
-                ) : (
-                  <span className="font-label text-xs text-dust">{m.content_type}</span>
-                )}
-              </div>
-              <div className="flex flex-col gap-0.5">
-                <span className="truncate text-sm font-semibold" title={m.filename}>
-                  {m.filename}
-                </span>
-                <span className="font-label text-[11px] text-ash">
-                  {formatBytes(m.size_bytes)}
-                  {m.width && m.height ? ` · ${m.width}×${m.height}` : ""} · {formatDate(m.created_at)}
-                </span>
-              </div>
-              <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
-                <a href={downloadUrl(m.r2_key) ?? original} className="font-semibold text-hornet hover:text-hornet-hover">
-                  Download original
-                </a>
-                <a href={original} target="_blank" rel="noopener noreferrer" className="text-dust hover:text-bone">
-                  Open
-                </a>
-              </div>
-              <EditForm action={updateMediaAlt.bind(null, m.id)}>
-                <TextField label="Alt text" name="alt" defaultValue={m.alt} />
-              </EditForm>
-              <ActionButton action={deleteMedia.bind(null, m.id)} variant="danger" confirm={`Delete ${m.filename}? Anything using it will show no image.`}>
-                Delete file
-              </ActionButton>
+            <li key={m.id} className="min-w-0">
+              <ModalItem
+                look="card"
+                title={m.filename}
+                description={meta}
+                size="lg"
+                action={updateMediaAlt.bind(null, m.id)}
+                destroy={{ label: "Delete file", confirm: `Delete ${m.filename}? Anything using it will show no image.`, action: deleteMedia.bind(null, m.id) }}
+                row={
+                  <>
+                    <span className="hatch flex h-40 items-center justify-center overflow-hidden rounded">{preview(false)}</span>
+                    <span className="flex min-w-0 items-start justify-between gap-2">
+                      <span className="flex min-w-0 flex-col gap-0.5">
+                        <span className="truncate text-sm font-semibold group-hover:text-hornet">{m.filename}</span>
+                        <span className="font-label text-[11px] text-ash">{meta}</span>
+                      </span>
+                      <Pencil size={15} className="mt-0.5 shrink-0 text-dust group-hover:text-hornet" />
+                    </span>
+                  </>
+                }
+              >
+                <div className="hatch flex h-[min(44vh,380px)] items-center justify-center overflow-hidden rounded">{preview(true)}</div>
+                <div className="flex flex-wrap gap-x-5 gap-y-1 text-sm">
+                  <a href={downloadUrl(m.r2_key) ?? original} className="font-semibold text-hornet hover:text-hornet-hover">
+                    Download original
+                  </a>
+                  <a href={original} target="_blank" rel="noopener noreferrer" className="text-dust hover:text-bone">
+                    Open in a new tab
+                  </a>
+                </div>
+                <TextField label="Alt text" name="alt" defaultValue={m.alt} hint="One short sentence describing it, for screen readers." />
+              </ModalItem>
             </li>
           );
         })}

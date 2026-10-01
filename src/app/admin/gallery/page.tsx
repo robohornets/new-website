@@ -5,7 +5,7 @@ import { getSeasonYears } from "@/lib/admin-data";
 import { ALBUM_COLUMNS } from "@/lib/data";
 import { all } from "@/lib/db";
 import type { Album } from "@/lib/types";
-import { ActionForm } from "../_components/action-form";
+import { AddButton } from "../_components/items";
 import { AdminPageHeader, Checkbox, Panel, SelectField, TextArea, TextField } from "../_components/fields";
 import { SortableGrid } from "../_components/sortable";
 import { createAlbum, saveAlbumOrder } from "./actions";
@@ -25,9 +25,11 @@ export default async function AdminGalleryPage() {
   return (
     <>
       <AdminPageHeader title="Gallery" description="Albums of photos, usually one per event. Photos are stored in the R2 bucket." />
-      <Panel title="New album">
-        <ActionForm action={createAlbum} submitLabel="Create album">
-          <div className="grid gap-4 md:grid-cols-[2fr_1fr_1fr]">
+      <Panel
+        title="Albums"
+        description="This is the order the Gallery shows them in (and each season's page). Drag an album by ⠿, or use ◀ ▶, then save. Click an album to add photos."
+        actions={
+          <AddButton label="New album" title="New album" description="Usually one per event. You'll add the photos next." action={createAlbum} submitLabel="Create album">
             <TextField label="Title" name="title" required placeholder="Green Country Regional" />
             <SelectField
               label="Season"
@@ -35,15 +37,11 @@ export default async function AdminGalleryPage() {
               defaultValue={years[0] ?? ""}
               options={[{ value: "", label: "No season" }, ...years.map((y) => ({ value: y, label: String(y) }))]}
             />
-            <TextField label="URL slug" name="slug" hint="Optional" />
-          </div>
-          <TextArea label="Description" name="description" rows={2} />
-          <Checkbox label="Visible on the site" name="published" defaultChecked />
-        </ActionForm>
-      </Panel>
-      <Panel
-        title="Albums"
-        description="This is the order the Gallery shows them in (and each season's page). Drag an album by ⠿, or use ◀ ▶, then save."
+            <TextArea label="Description" name="description" rows={2} />
+            <TextField label="URL slug" name="slug" hint="Optional: made from the title if left blank." />
+            <Checkbox label="Visible on the site" name="published" defaultChecked />
+          </AddButton>
+        }
       >
         {albums.length === 0 ? (
           <p className="text-dust">No albums yet. Create one to start uploading.</p>

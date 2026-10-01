@@ -8,9 +8,10 @@ import { formatDate, formatDateTime } from "@/lib/format";
 import { EVENT_TBA_FIELDS, MATCH_TBA_FIELDS, parseOverrides, parseTba } from "@/lib/tba/fields";
 import { matchLabel } from "@/lib/tba/map";
 import type { Match } from "@/lib/types";
-import { ActionButton, ActionForm } from "../../_components/action-form";
+import { ActionButton } from "../../_components/action-form";
+import { AddButton, Badge, ModalItem, RowContent } from "../../_components/items";
 import { EditForm } from "../../_components/unsaved";
-import { AdminPageHeader, Checkbox, Grid, Panel, SelectField, TextArea, TextField } from "../../_components/fields";
+import { AdminPageHeader, Checkbox, DeletePanel, Grid, Panel, SelectField, TextArea, TextField } from "../../_components/fields";
 import { TbaField } from "../../_components/tba-field";
 import {
   createMatch,
@@ -220,18 +221,14 @@ export default async function AdminEventPage(props: PageProps<"/admin/events/[id
             : "Add matches by hand if you want them on the event page."
         }
         actions={
-          matches.length > 0 ? (
-            <div className="flex gap-2">
-              <ActionButton action={setMatchesHidden.bind(null, id, true)}>Hide all</ActionButton>
-              <ActionButton action={setMatchesHidden.bind(null, id, false)}>Show all</ActionButton>
-            </div>
-          ) : undefined
-        }
-      >
-        <details className="rounded-md border border-dashed border-edge">
-          <summary className="list-none px-4 py-3 font-semibold text-hornet">+ Add a match by hand</summary>
-          <div className="border-t border-line p-4">
-            <ActionForm action={createMatch.bind(null, id)} submitLabel="Add match" resetOnSuccess>
+          <div className="flex flex-wrap gap-2">
+            {matches.length > 0 && (
+              <>
+                <ActionButton action={setMatchesHidden.bind(null, id, true)}>Hide all</ActionButton>
+                <ActionButton action={setMatchesHidden.bind(null, id, false)}>Show all</ActionButton>
+              </>
+            )}
+            <AddButton label="Add match" title="Add a match by hand" action={createMatch.bind(null, id)} size="lg">
               <Grid cols={4}>
                 <SelectField label="Round" name="comp_level" defaultValue="qm" options={LEVELS} />
                 <TextField label="Set" name="set_number" type="number" defaultValue={1} hint="Playoff series number; 1 for quals." />
@@ -244,26 +241,30 @@ export default async function AdminEventPage(props: PageProps<"/admin/events/[id
                 <SelectField label="Our result" name="result" defaultValue="" options={RESULTS} />
                 <TextField label="Video link" name="video_url" type="url" className="md:col-span-3" />
               </Grid>
-            </ActionForm>
+            </AddButton>
           </div>
-        </details>
-        <ul className="flex flex-col gap-2">
+        }
+      >
+        <div className="flex flex-col gap-2">
+          {matches.length === 0 && <p className="text-sm text-dust">No matches yet.</p>}
           {matches.map((m) => (
             <MatchItem key={m.id} match={m} />
           ))}
-        </ul>
+        </div>
       </Panel>
 
-      <Panel title="Danger zone">
-        <p className="text-sm text-dust">
-          {event.tba_key
+      <DeletePanel
+        title="Delete this event"
+        description={
+          event.tba_key
             ? "Events from The Blue Alliance come back on the next sync if deleted. To take one off the site, tick “Hide this event” above instead."
-            : "Deleting removes the event and its matches."}
-        </p>
+            : "Removes the event and its matches."
+        }
+      >
         <ActionButton action={deleteEvent.bind(null, id)} variant="danger" confirm={`Delete ${event.name} and all its matches?`}>
           Delete event
         </ActionButton>
-      </Panel>
+      </DeletePanel>
     </>
   );
 }
@@ -276,59 +277,62 @@ function MatchItem({ match: m }: { match: Match }) {
   const scored = m.red_score !== null && m.blue_score !== null;
   const resultColor = m.result === "win" ? "text-hornet" : m.result === "loss" ? "text-dust" : "text-sand";
   return (
-    <li>
-      <details className="group rounded-md border border-line bg-ink">
-        <summary className="flex cursor-pointer list-none flex-wrap items-center gap-x-4 gap-y-1 px-4 py-2.5 text-sm">
-          <span className="w-32 font-semibold">{matchLabel(m)}</span>
-          <span className="font-label text-xs text-dust">
-            <span className="text-[#ff8f8f]">{m.red_teams || "—"}</span> vs <span className="text-[#8fb8ff]">{m.blue_teams || "—"}</span>
-          </span>
-          <span className="font-label">{scored ? `${m.red_score}–${m.blue_score}` : "—"}</span>
-          {m.result && <span className={`font-label text-xs uppercase ${resultColor}`}>{m.result}</span>}
-          {m.video_url && <span className="font-label text-[10px] text-dust">VIDEO</span>}
-          {overrides.length > 0 && <span className="rounded bg-rust px-1.5 py-0.5 font-label text-[10px] font-bold text-white">EDITED</span>}
-          {m.hidden === 1 && <span className="rounded bg-raise px-1.5 py-0.5 font-label text-[10px] text-dust">HIDDEN</span>}
-          <span className="ml-auto text-hornet group-open:hidden">Edit</span>
-        </summary>
-        <div className="flex flex-col gap-3 border-t border-line p-3">
-          <EditForm action={updateMatch.bind(null, m.id)}>
-            {!synced && (
-              <Grid cols={4}>
-                <SelectField label="Round" name="comp_level" defaultValue={m.comp_level} options={LEVELS} />
-                <TextField label="Set" name="set_number" type="number" defaultValue={m.set_number} />
-                <TextField label="Match number" name="match_number" type="number" defaultValue={m.match_number} />
-                <SelectField label="Our alliance" name="our_alliance" defaultValue={m.our_alliance ?? "red"} options={[{ value: "red", label: "Red" }, { value: "blue", label: "Blue" }]} />
-              </Grid>
-            )}
-            <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
-              {MATCH_TBA_FIELDS.map((f) => (
-                <TbaField
-                  key={f.name}
-                  name={f.name}
-                  label={f.label}
-                  type={"type" in f ? f.type : "text"}
-                  value={values[f.name]}
-                  tbaValue={tba[f.name]}
-                  synced={synced}
-                  overridden={overrides.includes(f.name)}
-                  reset={resetMatchField.bind(null, m.id, f.name)}
-                  options={f.name === "result" ? RESULTS : undefined}
-                  hint={f.name === "video_url" ? "Swap in our own robot-cam video or a different YouTube link." : f.name.endsWith("_teams") ? "Team numbers, separated by commas." : undefined}
-                />
-              ))}
-            </div>
-            <Checkbox label="Hide this match from the site" name="hidden" defaultChecked={m.hidden === 1} />
-          </EditForm>
-          {!synced && (
-            <div className="border-t border-line pt-3">
-              <ActionButton action={deleteMatch.bind(null, m.id)} variant="danger" confirm="Delete this match?">
-                Delete match
-              </ActionButton>
-            </div>
-          )}
-          {m.time && <span className="text-xs text-ash">Played {formatDate(new Date(m.time * 1000).toISOString())}</span>}
-        </div>
-      </details>
-    </li>
+    <ModalItem
+      title={matchLabel(m)}
+      description={synced ? "From The Blue Alliance. Change a box to use your own value instead; Reset puts TBA's back." : "Added by hand."}
+      size="lg"
+      action={updateMatch.bind(null, m.id)}
+      destroy={synced ? undefined : { label: "Delete match", confirm: "Delete this match?", action: deleteMatch.bind(null, m.id) }}
+      row={
+        <RowContent
+          opens="popup"
+          title={
+            <span className="flex flex-wrap items-baseline gap-x-4">
+              <span className="w-32">{matchLabel(m)}</span>
+              <span className="font-label text-xs font-normal text-dust">
+                <span className="text-[#ff8f8f]">{m.red_teams || "—"}</span> vs <span className="text-[#8fb8ff]">{m.blue_teams || "—"}</span>
+              </span>
+            </span>
+          }
+          badges={
+            <>
+              <span className="font-label text-sm">{scored ? `${m.red_score}–${m.blue_score}` : "—"}</span>
+              {m.result && <span className={`font-label text-xs uppercase ${resultColor}`}>{m.result}</span>}
+              {m.video_url && <Badge tone="muted">Video</Badge>}
+              {overrides.length > 0 && <Badge tone="accent">Edited</Badge>}
+              {m.hidden === 1 && <Badge tone="muted">Hidden</Badge>}
+            </>
+          }
+        />
+      }
+    >
+      {!synced && (
+        <Grid cols={4}>
+          <SelectField label="Round" name="comp_level" defaultValue={m.comp_level} options={LEVELS} />
+          <TextField label="Set" name="set_number" type="number" defaultValue={m.set_number} />
+          <TextField label="Match number" name="match_number" type="number" defaultValue={m.match_number} />
+          <SelectField label="Our alliance" name="our_alliance" defaultValue={m.our_alliance ?? "red"} options={[{ value: "red", label: "Red" }, { value: "blue", label: "Blue" }]} />
+        </Grid>
+      )}
+      <div className="grid gap-2 md:grid-cols-2">
+        {MATCH_TBA_FIELDS.map((f) => (
+          <TbaField
+            key={f.name}
+            name={f.name}
+            label={f.label}
+            type={"type" in f ? f.type : "text"}
+            value={values[f.name]}
+            tbaValue={tba[f.name]}
+            synced={synced}
+            overridden={overrides.includes(f.name)}
+            reset={resetMatchField.bind(null, m.id, f.name)}
+            options={f.name === "result" ? RESULTS : undefined}
+            hint={f.name === "video_url" ? "Swap in our own robot-cam video or a different YouTube link." : f.name.endsWith("_teams") ? "Team numbers, separated by commas." : undefined}
+          />
+        ))}
+      </div>
+      <Checkbox label="Hide this match from the site" name="hidden" defaultChecked={m.hidden === 1} />
+      {m.time && <span className="text-xs text-ash">Played {formatDate(new Date(m.time * 1000).toISOString())}</span>}
+    </ModalItem>
   );
 }

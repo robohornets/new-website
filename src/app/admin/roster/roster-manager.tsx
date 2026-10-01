@@ -5,9 +5,11 @@ import { useMemo, useRef, useState, useTransition, type FormEvent, type ReactNod
 import type { ActionState } from "@/lib/admin";
 import { mediaUrl } from "@/lib/media";
 import type { Person, RosterMember, Subteam } from "@/lib/types";
+import { Pencil } from "@/components/icons";
 import { inputClass } from "../_components/fields";
 import { uploadFiles } from "../_components/media-field";
 import { Modal, useConfirm } from "../_components/modal";
+import { TrashButton } from "../_components/items";
 import { hasChanges } from "../_components/unsaved";
 import {
   addExistingPerson,
@@ -27,6 +29,7 @@ const primaryButton = "flex h-10 items-center justify-center gap-2 rounded-md bg
 const secondaryButton =
   "flex h-10 items-center justify-center gap-2 rounded-md border border-line-strong px-4 text-sm font-semibold text-bone hover:border-bone disabled:opacity-60";
 const quietButton = "flex h-10 items-center rounded-md px-4 text-sm font-semibold text-sand hover:bg-raise hover:text-bone";
+const dangerButton = "flex h-10 items-center rounded-md border border-danger/60 px-4 text-sm font-semibold text-danger hover:bg-danger/10";
 
 type Action = (prev: ActionState, fd: FormData) => Promise<ActionState>;
 
@@ -82,7 +85,7 @@ export function RosterManager({
   });
   const filtered = Boolean(q || subteam || grad || leadership);
 
-  async function remove(m: RosterMember) {
+  async function remove(m: RosterMember): Promise<void> {
     const name = `${m.first_name} ${m.last_name}`.trim();
     const ok = await confirm({
       title: `Remove ${m.first_name}?`,
@@ -93,6 +96,7 @@ export function RosterManager({
     if (!ok) return;
     startTransition(async () => {
       const result = await removeRosterEntry(m.entry_id, { ok: false });
+      if (result.ok) setEditing(null);
       flash(result.ok ? `${m.first_name} removed from ${year}.` : (result.error ?? "That didn't work."));
     });
   }
@@ -175,7 +179,7 @@ export function RosterManager({
       ) : (
         <ul className="grid grid-cols-1 gap-2 2xl:grid-cols-2">
           {shown.map((m) => (
-            <MemberCard key={m.entry_id} member={m} subteamName={subteamName} onEdit={() => setEditing(m)} onRemove={() => remove(m)} />
+            <MemberCard key={m.entry_id} member={m} subteamName={subteamName} onEdit={() => setEditing(m)} />
           ))}
         </ul>
       )}
@@ -186,6 +190,11 @@ export function RosterManager({
           title={`Edit ${editing.first_name}`}
           submitLabel="Save"
           action={saveRosterMember.bind(null, editing.entry_id, editing.id)}
+          danger={
+            <button type="button" onClick={() => remove(editing)} className={dangerButton}>
+              Remove from {year}
+            </button>
+          }
           onClose={() => setEditing(null)}
           onDone={(message) => {
             setEditing(null);
@@ -253,12 +262,10 @@ function MemberCard({
   member: m,
   subteamName,
   onEdit,
-  onRemove,
 }: {
   member: RosterMember;
   subteamName: (id: number | null) => string | undefined;
   onEdit: () => void;
-  onRemove: () => void;
 }) {
   const name = `${m.first_name} ${m.last_name}`.trim();
   const main = subteamName(m.subteam_id);
@@ -267,37 +274,33 @@ function MemberCard({
   const photoHidden = Boolean(m.photo_key) && m.show_photo !== 1;
 
   return (
-    <li className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-2 rounded-md border border-line bg-ink py-3 pr-2 pl-3 sm:gap-x-4 sm:pr-3 sm:pl-4">
-      <Avatar photoKey={m.photo_key} initials={initialsOf(m)} />
-      <div className="flex min-w-0 flex-1 basis-52 flex-col gap-0.5">
-        <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
-          <span className="truncate font-semibold">{name}</span>
-          {m.is_leadership === 1 && (
-            <span className="rounded bg-rust px-1.5 py-0.5 font-label text-[10px] font-bold tracking-wide text-white">LEADERSHIP</span>
-          )}
-          {m.kind === "mentor" && (
-            <span className="rounded border border-mentor/50 px-1.5 py-0.5 font-label text-[10px] font-bold tracking-wide text-mentor">MENTOR</span>
-          )}
+    <li className="min-w-0">
+      <button
+        type="button"
+        onClick={onEdit}
+        aria-haspopup="dialog"
+        aria-label={`Edit ${name}`}
+        className="group flex w-full min-w-0 items-center gap-3 rounded-md border border-line bg-ink px-3 py-3 text-left hover:border-edge focus-visible:border-hornet sm:gap-4 sm:px-4"
+      >
+        <Avatar photoKey={m.photo_key} initials={initialsOf(m)} />
+        <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+          <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
+            <span className="truncate font-semibold group-hover:text-hornet">{name}</span>
+            {m.is_leadership === 1 && (
+              <span className="rounded bg-rust px-1.5 py-0.5 font-label text-[10px] font-bold tracking-wide text-white">LEADERSHIP</span>
+            )}
+            {m.kind === "mentor" && (
+              <span className="rounded border border-mentor/50 px-1.5 py-0.5 font-label text-[10px] font-bold tracking-wide text-mentor">MENTOR</span>
+            )}
+          </span>
+          <span className="truncate text-sm text-dust">
+            {details}
+            {extras.length > 0 && <span className="text-ash"> · also {extras.join(", ")}</span>}
+          </span>
+          {photoHidden && <span className="text-xs text-ash">Photo hidden on the site</span>}
         </span>
-        <span className="truncate text-sm text-dust">
-          {details}
-          {extras.length > 0 && <span className="text-ash"> · also {extras.join(", ")}</span>}
-        </span>
-        {photoHidden && <span className="text-xs text-ash">Photo hidden on the site</span>}
-      </div>
-      <div className="ml-auto flex shrink-0 items-center gap-1">
-        <button type="button" onClick={onEdit} className={secondaryButton} aria-label={`Edit ${name}`}>
-          Edit
-        </button>
-        <button
-          type="button"
-          onClick={onRemove}
-          className="flex h-10 items-center rounded-md px-3 text-sm font-semibold text-danger hover:bg-danger/10"
-          aria-label={`Remove ${name}`}
-        >
-          Remove
-        </button>
-      </div>
+        <Pencil size={16} className="shrink-0 text-dust group-hover:text-hornet" />
+      </button>
     </li>
   );
 }
@@ -317,6 +320,7 @@ function MemberModal({
   onDone,
   children,
   header,
+  danger,
 }: {
   title: string;
   description?: ReactNode;
@@ -327,6 +331,8 @@ function MemberModal({
   children: ReactNode;
   /** Shown above the form (the add popup's New / Returning switch). */
   header?: ReactNode;
+  /** A red button at the start of the footer (Remove from the season). */
+  danger?: ReactNode;
 }) {
   const formRef = useRef<HTMLFormElement>(null);
   const [error, setError] = useState<string | null>(null);
@@ -369,8 +375,9 @@ function MemberModal({
       size="lg"
       footer={
         <>
+          {danger && <span className="mr-auto">{danger}</span>}
           {error && (
-            <p role="alert" className="mr-auto text-sm text-danger">
+            <p role="alert" className={`text-sm text-danger ${danger ? "" : "mr-auto"}`}>
               {error}
             </p>
           )}
@@ -774,14 +781,7 @@ function SubteamsModal({
                   Private
                 </label>
                 <span className="w-20 text-right text-xs text-dust">{counts(t.id) === 1 ? "1 person" : `${counts(t.id)} people`}</span>
-                <button
-                  type="button"
-                  onClick={() => remove(t)}
-                  aria-label={`Delete ${t.name}`}
-                  className="flex h-10 items-center rounded-md px-3 text-sm font-semibold text-danger hover:bg-danger/10"
-                >
-                  Delete
-                </button>
+                <TrashButton label={`Delete ${t.name}`} onClick={() => remove(t)} />
               </li>
             ))}
           </ul>

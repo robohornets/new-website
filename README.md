@@ -28,6 +28,26 @@ npx wrangler r2 bucket create btwrobotics-media
 
 The name must match `r2_buckets[0].bucket_name` in `wrangler.jsonc`.
 
+**Direct uploads (for videos up to 1 GB).** Without this, every upload goes through the Worker and is capped at
+95 MB. With it, the browser uploads straight to R2 and the Worker never handles the file:
+
+1. In the Cloudflare dashboard, **R2 → Manage API tokens → Create API token**. Permission **Object Read & Write**,
+   applied to the `btwrobotics-media` bucket only. Copy the **Access Key ID** and **Secret Access Key**.
+2. Save them as Worker secrets:
+   ```bash
+   npx wrangler secret put R2_ACCESS_KEY_ID
+   npx wrangler secret put R2_SECRET_ACCESS_KEY
+   ```
+   (`R2_ACCOUNT_ID` and `R2_BUCKET_NAME` are already in `wrangler.jsonc`.)
+3. **R2 → btwrobotics-media → Settings → CORS policy**, add:
+   ```json
+   [{ "AllowedOrigins": ["https://btwrobotics.com"], "AllowedMethods": ["PUT"], "AllowedHeaders": ["content-type"], "MaxAgeSeconds": 3600 }]
+   ```
+   Add your `*.workers.dev` address to `AllowedOrigins` too if you use the admin there.
+
+The uploader says "up to 1 GB" once this is working. If the CORS rule is missing, uploads under 95 MB quietly fall
+back to the Worker and bigger ones say to check it.
+
 ### 3. Create the tables and starter content in D1
 
 The D1 database (`0a483600-2eec-4bff-a8d3-739fcb5b1962`) is already set in `wrangler.jsonc`.
@@ -136,7 +156,7 @@ Everything is in **btwrobotics.com/admin**:
 | When | Where | What |
 | --- | --- | --- |
 | Before or at kickoff | **Seasons → Start new season** | Year, game name, kickoff date. Carries over returning students (skips anyone whose graduation year has passed), mentors and sponsors, and makes it the homepage's current season. |
-| Build season | **Seasons → (year)** | Add the robot: name, specs (`Label: value` per line), tags, GitHub link, photo. Set status to *Build season*. |
+| Build season | **Seasons → (year)** | **+ Add robot**, then on its page: photos (they become the season page slideshow and a Gallery album), specs (`Label: value` per line), tags, code and CAD links. Set status to *Build season*. Add anything for other teams under **Resources**. |
 | End of season | **Seasons → (year)** | Upload the engineering notebook PDF (or paste a link) under *Season basics*. |
 | Before events | nothing | Events 1209 registers for appear from The Blue Alliance on their own. Upcoming ones show on the homepage. During the event a **LIVE NOW** card above the hero shows our next match (predicted time, partners and opponents), rank, record and last result, refreshing every minute. |
 | During/after events | **Seasons → (year) → event** | Results and every match fill in automatically. Fix anything (it's marked **Edited**), add a write-up, highlight video or album, or hide an event/match. |
@@ -204,7 +224,7 @@ no ISR cache bucket is needed.
 Content is organised around **seasons**. Each FRC year is a row, and most other content hangs off it:
 
 - `seasons`: year (PK), game name, summary, status (`pre_kickoff` / `build` / `competition` / `offseason`), kickoff date, reveal video, hero photo, engineering notebook (uploaded PDF and/or link), `is_current` (at most one)
-- `robots`: per season: name, kind (competition / kitbot / …), description, specs JSON, tags JSON, code and CAD links, photo
+- `robots`: per season: name, kind (competition / kitbot / …), description, specs JSON, tags JSON, code and CAD links, and `album_id`: the album its photos come from (the season page slideshow; its cover or first photo is the robot's main photo). `photo_media_id` is the single photo robots had before albums, still used if a robot has no album.
 - `events`: per season: name, kind, location, dates, website, webcast, Blue Alliance key, rank, record, alliance,
   playoff result, awards, plus admin-only extras (write-up, highlight video, album, hidden). `tba` holds the latest
   TBA values and `overrides` lists the fields an admin changed; syncing only writes fields not in that list.
@@ -214,7 +234,8 @@ Content is organised around **seasons**. Each FRC year is a row, and most other 
 - `tba_cache`: the last ETag for each TBA request, so unchanged data is skipped
 - `people` + `roster_entries`: a person exists once; a roster entry puts them on a season with a role, main subteam and leadership flag. This is how the roster carries over year to year.
 - `subteams` + `roster_extra_subteams`: the subteam list admins edit (private ones can't be picked on the join form), and any extra subteams a roster entry is on
-- `scouting_forms`, `scouting_entries`, `scouting_history`: see Scouting below
+- `scouting_forms`, `scouting_entries`, `scouting_history`: see Scouting below. `scouting_forms.published` puts a season's scouting on its public Scouting tab.
+- `resources`: links and files on a season's Resources tab (`season_year` NULL for team documents shown on every season)
 - `join_requests`: students asking to join from `/join` (name, class, subteam ranking, about), with pending / added / declined status. The form only accepts requests while `site_settings.join_requests.open` is on.
 - `sponsors` + `sponsor_tiers` + `sponsor_seasons`: sponsors are stored once; each season lists who sponsored it and at what tier
 - `posts`: news posts from the old site. Nothing shows them any more (News was removed); they're kept only so Export can still download them.
@@ -237,19 +258,31 @@ Every upload goes to R2 **once, unchanged**. That file is the only copy: nothing
   month) covers about 1,000 different photos viewed at every size each month. If it runs out, the site
   serves the originals until the next month instead of breaking. Nothing is billed on the free Images plan.
 - iPhone HEIC photos are fine: the resized copies are WebP/JPEG, which every browser can show.
-- Videos (MP4/MOV/WebM, up to 95 MB) are served straight from R2 with range requests, so they stream and seek.
-  For long videos like full matches, upload to the team YouTube channel and link it instead.
+- Videos (MP4/MOV/WebM; up to 1 GB with direct uploads, 95 MB without) are served straight from R2 with range
+  requests, so they stream and seek. Before uploading, the browser converts anything that isn't already H.264 MP4
+  (iPhone HEVC `.mov`, WebM) with [mediabunny](https://mediabunny.dev) on the device's own video encoder, shrinking
+  anything over 1080p (`src/app/admin/_components/upload-client.ts`). Videos are the one thing not stored exactly as
+  uploaded: the converted MP4 is kept instead, because HEVC doesn't play in Chrome on many Windows and Android
+  devices. If a device can't convert (no WebCodecs, or a file over 700 MB), the original uploads with a warning.
+  For long videos like full matches, the team YouTube channel is still the better home.
 
-**Uploads and the 10 ms CPU limit.** `POST /admin/api/upload` is answered by `worker.ts` itself
-(`src/lib/upload.ts`), before the request reaches Next.js. Profiling a 7.5 MB phone photo on workerd showed why:
-through Next, OpenNext copies the whole request body through Node.js streams in JavaScript (often 100+ ms of CPU, more
-for bigger files), and reading the photo back from R2 to measure it added more. The direct path streams the file
-into R2 natively and only runs a few milliseconds of our own code. The browser reads the photo's pixel size and sends
-it with the upload; only when it can't (HEIC outside Safari) does the Worker read the file back to measure it. The
-Cloudflare Access token is checked the same way as in the rest of the admin (`src/lib/access.ts`), cached per token
-for the length of a bulk upload, and uploads from any other site are refused. Under `next dev` the Next.js route at the
-same path does the same work. If uploads still fail on the Free plan, the next steps are uploading straight from the
-browser to R2 with presigned URLs (needs an R2 API token and a CORS rule on the bucket) or the $5 Workers Paid plan.
+**Uploads and the 10 ms CPU limit.** Upload requests are answered by `worker.ts` itself (`src/lib/upload.ts`), before
+they reach Next.js. Profiling a 7.5 MB phone photo on workerd showed why: through Next, OpenNext copies the whole
+request body through Node.js streams in JavaScript (often 100+ ms of CPU, more for bigger files). Two ways in:
+
+- **Straight to R2** (when the R2 API keys are set, see setup step 2): `POST /admin/api/upload/start` checks the type
+  and size and returns a presigned PUT URL for one new key, valid for an hour (aws4fetch; the content type is part of
+  the signature, so a file can't be stored as anything but the type that was checked). The browser PUTs the file to
+  R2 with upload progress, then `POST /admin/api/upload/finish` records it. `/finish` only accepts the key `/start`
+  handed out (an HMAC "receipt" signed with the R2 secret, tied to the admin, size and type) and checks the stored
+  object's size, deleting it if it's incomplete.
+- **Through the Worker** (no keys yet, or `next dev`): `POST /admin/api/upload` with the file as the body, streamed
+  into R2 natively with `FixedLengthStream`, up to 95 MB.
+
+Either way the browser reads the photo's pixel size and sends it along; only when it can't (HEIC outside Safari)
+does the Worker read the file back for the Images binding to measure. The Cloudflare Access token is checked the same
+way as the rest of the admin (`src/lib/access.ts`, cached per token for a bulk upload), and requests from any other
+site are refused.
 
 Why not Cloudflare *hosted* Images or Stream? Hosted Images needs the paid Images plan (from $5/month) and keeps
 the originals in Cloudflare's own store, so they're harder to take elsewhere. Stream is $5 per 1,000 minutes
@@ -317,6 +350,25 @@ comes from `getLiveMatches()` (`src/lib/live-match.ts`): TBA's `/team/{key}/even
 are watching. Without a TBA key it uses the matches the sync job saved. The card polls `GET /api/live-match` every
 minute while the tab is visible and removes itself when the list comes back empty.
 
+### Season pages
+
+`/seasons/<year>` has **Overview**, **Scouting** and **Resources** tabs (`src/components/season-tabs.tsx`), each its own
+page so a link can go straight to one. A tab only shows when it has something in it (`getSeasonTabs`).
+
+- **Overview** leads with the main robot's photos as a slideshow (`src/components/robot-slideshow.tsx`): a photo every
+  5 seconds, paused while hovered or focused, a control bar (back, dots, next, pause) on hover and always on touch
+  screens, swipe on phones, no autoplay with `prefers-reduced-motion`. The season photo (`seasons.hero_media_id`) is
+  only for the homepage and Seasons list, and stands in on the season page until the robot has photos.
+- **Scouting** (`src/lib/season-extras.ts`, `getPublicScouting`) is off until the admin ticks *Show on the season
+  page*. Then it lists every team scouted that season with its robot sheet, match-report averages and every report,
+  notes included, never scouts' names, and with no link to `/scouting`.
+- **Resources** combines automatic items (each robot's code and CAD links, the engineering notebook, the Scouting tab,
+  the Strategic Plan) with the `resources` table.
+
+Album photos and the slideshow open a full-screen viewer (`src/components/lightbox.tsx`): the photo's Description
+underneath (stored in `album_photos.caption`), back and forth by buttons, arrow keys or swipe, and the photo in the
+address bar (`#photo-<id>`) so the phone's Back button closes it and a link can open one photo.
+
 ### Calendar
 
 The Team page's *Meetings & events* comes from the public iCal feed of the Google Calendar set in
@@ -332,7 +384,13 @@ or `data-default` for widgets that control their own value, like photo pickers).
 at the bottom offers Save (every changed form, in page order) and Revert, and leaving the page is blocked: links and
 the browser Back button make the bar flash and shake, and closing the tab shows the browser's own warning. Forms that
 create something new (`ActionForm` with an "Add" button) and delete buttons still act immediately.
-Add forms sit above the list they add to. Confirmations use the site's own dialog (`useConfirm()` from
+Lists all work one way (`src/app/admin/_components/items.tsx`): every item is a row you click anywhere on. Small
+things (a sponsor, resource, photo, contact, message, match) open a popup with its own Save (`ModalItem` /
+`FormModal`, ✎ on the row); things with their own lists (a season, robot, event, album, outreach event) open their own
+page (`LinkRow`, → on the row). Adding is a **+ Add …** button at the top of the list (`AddButton`). Delete is the
+last thing inside, in red, and asks first: in a popup's footer, or a `DeletePanel` at the end of a page. Tiny lists
+(sponsor tiers, subteams) are edited in place, with a trash button per row. The one exception is a scouting team's
+admin page, a review screen that shows every entry and version at once. Confirmations use the site's own dialog (`useConfirm()` from
 `_components/modal.tsx`, also used by any button with a `confirm` prop) instead of the browser's.
 
 ### Admin security rules

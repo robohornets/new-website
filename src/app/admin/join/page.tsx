@@ -5,7 +5,8 @@ import { getCurrentSeason, getSettings, getSubteams } from "@/lib/data";
 import { all, first, parseJson } from "@/lib/db";
 import { formatDate } from "@/lib/format";
 import type { JoinRequest, JoinRequestStatus, Subteam } from "@/lib/types";
-import { ActionButton, ActionForm } from "../_components/action-form";
+import { ActionButton } from "../_components/action-form";
+import { ModalItem, RowContent } from "../_components/items";
 import { AdminPageHeader, Checkbox, Panel, SelectField, TextField } from "../_components/fields";
 import { EditForm } from "../_components/unsaved";
 import { saveSettings } from "../settings/actions";
@@ -133,20 +134,18 @@ export default async function AdminJoinPage(props: PageProps<"/admin/join">) {
             {tab === "pending" ? (open ? "No requests waiting. New ones show up here." : "No requests waiting. The form is closed.") : `No ${tab} requests.`}
           </p>
         ) : (
-          <ul className="flex flex-col gap-3">
+          <div className="flex flex-col gap-2">
             {requests.map((r) => (
-              <li key={r.id}>
-                <RequestCard request={r} subteams={subteams} seasonYear={season?.year ?? null} />
-              </li>
+              <RequestItem key={r.id} request={r} subteams={subteams} seasonYear={season?.year ?? null} />
             ))}
-          </ul>
+          </div>
         )}
       </Panel>
     </>
   );
 }
 
-function RequestCard({
+function RequestItem({
   request: r,
   subteams,
   seasonYear,
@@ -161,96 +160,85 @@ function RequestCard({
     { value: "", label: "No subteam" },
     ...subteams.map((s) => ({ value: s.id, label: s.private ? `${s.name} (private)` : s.name })),
   ];
+  const name = `${r.first_name} ${r.last_name}`;
+  const status =
+    r.status === "pending"
+      ? firstPick
+        ? `1st choice: ${nameFor(firstPick)}`
+        : "No subteams ranked"
+      : r.status === "added"
+        ? `Added${r.subteam_name ? ` to ${r.subteam_name}` : ""}${r.season_year ? `, ${r.season_year} roster` : ""}`
+        : `Declined ${formatDate(r.decided_at)}`;
 
-  return (
-    <details className="group rounded-md border border-line bg-ink open:border-line-strong">
-      <summary className="flex cursor-pointer list-none flex-wrap items-center gap-x-4 gap-y-1 px-4 py-3">
-        <span className="text-dust transition-transform group-open:rotate-90" aria-hidden="true">
-          ›
-        </span>
-        <span className="font-semibold">
-          {r.first_name} {r.last_name}
-        </span>
-        <span className="font-label text-sm text-dust">Class of {r.graduation_year}</span>
-        {r.status === "pending" && firstPick && <span className="text-sm text-sand">1st choice: {nameFor(firstPick)}</span>}
-        {r.status === "added" && (
-          <span className="text-sm text-sand">
-            Added{r.subteam_name ? ` to ${r.subteam_name}` : ""}
-            {r.season_year ? `, ${r.season_year} roster` : ""}
-          </span>
+  const details = (
+    <div className="grid gap-6 sm:grid-cols-[200px_1fr]">
+      <div className="flex flex-col gap-2">
+        <h3 className="eyebrow text-[11px] text-ash">Their ranking</h3>
+        {r.ranking.length ? (
+          <ol className="flex flex-col gap-1">
+            {r.ranking.map((pick, i) => (
+              <li key={pick.id} className="flex items-baseline gap-3 text-sm">
+                <span className="w-5 font-label font-bold text-hornet">{i + 1}</span>
+                {nameFor(pick)}
+              </li>
+            ))}
+          </ol>
+        ) : (
+          <p className="text-sm text-dust">No subteams ranked.</p>
         )}
-        <span className="ml-auto text-xs text-ash">Sent {formatDate(r.created_at)}</span>
-      </summary>
-
-      <div className="grid gap-6 border-t border-line p-4 lg:grid-cols-[260px_1fr]">
-        <div className="flex flex-col gap-2">
-          <h3 className="eyebrow text-[11px] text-ash">Their ranking</h3>
-          {r.ranking.length ? (
-            <ol className="flex flex-col gap-1">
-              {r.ranking.map((pick, i) => (
-                <li key={pick.id} className="flex items-baseline gap-3 text-sm">
-                  <span className="w-5 font-label font-bold text-hornet">{i + 1}</span>
-                  {nameFor(pick)}
-                </li>
-              ))}
-            </ol>
-          ) : (
-            <p className="text-sm text-dust">No subteams ranked.</p>
-          )}
-        </div>
-        <div className="flex flex-col gap-2">
-          <h3 className="eyebrow text-[11px] text-ash">About them</h3>
-          <p className="text-[15px] leading-relaxed whitespace-pre-line text-sand">{r.about || "They didn't write anything."}</p>
-        </div>
       </div>
+      <div className="flex flex-col gap-2">
+        <h3 className="eyebrow text-[11px] text-ash">About them</h3>
+        <p className="text-[15px] leading-relaxed whitespace-pre-line text-sand">{r.about || "They didn't write anything."}</p>
+      </div>
+    </div>
+  );
 
-      <div className="flex flex-col gap-4 border-t border-line p-4">
-        {r.status === "pending" && (
+  const row = <RowContent opens="popup" title={name} meta={`Class of ${r.graduation_year} · ${status} · sent ${formatDate(r.created_at)}`} />;
+
+  if (r.status === "pending") {
+    return (
+      <ModalItem
+        row={row}
+        title={name}
+        description={`Class of ${r.graduation_year} · sent ${formatDate(r.created_at)}`}
+        size="lg"
+        action={addJoinToRoster.bind(null, r.id)}
+        submitLabel={seasonYear ? `Add to ${seasonYear} roster` : "Add to roster"}
+        destroy={{ label: "Decline", confirm: `Decline ${r.first_name}'s request? You can move it back to Pending later.`, action: declineJoin.bind(null, r.id) }}
+      >
+        {details}
+        <div className="grid gap-3 border-t border-line pt-4 sm:grid-cols-2">
+          <SelectField label="Subteam" name="subteam_id" defaultValue={r.assigned_subteam_id ?? ""} options={subteamOptions} hint="Starts as their 1st choice. They never see this." />
+          <TextField label="Role" name="role" defaultValue="Member" />
+        </div>
+      </ModalItem>
+    );
+  }
+  return (
+    <ModalItem
+      row={row}
+      title={name}
+      description={`Class of ${r.graduation_year} · ${r.status === "added" ? "added" : "declined"} by ${r.decided_by} on ${formatDate(r.decided_at)}`}
+      size="lg"
+      footer={
+        r.status === "declined" ? (
           <>
-            <ActionForm
-              action={addJoinToRoster.bind(null, r.id)}
-              submitLabel={seasonYear ? `Add to ${seasonYear} roster` : "Add to roster"}
-            >
-              <div className="grid gap-3 sm:grid-cols-2 lg:max-w-2xl">
-                <SelectField
-                  label="Subteam"
-                  name="subteam_id"
-                  defaultValue={r.assigned_subteam_id ?? ""}
-                  options={subteamOptions}
-                  hint="Starts as their 1st choice. They never see this."
-                />
-                <TextField label="Role" name="role" defaultValue="Member" />
-              </div>
-            </ActionForm>
-            <div className="flex flex-wrap gap-2">
-              <ActionButton action={declineJoin.bind(null, r.id)} confirm={`Decline ${r.first_name}'s request?`}>
-                Decline
+            <span className="mr-auto">
+              <ActionButton action={deleteJoin.bind(null, r.id)} variant="danger" confirm="Delete this request for good?">
+                Delete request
               </ActionButton>
-            </div>
-          </>
-        )}
-        {r.status === "added" && (
-          <p className="text-sm text-dust">
-            Added by {r.decided_by} on {formatDate(r.decided_at)}.{" "}
-            {r.person_id && (
-              <Link href={`/admin/people/${r.person_id}`} className="font-semibold text-hornet hover:text-hornet-hover">
-                Edit {r.person_name ?? "their profile"}
-              </Link>
-            )}
-          </p>
-        )}
-        {r.status === "declined" && (
-          <div className="flex flex-wrap items-center gap-3">
-            <span className="text-sm text-dust">
-              Declined by {r.decided_by} on {formatDate(r.decided_at)}.
             </span>
             <ActionButton action={reopenJoin.bind(null, r.id)}>Move back to Pending</ActionButton>
-            <ActionButton action={deleteJoin.bind(null, r.id)} variant="danger" confirm="Delete this request for good?">
-              Delete
-            </ActionButton>
-          </div>
-        )}
-      </div>
-    </details>
+          </>
+        ) : r.person_id ? (
+          <Link href={`/admin/people/${r.person_id}`} className="mr-auto text-sm font-semibold text-hornet hover:text-hornet-hover">
+            Edit {r.person_name ?? "their profile"}
+          </Link>
+        ) : undefined
+      }
+    >
+      {details}
+    </ModalItem>
   );
 }
