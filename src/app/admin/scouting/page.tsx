@@ -7,12 +7,13 @@ import { all, first, parseJson } from "@/lib/db";
 import { formatDateTime } from "@/lib/format";
 import { cleanForm, EMPTY_FORM, STARTER_FORM } from "@/lib/scouting";
 import { cachedNicknames, getScoutingForm } from "@/lib/scouting-data";
+import { isScoutingPublished } from "@/lib/season-extras";
 import { CopyLink } from "../_components/copy-link";
 import { AdminPageHeader, Checkbox, Panel } from "../_components/fields";
 import { SeasonPicker } from "../_components/season-picker";
 import { EditForm } from "../_components/unsaved";
 import { saveSettings } from "../settings/actions";
-import { saveScoutingForm } from "./actions";
+import { saveScoutingForm, setScoutingPublished } from "./actions";
 import { FormBuilder } from "./form-builder";
 
 export const metadata: Metadata = { title: "Scouting" };
@@ -34,7 +35,7 @@ export default async function AdminScoutingPage(props: PageProps<"/admin/scoutin
     );
   }
 
-  const [settings, form, previousRow, teams] = await Promise.all([
+  const [settings, form, previousRow, teams, published] = await Promise.all([
     getSettings(),
     getScoutingForm(year),
     first<{ season_year: number; fields: string }>(
@@ -50,6 +51,7 @@ export default async function AdminScoutingPage(props: PageProps<"/admin/scoutin
        FROM scouting_entries WHERE season_year = ? GROUP BY team_number ORDER BY team_number`,
       year,
     ),
+    isScoutingPublished(year),
   ]);
   const previous = previousRow ? { year: previousRow.season_year, form: cleanForm(parseJson(previousRow.fields, EMPTY_FORM)) } : null;
   const names = await cachedNicknames(teams.map((t) => t.team_number));
@@ -81,6 +83,25 @@ export default async function AdminScoutingPage(props: PageProps<"/admin/scoutin
         <CopyLink path="/scouting" />
         {open && questions === 0 && (
           <p className="text-sm text-hornet">Scouting is open, but the {year} form has no questions yet. Build it below.</p>
+        )}
+      </Panel>
+
+      <Panel
+        title="On the season page"
+        description={`Shows everything scouted in ${year} (robot sheets and match reports, notes included, without scouts' names) on a Scouting tab of the ${year} season page. Read-only: it doesn't link to /scouting.`}
+      >
+        <EditForm action={setScoutingPublished.bind(null, year)}>
+          <div className="flex flex-wrap items-center gap-4">
+            <Checkbox label={`Show ${year} scouting on the season page`} name="published" defaultChecked={published} hint="Look through the results below first: notes are public once this is on." />
+            <span className={`rounded px-2.5 py-1 font-label text-xs font-bold tracking-wider ${published ? "bg-rust text-white" : "bg-raise text-dust"}`}>
+              {published ? "PUBLIC" : "PRIVATE"}
+            </span>
+          </div>
+        </EditForm>
+        {published && (
+          <a href={`/seasons/${year}/scouting`} target="_blank" className="self-start text-sm font-semibold text-hornet hover:text-hornet-hover">
+            See the Scouting tab
+          </a>
         )}
       </Panel>
 

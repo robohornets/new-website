@@ -1,6 +1,6 @@
 "use server";
 
-import { adminAction, FormError, type ActionState } from "@/lib/admin";
+import { adminAction, bool, FormError, type ActionState } from "@/lib/admin";
 import { batch, first, parseJson, run } from "@/lib/db";
 import { cleanForm } from "@/lib/scouting";
 
@@ -72,5 +72,19 @@ export async function restoreScoutingVersion(historyId: number, _prev: ActionSta
       ],
     ]);
     return "That version is back.";
+  });
+}
+
+/** Whether this season's scouting shows on its public season page (Scouting tab). */
+export async function setScoutingPublished(year: number, _prev: ActionState, fd: FormData): Promise<ActionState> {
+  return adminAction({ action: "publish", entity: "scouting", entityId: year }, async () => {
+    const published = bool(fd, "published");
+    await run(
+      `INSERT INTO scouting_forms (season_year, published) VALUES (?, ?)
+       ON CONFLICT(season_year) DO UPDATE SET published = excluded.published`,
+      year,
+      published,
+    );
+    return published ? `${year} scouting is on the season page.` : `${year} scouting is off the season page.`;
   });
 }

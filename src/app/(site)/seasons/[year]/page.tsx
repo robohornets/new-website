@@ -4,11 +4,12 @@ import { notFound } from "next/navigation";
 import { EventRow } from "@/components/cards";
 import type { LightboxItem } from "@/components/lightbox";
 import { RobotSlideshow } from "@/components/robot-slideshow";
+import { SeasonRail, SeasonTabs } from "@/components/season-tabs";
+import { getSeasonTabs } from "@/lib/season-extras";
 import { ArrowRight, Download, External } from "@/components/icons";
 import { MediaImage } from "@/components/media-image";
 import { Container, EmptyState } from "@/components/page-header";
 import { RosterGrid } from "@/components/roster-grid";
-import { SeasonSwitcher } from "@/components/season-switcher";
 import { SponsorWall } from "@/components/sponsor-wall";
 import {
   getAlbums,
@@ -46,7 +47,7 @@ export default async function SeasonPage(props: PageProps<"/seasons/[year]">) {
   const season = year ? await getSeason(year) : null;
   if (!season) notFound();
 
-  const [seasons, robots, events, roster, sponsors, photos, albums, subteams, matchSummary] = await Promise.all([
+  const [seasons, robots, events, roster, sponsors, photos, albums, subteams, matchSummary, tabs] = await Promise.all([
     getSeasons(),
     getRobots(season.year),
     getEvents(season.year),
@@ -56,6 +57,7 @@ export default async function SeasonPage(props: PageProps<"/seasons/[year]">) {
     getAlbums(season.year),
     getSubteams(),
     getEventMatchSummary(season.year),
+    getSeasonTabs(season.year),
   ]);
   const [mainRobot, ...otherRobots] = robots;
   const students = roster.filter((m) => m.kind === "student");
@@ -74,12 +76,8 @@ export default async function SeasonPage(props: PageProps<"/seasons/[year]">) {
 
   return (
     <>
-      {/* Year rail */}
-      <nav aria-label="Seasons" className="border-b border-line bg-panel">
-        <div className="mx-auto flex max-w-[1440px] items-center gap-2 px-4 py-4 md:px-8 xl:px-16">
-          <SeasonSwitcher years={seasons.map((s) => s.year)} current={season.year} href="/seasons/{year}" label="Season" variant="rail" />
-        </div>
-      </nav>
+      <SeasonRail years={seasons.map((s) => s.year)} current={season.year} />
+      <SeasonTabs year={season.year} active="overview" tabs={tabs} />
 
       {/* Hero */}
       <Container className="flex flex-col gap-10 py-12 md:py-18 lg:flex-row lg:gap-16">

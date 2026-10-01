@@ -9,13 +9,15 @@ import { tbaConfigured } from "@/lib/tba/client";
 import { parseOverrides } from "@/lib/tba/fields";
 import { ActionButton } from "../../_components/action-form";
 import { EditForm } from "../../_components/unsaved";
-import { AdminPageHeader, Grid, Panel, SelectField, TextArea, TextField } from "../../_components/fields";
+import { AdminPageHeader, Checkbox, Grid, Panel, SelectField, TextArea, TextField } from "../../_components/fields";
 import { DocumentField } from "../../_components/document-field";
 import { MediaField } from "../../_components/media-field";
 import { TbaSyncPanel } from "../../_components/tba-sync-panel";
 import { createEvent, deleteSeason, makeCurrentSeason, updateSeason } from "../actions";
 import { createRobot } from "../../robots/actions";
-import { AddButton, Badge, LinkRow, RowContent } from "../../_components/items";
+import { AddButton, Badge, LinkRow, ModalItem, RowContent } from "../../_components/items";
+import { createResource, deleteResource, updateResource } from "../../resources/actions";
+import { getSeasonResources, getStoredResources, isScoutingPublished, type StoredResource } from "@/lib/season-extras";
 import { MediaImage } from "@/components/media-image";
 import { requireAdminPage } from "@/lib/auth";
 
@@ -44,13 +46,26 @@ export default async function AdminSeasonPage(props: PageProps<"/admin/seasons/[
   const year = Number((await props.params).year);
   const season = Number.isInteger(year) ? await getSeason(year) : null;
   if (!season) notFound();
-  const [robots, events, library, tbaStatus, env] = await Promise.all([
+  const [robots, events, library, tbaStatus, env, stored, resources, scoutingPublished] = await Promise.all([
     getRobots(year),
     getEvents(year, true),
     getMediaOptions(),
     getTbaStatus(),
     getEnv(),
+    getStoredResources(year),
+    getSeasonResources(year),
+    isScoutingPublished(year),
   ]);
+  // The resources filled in automatically, and where each is changed.
+  const autoResources = [
+    ...robots.flatMap((r) => [
+      ...(r.code_url ? [{ key: `code${r.id}`, title: `${r.name} robot code`, from: `${r.name}'s code link`, source: `/admin/robots/${r.id}` }] : []),
+      ...(r.cad_url ? [{ key: `cad${r.id}`, title: `${r.name} CAD`, from: `${r.name}'s CAD link`, source: `/admin/robots/${r.id}` }] : []),
+    ]),
+    ...(resources.season.some((x) => x.key === "notebook") ? [{ key: "notebook", title: `${year} engineering notebook`, from: "Season basics above", source: `/admin/seasons/${year}` }] : []),
+    ...(scoutingPublished ? [{ key: "scouting", title: `${year} scouting data`, from: "Scouting (shown on the season page)", source: `/admin/scouting?season=${year}` }] : []),
+    ...(resources.team.some((x) => x.key === "plan") ? [{ key: "plan", title: "Strategic Plan (every season)", from: "Site text & links", source: "/admin/settings" }] : []),
+  ];
   const tbaConnected = tbaConfigured(env);
   const heroMedia = library.find((m) => m.id === season.hero_media_id) ?? null;
 
@@ -203,6 +218,52 @@ export default async function AdminSeasonPage(props: PageProps<"/admin/seasons/[
         </div>
       </Panel>
 
+      <Panel
+        title="Resources"
+        description={
+          <>
+            The{" "}
+            <Link href={`/seasons/${year}/resources`} className="font-semibold text-hornet hover:text-hornet-hover">
+              Resources tab
+            </Link>{" "}
+            of the season page: things other teams (and judges) can use. Some are filled in for you; add anything else as a link or a PDF.
+          </>
+        }
+        actions={
+          <AddButton label="Add resource" title="Add a resource" action={createResource.bind(null, year)}>
+            <ResourceFields />
+          </AddButton>
+        }
+      >
+        <div className="flex flex-col gap-2">
+          {autoResources.map((r) => (
+            <LinkRow key={r.key} href={r.source}>
+              <RowContent opens="page" title={r.title} meta={`Filled in from ${r.from}`} badges={<Badge tone="muted">Auto</Badge>} />
+            </LinkRow>
+          ))}
+          {stored.map((r) => (
+            <ModalItem
+              key={r.id}
+              row={
+                <RowContent
+                  opens="popup"
+                  title={r.title}
+                  meta={r.r2_key ? r.filename ?? "File" : (r.url ?? "")}
+                  badges={r.season_year === null ? <Badge>Every season</Badge> : undefined}
+                />
+              }
+              title="Edit resource"
+              description={r.season_year === null ? "A team document: it shows on every season's Resources tab." : undefined}
+              action={updateResource.bind(null, r.id, year)}
+              destroy={{ label: "Delete resource", confirm: `Delete “${r.title}”?${r.season_year === null ? " It's removed from every season." : ""}`, action: deleteResource.bind(null, r.id) }}
+            >
+              <ResourceFields resource={r} />
+            </ModalItem>
+          ))}
+          {autoResources.length === 0 && stored.length === 0 && <p className="text-sm text-dust">Nothing yet. Add a robot code link, the notebook, or your own resources.</p>}
+        </div>
+      </Panel>
+
       <Panel title="Danger zone">
         <ActionButton
           action={deleteSeason.bind(null, year)}
@@ -212,6 +273,28 @@ export default async function AdminSeasonPage(props: PageProps<"/admin/seasons/[
           Delete {year} season
         </ActionButton>
       </Panel>
+    </>
+  );
+}
+
+function ResourceFields({ resource }: { resource?: StoredResource }) {
+  return (
+    <>
+      <TextField label="Title" name="title" defaultValue={resource?.title} required placeholder="Branding guidelines" />
+      <TextArea label="Description" name="description" rows={2} defaultValue={resource?.description} hint="One sentence on what it is and who it's for." />
+      <DocumentField
+        name="link"
+        label="File or link"
+        current={resource?.media_id && resource.r2_key ? { id: resource.media_id, r2_key: resource.r2_key, filename: resource.filename ?? "File" } : null}
+        currentUrl={resource?.url ?? null}
+        hint="Upload a PDF, or paste a link to anything else (Google Drive, GitHub, Onshape, YouTube)."
+      />
+      <Checkbox
+        label="Show on every season"
+        name="team"
+        defaultChecked={resource ? resource.season_year === null : false}
+        hint="For team documents like the branding guidelines, rather than things from this season."
+      />
     </>
   );
 }
