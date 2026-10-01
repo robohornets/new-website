@@ -295,12 +295,17 @@ export const getAlbumPhotos = cache(async (albumId: number, limit = 500): Promis
 /** A handful of photos from a season's first albums (in the admin's order), for previews. */
 export const getSeasonPhotos = cache(async (year: number, limit = 4): Promise<AlbumPhoto[]> =>
   all<AlbumPhoto>(
-    `SELECT ap.media_id, m.r2_key, m.content_type, m.width, m.height, m.alt, ap.caption, ap.sort_order
-     FROM album_photos ap
-     JOIN albums a ON a.id = ap.album_id
-     JOIN media m ON m.id = ap.media_id
-     WHERE a.season_year = ? AND a.published = 1 AND m.content_type LIKE 'image/%'
-     ORDER BY a.sort_order, a.created_at DESC, ap.sort_order LIMIT ?`,
+    // A photo in several of the season's albums shows once, where it first appears.
+    `SELECT media_id, r2_key, content_type, width, height, alt, caption, sort_order FROM (
+       SELECT ap.media_id, m.r2_key, m.content_type, m.width, m.height, m.alt, ap.caption, ap.sort_order,
+              a.sort_order AS album_order, a.created_at AS album_created,
+              ROW_NUMBER() OVER (PARTITION BY ap.media_id ORDER BY a.sort_order, a.created_at DESC, ap.sort_order) AS n
+       FROM album_photos ap
+       JOIN albums a ON a.id = ap.album_id
+       JOIN media m ON m.id = ap.media_id
+       WHERE a.season_year = ? AND a.published = 1 AND m.content_type LIKE 'image/%'
+     ) WHERE n = 1
+     ORDER BY album_order, album_created DESC, sort_order LIMIT ?`,
     year,
     limit,
   ),

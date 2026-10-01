@@ -50,7 +50,7 @@ export default async function SeasonPage(props: PageProps<"/seasons/[year]">) {
   const season = year ? await getSeason(year) : null;
   if (!season) notFound();
 
-  const [seasons, robots, events, roster, sponsors, photos, albums, posts, subteams, matchSummary, tabs] = await Promise.all([
+  const [seasons, robots, events, roster, sponsors, photos, albums, impact, subteams, matchSummary, tabs] = await Promise.all([
     getSeasons(),
     getRobots(season.year),
     getEvents(season.year),
@@ -58,7 +58,7 @@ export default async function SeasonPage(props: PageProps<"/seasons/[year]">) {
     getSeasonSponsors(season.year),
     getSeasonPhotos(season.year, 4),
     getAlbums(season.year),
-    getPublicOutreachEvents({ seasonYear: season.year, stories: true, limit: 3 }),
+    getPublicOutreachEvents({ seasonYear: season.year }),
     getSubteams(),
     getEventMatchSummary(season.year),
     getSeasonTabs(season.year),
@@ -76,7 +76,6 @@ export default async function SeasonPage(props: PageProps<"/seasons/[year]">) {
   const heroKey = season.hero_key ?? null;
   const notebook = documentLink(season.notebook_key, season.notebook_url);
   const competitions = events.filter((e) => e.kind !== "outreach");
-  const outreachEvents = events.filter((e) => e.kind === "outreach");
 
   return (
     <>
@@ -230,26 +229,23 @@ export default async function SeasonPage(props: PageProps<"/seasons/[year]">) {
         </section>
       )}
 
-      {outreachEvents.length > 0 && (
-        <Container className="flex flex-col gap-6 pb-16">
-          <h2 className="font-display text-4xl font-extrabold uppercase">Outreach this season</h2>
-          <ul className="grid gap-3 lg:grid-cols-2">
-            {outreachEvents.map((e) => (
-              <EventRow key={e.id} event={e} />
-            ))}
-          </ul>
-        </Container>
-      )}
-
-      {posts.length > 0 && (
+      {/* Impact events, each once: its photo, what we did, and "Read the story" when it has one. */}
+      {impact.length > 0 && (
         <section className="border-t border-line">
           <Container className="flex flex-col gap-10 py-16 md:py-24">
-            <h2 className="font-display text-5xl leading-[0.95] font-extrabold uppercase md:text-6xl">{seasonLabel(season.year)} stories</h2>
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-              {posts.map((e) => (
-                <ImpactCard key={e.id} event={e} />
-              ))}
+            <div className="flex flex-wrap items-end justify-between gap-4">
+              <h2 className="font-display text-5xl leading-[0.95] font-extrabold uppercase md:text-6xl">{seasonLabel(season.year)} impact</h2>
+              <Link href="/impact" className="flex items-center gap-2 font-semibold text-hornet hover:text-hornet-hover">
+                All of our impact <ArrowRight size={16} />
+              </Link>
             </div>
+            <ul className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              {impact.map((e) => (
+                <li key={e.id}>
+                  <ImpactCard event={e} />
+                </li>
+              ))}
+            </ul>
           </Container>
         </section>
       )}

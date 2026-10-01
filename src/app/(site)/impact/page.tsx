@@ -18,7 +18,7 @@ export default async function ImpactPage() {
   return (
     <>
       <PageHeader
-        label="Outreach & community"
+        label="In the community"
         title="Impact"
         intro={<p>Demos, recruiting, the Impact Award and every other way we share FIRST with Booker T. and Tulsa.</p>}
       />

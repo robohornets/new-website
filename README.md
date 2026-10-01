@@ -345,8 +345,8 @@ Totals are in `src/lib/outreach.ts`: a person's hours are `COALESCE(attendance.h
 event counts once it has started or has anyone logged. Each impact event's public page is `/impact/<id>-<name>`
 (`impactPath()` in `src/lib/format.ts`; `/seasons/<year>/events/<id>` redirects there). The public pages only get
 `getPublicOutreachTotals()`, `getPublicOutreachEvents()` and `getPublicImpactEvent()` (name, date, place, people
-reached, summary, story, photos), never names or anyone's hours. Published stories also show on the homepage and
-their season's page. CSV downloads are at `/admin/api/outreach-export?season=YYYY&part=people|log`. Old admin links
+reached, summary, story, photos), never names or anyone's hours. Published stories also show on the homepage; a
+season's page lists each of its impact events once, as the same card. CSV downloads are at `/admin/api/outreach-export?season=YYYY&part=people|log`. Old admin links
 (`/admin/outreach`, `/admin/posts`) redirect.
 
 ### Live match card

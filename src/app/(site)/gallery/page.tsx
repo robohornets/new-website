@@ -9,7 +9,7 @@ import { seasonLabel } from "@/lib/format";
 
 export const metadata: Metadata = {
   title: "Gallery",
-  description: "Photos from RoboHornets build seasons, competitions and outreach events.",
+  description: "Photos from RoboHornets build seasons, competitions and impact events.",
 };
 
 export default async function GalleryPage(props: PageProps<"/gallery">) {

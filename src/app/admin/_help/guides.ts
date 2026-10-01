@@ -501,7 +501,7 @@ export const GUIDES: Guide[] = [
     steps: [
       "Open the event from **Impact events**.",
       "Under **Story**, write a sentence or two in **What we did**. It's shown on the event's card on the Impact page and at the top of its page.",
-      "For a full story, write it under **Article** (**Preview** shows how it will look), tick **Publish the article** and click **Save changes**. Published stories are also on the homepage and the season's page.",
+      "For a full story, write it under **Article** (**Preview** shows how it will look), tick **Publish the article** and click **Save changes**. Published stories are also on the homepage; the season's page lists every impact event, with \"Read the story\" on the ones that have one.",
       "Under **Photos**, drop in as many photos as you like, or pick an album that already has them in **Photos come from**. The main photo leads the card and the page; the rest are a gallery at the end.",
     ],
     tips: [
