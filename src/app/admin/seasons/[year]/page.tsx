@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getMediaOptions, getSeasonYears, getTbaStatus } from "@/lib/admin-data";
+import { getSeasonYears, getTbaStatus } from "@/lib/admin-data";
 import { getEnv } from "@/lib/cf";
 import { getEvents, getRobots, getSeason } from "@/lib/data";
 import { formatDate, seasonLabel } from "@/lib/format";
@@ -37,7 +37,7 @@ const EVENT_KINDS = [
   { value: "district", label: "District event" },
   { value: "championship", label: "Championship" },
   { value: "offseason", label: "Offseason event" },
-  { value: "outreach", label: "Outreach / demo" },
+  { value: "outreach", label: "Impact event (outreach, demo)" },
   { value: "other", label: "Other" },
 ];
 
@@ -46,10 +46,9 @@ export default async function AdminSeasonPage(props: PageProps<"/admin/seasons/[
   const year = Number((await props.params).year);
   const season = Number.isInteger(year) ? await getSeason(year) : null;
   if (!season) notFound();
-  const [robots, events, library, tbaStatus, env, stored, resources, scoutingPublished, years] = await Promise.all([
+  const [robots, events, tbaStatus, env, stored, resources, scoutingPublished, years] = await Promise.all([
     getRobots(year),
     getEvents(year, true),
-    getMediaOptions(),
     getTbaStatus(),
     getEnv(),
     getStoredResources(year),
@@ -68,7 +67,7 @@ export default async function AdminSeasonPage(props: PageProps<"/admin/seasons/[
     ...(resources.team.some((x) => x.key === "plan") ? [{ key: "plan", title: "Strategic Plan (every season)", from: "Site text & links", source: "/admin/settings" }] : []),
   ];
   const tbaConnected = tbaConfigured(env);
-  const heroMedia = library.find((m) => m.id === season.hero_media_id) ?? null;
+  const heroMedia = season.hero_media_id && season.hero_key ? { id: season.hero_media_id, r2_key: season.hero_key, filename: "Season photo" } : null;
 
   return (
     <>
@@ -129,7 +128,6 @@ export default async function AdminSeasonPage(props: PageProps<"/admin/seasons/[
             name="hero_media_id"
             label="Season photo"
             current={heroMedia}
-            library={library}
             hint="A team or game photo for the homepage (while this is the current season) and the Seasons list. The season page itself leads with the robot's photo slideshow."
           />
           <DocumentField
@@ -176,7 +174,7 @@ export default async function AdminSeasonPage(props: PageProps<"/admin/seasons/[
         title="Competitions & events"
         description="Events 1209 is registered for come in from The Blue Alliance on their own, with rank, record, awards and every match. Click an event to fix anything or add a write-up."
         actions={
-          <AddButton label="Add event" title="Add an event by hand" description="For events The Blue Alliance doesn't list, like scrimmages, demos or outreach." action={createEvent.bind(null, year)} submitLabel="Add event">
+          <AddButton label="Add event" title="Add an event by hand" description="For events The Blue Alliance doesn't list, like scrimmages. For demos and outreach, add an impact event under Impact events instead." action={createEvent.bind(null, year)} submitLabel="Add event">
             <TextField label="Event name" name="name" required />
             <Grid>
               <SelectField label="Type" name="kind" defaultValue="offseason" options={EVENT_KINDS} />
@@ -198,14 +196,14 @@ export default async function AdminSeasonPage(props: PageProps<"/admin/seasons/[
             {events.map((e) => {
               const edited = parseOverrides(e.overrides).length;
               return (
-                <LinkRow key={e.id} href={`/admin/events/${e.id}`}>
+                <LinkRow key={e.id} href={e.kind === "outreach" && !e.tba ? `/admin/impact/${e.id}` : `/admin/events/${e.id}`}>
                   <RowContent
                     opens="page"
                     title={e.name}
                     meta={`${formatDate(e.start_date) || "No date"}${e.location ? ` · ${e.location}` : ""}${e.rank ? ` · ${e.rank}` : ""}`}
                     badges={
                       <>
-                        {e.kind === "outreach" && <Badge>Outreach</Badge>}
+                        {e.kind === "outreach" && <Badge>Impact</Badge>}
                         <Badge tone={e.tba ? "plain" : "muted"}>{e.tba ? "TBA" : "By hand"}</Badge>
                         {edited > 0 && <Badge tone="accent">{edited} edited</Badge>}
                         {e.hidden === 1 && <Badge tone="muted">Hidden</Badge>}

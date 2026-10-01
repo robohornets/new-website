@@ -141,10 +141,10 @@ export default async function AdminDashboard() {
         <Stat href={season ? `/admin/roster?season=${season.year}` : "/admin/roster"} label={`Roster${season ? ` · ${season.year}` : ""}`} value={roster.length} sub={`${roster.filter((r) => r.kind === "student").length} students · ${roster.filter((r) => r.kind === "mentor").length} mentors`} />
         <Stat href="/admin/sponsors" label="Sponsors" value={counts?.sponsors ?? 0} sub={`${sponsors.length} this season`} />
         <Stat
-          href="/admin/outreach"
-          label={`Outreach hours${season ? ` · ${seasonLabel(season.year)}` : ""}`}
+          href="/admin/impact"
+          label={`Impact hours${season ? ` · ${seasonLabel(season.year)}` : ""}`}
           value={formatHours(outreach?.hours ?? 0)}
-          sub={`${outreach?.events ?? 0} events · ${outreach?.volunteers ?? 0} helped`}
+          sub={`${outreach?.events ?? 0} impact events · ${outreach?.volunteers ?? 0} helped`}
         />
         <Stat href="/admin/gallery" label="Gallery albums" value={counts?.albums ?? 0} sub={`${seasonPhotos?.n ?? 0} photos this season`} />
       </div>

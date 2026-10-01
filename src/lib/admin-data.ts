@@ -5,14 +5,6 @@ import { directUploadsConfigured } from "./upload";
 
 export type MediaOption = { id: number; r2_key: string; filename: string };
 
-/** Recent images for the "pick from library" dropdowns. */
-export async function getMediaOptions(limit = 300): Promise<MediaOption[]> {
-  return all<MediaOption>(
-    "SELECT id, r2_key, filename FROM media WHERE content_type LIKE 'image/%' ORDER BY created_at DESC LIMIT ?",
-    limit,
-  );
-}
-
 export async function getMediaOption(id: number | null | undefined): Promise<MediaOption | null> {
   if (!id) return null;
   return first<MediaOption>("SELECT id, r2_key, filename FROM media WHERE id = ?", id);

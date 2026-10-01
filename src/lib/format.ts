@@ -90,3 +90,14 @@ export function seasonLabel(year: number | null | undefined): string {
   const yy = (n: number) => String(((n % 100) + 100) % 100).padStart(2, "0");
   return `${yy(year - 1)}-${yy(year)}`;
 }
+
+/** An impact (outreach) event's public page: /impact/12-demo-at-central-library. */
+export function impactPath(e: { id: number; name: string }): string {
+  const slug = slugify(e.name);
+  return `/impact/${e.id}${slug ? `-${slug}` : ""}`;
+}
+
+/** Where an event's public page is: impact events have their own, the rest are under their season. */
+export function eventPath(e: { id: number; name: string; kind: string; season_year: number }): string {
+  return e.kind === "outreach" ? impactPath(e) : `/seasons/${e.season_year}/events/${e.id}`;
+}

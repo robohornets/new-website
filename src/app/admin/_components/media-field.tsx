@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { mediaUrl } from "@/lib/media";
+import { LibraryPicker } from "./library-picker";
 
 export type MediaOption = { id: number; r2_key: string; filename: string };
 
@@ -12,23 +13,22 @@ export { uploadFiles };
 
 /**
  * Picks an image for a form: upload a new file straight to R2, or choose one
- * already in the media library. Submits the media id under `name`.
+ * already in the media library (a searchable grid of thumbnails). Submits
+ * the media id under `name`.
  */
 export function MediaField({
   name,
   label,
   current,
-  library,
   hint,
 }: {
   name: string;
   label: string;
   current: MediaOption | null;
-  library: MediaOption[];
   hint?: string;
 }) {
   const [selected, setSelected] = useState<MediaOption | null>(current);
-  const [options, setOptions] = useState(library);
+  const [picking, setPicking] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -41,7 +41,6 @@ export function MediaField({
     try {
       const [m] = await uploadFiles([files[0]]);
       setSelected(m);
-      setOptions((o) => [m, ...o.filter((x) => x.id !== m.id)]);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Upload failed");
     } finally {
@@ -76,6 +75,14 @@ export function MediaField({
                 onChange={(e) => onFile(e.target.files)}
               />
             </label>
+            <button
+              type="button"
+              onClick={() => setPicking(true)}
+              aria-haspopup="dialog"
+              className="flex h-10 items-center rounded-md border border-line-strong px-4 text-sm font-semibold hover:border-bone"
+            >
+              Choose from library
+            </button>
             {selected && (
               <button
                 type="button"
@@ -86,25 +93,16 @@ export function MediaField({
               </button>
             )}
           </div>
-          {options.length > 0 && (
-            <select
-              aria-label={`${label}: choose from media library`}
-              value={selected?.id ?? ""}
-              onChange={(e) => setSelected(options.find((o) => o.id === Number(e.target.value)) ?? null)}
-              className="h-10 max-w-xs rounded-md border border-edge bg-ink px-2 text-sm text-bone"
-            >
-              <option value="">Or pick from library…</option>
-              {options.map((o) => (
-                <option key={o.id} value={o.id}>
-                  {o.filename}
-                </option>
-              ))}
-            </select>
-          )}
           {hint && <span className="text-xs text-dust">{hint}</span>}
           {error && <span className="text-sm text-danger">{error}</span>}
         </div>
       </div>
+      <LibraryPicker
+        open={picking}
+        onClose={() => setPicking(false)}
+        title={`Choose: ${label}`}
+        onPick={([m]) => m && setSelected({ id: m.id, r2_key: m.r2_key, filename: m.filename })}
+      />
     </fieldset>
   );
 }

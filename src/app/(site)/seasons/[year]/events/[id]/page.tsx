@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import { ArrowRight, External } from "@/components/icons";
 import { Container } from "@/components/page-header";
 import { VideoEmbed } from "@/components/video-embed";
 import { getAlbumPhotos, getEvent, getMatches } from "@/lib/data";
 import { first } from "@/lib/db";
-import { formatDate, seasonLabel } from "@/lib/format";
+import { formatDate, impactPath, seasonLabel } from "@/lib/format";
 import { mediaSrcSet, mediaUrl } from "@/lib/media";
 import { matchLabel } from "@/lib/tba/map";
 import type { Match, TeamEvent } from "@/lib/types";
@@ -40,6 +40,8 @@ function dateRange(e: TeamEvent) {
 export default async function EventPage(props: PageProps<"/seasons/[year]/events/[id]">) {
   const event = await load(props);
   if (!event) notFound();
+  // Impact events have their own page.
+  if (event.kind === "outreach") permanentRedirect(impactPath(event));
   const [matches, album] = await Promise.all([
     getMatches(event.id),
     event.album_id

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getMediaOptions } from "@/lib/admin-data";
+import { getMediaOption } from "@/lib/admin-data";
 import { all, first } from "@/lib/db";
 import type { Person } from "@/lib/types";
 import { ActionButton } from "../../_components/action-form";
@@ -19,9 +19,9 @@ export default async function PersonPage(props: PageProps<"/admin/people/[id]">)
   const id = Number((await props.params).id);
   const person = Number.isInteger(id) ? await first<Person>("SELECT *, NULL AS photo_key FROM people WHERE id = ?", id) : null;
   if (!person) notFound();
-  const [seasons, library] = await Promise.all([
+  const [seasons, photo] = await Promise.all([
     all<{ season_year: number; role: string }>("SELECT season_year, role FROM roster_entries WHERE person_id = ? ORDER BY season_year DESC", id),
-    getMediaOptions(),
+    getMediaOption(person.photo_media_id),
   ]);
 
   return (
@@ -48,11 +48,11 @@ export default async function PersonPage(props: PageProps<"/admin/people/[id]">)
             <TextField label="Graduation year" name="graduation_year" type="number" defaultValue={person.graduation_year} />
           </Grid>
           <TextArea label="Short bio" name="bio" rows={3} defaultValue={person.bio} hint="Public: anyone can read it by clicking their card on the Team page." />
-          <MediaField name="photo_media_id" label="Photo" current={library.find((m) => m.id === person.photo_media_id) ?? null} library={library} />
+          <MediaField name="photo_media_id" label="Photo" current={photo} />
           <Checkbox label="Show photo on the public site" name="show_photo" defaultChecked={person.show_photo === 1} />
         </EditForm>
       </Panel>
-      <DeletePanel title="Delete this person" description="Removes them from every season's roster and their outreach hours. This can't be undone; to take them off one season, use Remove on the roster instead.">
+      <DeletePanel title="Delete this person" description="Removes them from every season's roster and their impact event hours. This can't be undone; to take them off one season, use Remove on the roster instead.">
         <ActionButton action={deletePerson.bind(null, id)} variant="danger" confirm="Delete this person from every season? This can't be undone.">
           Delete person
         </ActionButton>

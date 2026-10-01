@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { seasonLabel } from "@/lib/format";
-import { EventRow, PostCard } from "@/components/cards";
+import { getPublicOutreachEvents } from "@/lib/outreach";
+import { EventRow } from "@/components/cards";
+import { ImpactCard } from "@/components/impact-card";
 import type { LightboxItem } from "@/components/lightbox";
 import { RobotSlideshow } from "@/components/robot-slideshow";
 import { SeasonRail, SeasonTabs } from "@/components/season-tabs";
@@ -14,7 +16,6 @@ import { RosterGrid } from "@/components/roster-grid";
 import { SponsorWall } from "@/components/sponsor-wall";
 import {
   getAlbums,
-  getPosts,
   getAlbumPhotos,
   getEventMatchSummary,
   getEvents,
@@ -57,7 +58,7 @@ export default async function SeasonPage(props: PageProps<"/seasons/[year]">) {
     getSeasonSponsors(season.year),
     getSeasonPhotos(season.year, 4),
     getAlbums(season.year),
-    getPosts({ seasonYear: season.year, limit: 3 }),
+    getPublicOutreachEvents({ seasonYear: season.year, stories: true, limit: 3 }),
     getSubteams(),
     getEventMatchSummary(season.year),
     getSeasonTabs(season.year),
@@ -244,9 +245,9 @@ export default async function SeasonPage(props: PageProps<"/seasons/[year]">) {
         <section className="border-t border-line">
           <Container className="flex flex-col gap-10 py-16 md:py-24">
             <h2 className="font-display text-5xl leading-[0.95] font-extrabold uppercase md:text-6xl">{seasonLabel(season.year)} stories</h2>
-            <div className="grid gap-10 md:grid-cols-2 md:gap-6 xl:grid-cols-3">
-              {posts.map((p) => (
-                <PostCard key={p.id} post={p} />
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              {posts.map((e) => (
+                <ImpactCard key={e.id} event={e} />
               ))}
             </div>
           </Container>

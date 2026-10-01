@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { formatDate, monthDay, seasonLabel } from "@/lib/format";
-import { SEASON_STATUS_LABEL, type Post, type Robot, type Season, type TeamEvent } from "@/lib/types";
+import { eventPath, monthDay, seasonLabel } from "@/lib/format";
+import { SEASON_STATUS_LABEL, type Robot, type Season, type TeamEvent } from "@/lib/types";
 import { MediaImage } from "./media-image";
 
 export function SeasonStatusCard({
@@ -82,30 +82,6 @@ export function RobotCard({ robot, gameName }: { robot: Robot; gameName?: string
   );
 }
 
-/** An outreach post on the Impact page, the homepage and its season's page. */
-export function PostCard({ post }: { post: Post }) {
-  return (
-    <Link href={`/impact/${post.slug}`} className="group flex flex-col gap-4.5 text-bone">
-      <div className="h-60 overflow-hidden rounded-md">
-        <MediaImage mediaKey={post.cover_key} alt="" className="size-full transition-transform duration-300 group-hover:scale-[1.03]" />
-      </div>
-      <div className="flex items-center gap-2.5 font-label text-xs tracking-wider uppercase">
-        <span className="text-hornet">Outreach</span>
-        {post.published_at && (
-          <>
-            <span className="text-ash">·</span>
-            <time dateTime={post.published_at} className="text-dust">
-              {formatDate(post.published_at)}
-            </time>
-          </>
-        )}
-      </div>
-      <h3 className="font-display text-[32px] leading-[1.05] font-bold uppercase group-hover:text-hornet">{post.title}</h3>
-      {post.excerpt && <p className="text-[15px] leading-relaxed text-dust">{post.excerpt}</p>}
-    </Link>
-  );
-}
-
 /**
  * An event in a list, linking to its page on our site. Pass `matches` (the
  * season page does) to say on the row that the match list is there.
@@ -123,7 +99,7 @@ export function EventRow({ event, matches }: { event: TeamEvent; matches?: { cou
   return (
     <li>
       <Link
-        href={`/seasons/${event.season_year}/events/${event.id}`}
+        href={eventPath(event)}
         className="group flex items-center gap-4 rounded-md border border-line bg-ink px-4 py-4.5 hover:border-edge sm:gap-5 sm:px-5"
       >
         <div className="flex w-14 shrink-0 flex-col items-center gap-0.5 sm:w-16">

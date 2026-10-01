@@ -5,7 +5,7 @@ import { seasonLabel } from "@/lib/format";
 export function OutreachTotalsStrip({ totals }: { totals: OutreachTotals }) {
   const stats = [
     { label: "volunteer hours", value: Math.round(totals.hours) },
-    { label: totals.events === 1 ? "outreach event" : "outreach events", value: totals.events },
+    { label: totals.events === 1 ? "impact event" : "impact events", value: totals.events },
     { label: "people reached", value: totals.reached },
   ].filter((s) => s.value > 0);
   if (stats.length === 0) return null;

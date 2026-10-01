@@ -4,13 +4,14 @@ import { notFound } from "next/navigation";
 import { specsToText } from "@/lib/admin";
 import { directUploadsEnabled, getSeasonYears } from "@/lib/admin-data";
 import { requireAdminPage } from "@/lib/auth";
-import { getRobot } from "@/lib/data";
+import { FIRST_IMAGE, getRobot } from "@/lib/data";
 import { all, first } from "@/lib/db";
 import { seasonLabel } from "@/lib/format";
 import { ActionButton } from "../../_components/action-form";
 import { BulkUploader } from "../../_components/bulk-uploader";
 import { AdminPageHeader, DeletePanel, Grid, Panel, SelectField, TextArea, TextField } from "../../_components/fields";
 import { PhotosEditor, type EditorPhoto } from "../../_components/photos-editor";
+import { AlbumField, type LibraryAlbum } from "../../_components/library-picker";
 import { EditForm } from "../../_components/unsaved";
 import { deleteRobot, ensureRobotAlbum, setRobotAlbum, updateRobot } from "../actions";
 
@@ -30,14 +31,7 @@ export default async function AdminRobotPage(props: PageProps<"/admin/robots/[id
   const robot = Number.isInteger(id) ? await getRobot(id) : null;
   if (!robot) notFound();
 
-  const [albums, photos, album, direct, years] = await Promise.all([
-    // Its season's albums, and the one it uses (from another season, if the robot was moved).
-    all<{ id: number; title: string; photos: number }>(
-      `SELECT a.id, a.title, (SELECT COUNT(*) FROM album_photos ap WHERE ap.album_id = a.id) AS photos
-       FROM albums a WHERE a.season_year = ? OR a.id = ? ORDER BY a.sort_order, a.created_at DESC`,
-      robot.season_year,
-      robot.album_id ?? 0,
-    ),
+  const [photos, album, direct, years] = await Promise.all([
     robot.album_id
       ? all<EditorPhoto>(
           `SELECT ap.media_id, m.r2_key, m.alt, m.filename, ap.caption FROM album_photos ap JOIN media m ON m.id = ap.media_id
@@ -45,7 +39,15 @@ export default async function AdminRobotPage(props: PageProps<"/admin/robots/[id
           robot.album_id,
         )
       : [],
-    robot.album_id ? first<{ id: number; title: string; slug: string; cover_media_id: number | null; published: number }>("SELECT id, title, slug, cover_media_id, published FROM albums WHERE id = ?", robot.album_id) : null,
+    robot.album_id
+      ? first<LibraryAlbum & { cover_media_id: number | null; published: number }>(
+          `SELECT a.id, a.title, a.season_year, a.cover_media_id, a.published,
+              (SELECT COUNT(*) FROM album_photos ap WHERE ap.album_id = a.id) AS photos,
+              (SELECT mi.r2_key FROM media mi WHERE mi.id = COALESCE(a.cover_media_id, ${FIRST_IMAGE})) AS cover_key
+       FROM albums a WHERE a.id = ?`,
+          robot.album_id,
+        )
+      : null,
     directUploadsEnabled(),
     getSeasonYears(),
   ]);
@@ -128,16 +130,11 @@ export default async function AdminRobotPage(props: PageProps<"/admin/robots/[id
         />
         {/* Keyed by the album, so it shows the new one after the first upload makes it. */}
         <EditForm key={robot.album_id ?? "none"} action={setRobotAlbum.bind(null, robot.id)}>
-          <SelectField
-            label="Photos come from"
+          <AlbumField
             name="album_id"
-            defaultValue={robot.album_id ?? ""}
-            options={[
-              { value: "", label: album ? "No album (remove the photos from this robot)" : "Its own album (made when you upload above)" },
-              ...albums.map((a) => ({ value: a.id, label: `${a.title} (${a.photos} photos)` })),
-            ]}
-            hint={`Already have the photos in a ${season} album? Pick it here instead of uploading again.`}
-            className="max-w-xl"
+            current={album}
+            noneLabel="Its own album, made when you upload above"
+            hint="Already have the photos in an album? Use it instead of uploading them again."
           />
         </EditForm>
         {album && photos.length > 0 && <PhotosEditor albumId={album.id} coverId={album.cover_media_id} photos={photos} coverLabel="Make main photo" />}

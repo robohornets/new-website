@@ -11,6 +11,10 @@ const nextConfig: NextConfig = {
       // Outreach posts used to live under /news and are now on the Impact page.
       { source: "/news", destination: "/", permanent: true },
       { source: "/news/:slug", destination: "/impact/:slug", permanent: true },
+      // Outreach posts and outreach hours are one thing now: impact events.
+      { source: "/admin/outreach", destination: "/admin/impact", permanent: true },
+      { source: "/admin/outreach/:id", destination: "/admin/impact/:id", permanent: true },
+      { source: "/admin/posts/:path*", destination: "/admin/impact", permanent: true },
     ];
   },
 };

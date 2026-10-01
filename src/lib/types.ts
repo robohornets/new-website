@@ -94,6 +94,9 @@ export type TeamEvent = {
   outreach_hours: number | null;
   /** Outreach events: rough count of the public we reached. */
   people_reached: number | null;
+  /** Impact (outreach) events: the story, in Markdown, shown once story_published is 1. */
+  story: string;
+  story_published: number;
 };
 
 export type Match = {
@@ -160,27 +163,6 @@ export type JoinRequest = {
   decided_by: string | null;
   decided_at: string | null;
   created_at: string;
-};
-
-/**
- * An outreach post (a story on the Impact page). Posts written for the old
- * News section have category "news" and aren't shown on the site.
- */
-export type Post = {
-  id: number;
-  slug: string;
-  title: string;
-  category: "news" | "outreach";
-  excerpt: string;
-  body: string;
-  /** Its photos (uploaded on the post); the album's main photo is the cover. */
-  album_id: number | null;
-  cover_key: string | null;
-  season_year: number | null;
-  published: number;
-  published_at: string | null;
-  created_at: string;
-  updated_at: string;
 };
 
 export type SponsorTier = { id: number; name: string; rank: number };

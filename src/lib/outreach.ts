@@ -70,26 +70,52 @@ export type PublicOutreachEvent = {
   start_date: string | null;
   end_date: string | null;
   recap: string;
+  people_reached: number | null;
+  /** 1 when it has a published story to read. */
+  has_story: number;
   /** The cover of the event's album (or its first photo), if it has one. */
   cover_key: string | null;
   upcoming: number;
 };
 
+const PUBLIC_COLUMNS = `e.id, e.season_year, e.name, e.location, e.start_date, e.end_date, e.recap, e.people_reached,
+  (e.story_published = 1 AND trim(e.story) != '') AS has_story,
+  m.r2_key AS cover_key, COALESCE(date(e.start_date) > ${TODAY}, 0) AS upcoming`;
+const PUBLIC_FROM = `FROM events e
+  LEFT JOIN albums a ON a.id = e.album_id AND a.published = 1
+  LEFT JOIN media m ON m.id = COALESCE(a.cover_media_id, ${FIRST_IMAGE})`;
+
 /**
- * Outreach events for the public Impact page, newest first: what we did and
- * where, never who went or for how long.
+ * Impact (outreach) events for the site, newest first: what we did and
+ * where, never who went or for how long. `stories` keeps just the ones with
+ * a published story; `seasonYear` just one season's.
  */
-export const getPublicOutreachEvents = cache(async (limit = 60): Promise<PublicOutreachEvent[]> =>
-  all<PublicOutreachEvent>(
-    `SELECT e.id, e.season_year, e.name, e.location, e.start_date, e.end_date, e.recap,
-            m.r2_key AS cover_key, COALESCE(date(e.start_date) > ${TODAY}, 0) AS upcoming
-     FROM events e
-     LEFT JOIN albums a ON a.id = e.album_id AND a.published = 1
-     LEFT JOIN media m ON m.id = COALESCE(a.cover_media_id, ${FIRST_IMAGE})
-     WHERE e.kind = 'outreach' AND e.hidden = 0
-     ORDER BY e.start_date IS NULL, e.start_date DESC, e.id DESC
-     LIMIT ?`,
-    limit,
+export const getPublicOutreachEvents = cache(
+  async (opts: { limit?: number; stories?: boolean; seasonYear?: number } = {}): Promise<PublicOutreachEvent[]> => {
+    const where = ["e.kind = 'outreach'", "e.hidden = 0"];
+    const params: number[] = [];
+    if (opts.stories) where.push("e.story_published = 1 AND trim(e.story) != ''");
+    if (opts.seasonYear) {
+      where.push("e.season_year = ?");
+      params.push(opts.seasonYear);
+    }
+    return all<PublicOutreachEvent>(
+      `SELECT ${PUBLIC_COLUMNS} ${PUBLIC_FROM} WHERE ${where.join(" AND ")}
+       ORDER BY e.start_date IS NULL, e.start_date DESC, e.id DESC LIMIT ?`,
+      ...params,
+      opts.limit ?? 60,
+    );
+  },
+);
+
+export type PublicImpactEvent = PublicOutreachEvent & { story: string; story_published: number; highlight_video_url: string | null; album_id: number | null };
+
+/** One impact event for its public page, or null if it's hidden or not an impact event. */
+export const getPublicImpactEvent = cache(async (id: number): Promise<PublicImpactEvent | null> =>
+  first<PublicImpactEvent>(
+    `SELECT ${PUBLIC_COLUMNS}, e.story, e.story_published, e.highlight_video_url, a.id AS album_id ${PUBLIC_FROM}
+     WHERE e.id = ? AND e.kind = 'outreach' AND e.hidden = 0`,
+    id,
   ),
 );
 
@@ -106,6 +132,9 @@ export type OutreachEventRow = {
   hours: number;
   /** 1 once the event has started. */
   happened: number;
+  /** "published", "draft" (written but not published) or "" (no story). */
+  story: "published" | "draft" | "";
+  photos: number;
 };
 
 /** A season's outreach events, newest first, with who went. */
@@ -113,7 +142,9 @@ export async function getOutreachEvents(year: number): Promise<OutreachEventRow[
   return all<OutreachEventRow>(
     `SELECT e.id, e.name, e.location, e.start_date, e.end_date, e.outreach_hours, e.people_reached, e.hidden,
             COUNT(a.person_id) AS attendees, COALESCE(SUM(${HOURS}), 0) AS hours,
-            COALESCE(date(e.start_date) <= ${TODAY}, 0) AS happened
+            COALESCE(date(e.start_date) <= ${TODAY}, 0) AS happened,
+            CASE WHEN trim(e.story) = '' THEN '' WHEN e.story_published = 1 THEN 'published' ELSE 'draft' END AS story,
+            (SELECT COUNT(*) FROM album_photos ap WHERE ap.album_id = e.album_id) AS photos
      FROM events e LEFT JOIN outreach_attendance a ON a.event_id = e.id
      WHERE e.season_year = ? AND e.kind = 'outreach'
      GROUP BY e.id

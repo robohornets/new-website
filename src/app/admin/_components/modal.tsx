@@ -23,7 +23,7 @@ export function Modal({
   description?: ReactNode;
   children?: ReactNode;
   footer?: ReactNode;
-  size?: "sm" | "md" | "lg";
+  size?: "sm" | "md" | "lg" | "xl";
 }) {
   const ref = useRef<HTMLDialogElement>(null);
   const titleId = useId();
@@ -35,7 +35,7 @@ export function Modal({
     if (!open && dialog.open) dialog.close();
   }, [open]);
 
-  const width = { sm: "max-w-[440px]", md: "max-w-[640px]", lg: "max-w-[860px]" }[size];
+  const width = { sm: "max-w-[440px]", md: "max-w-[640px]", lg: "max-w-[860px]", xl: "max-w-[1120px]" }[size];
 
   return (
     <dialog

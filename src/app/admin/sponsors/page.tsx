@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { getMediaOptions, resolveSeasonParam } from "@/lib/admin-data";
+import { resolveSeasonParam } from "@/lib/admin-data";
 import { all } from "@/lib/db";
 import { mediaUrl } from "@/lib/media";
 import type { Sponsor, SponsorTier } from "@/lib/types";
@@ -19,7 +19,7 @@ export default async function AdminSponsorsPage(props: PageProps<"/admin/sponsor
   await requireAdminPage();
   const { season } = await props.searchParams;
   const { year, years } = await resolveSeasonParam(season);
-  const [sponsors, tiers, lineup, library] = await Promise.all([
+  const [sponsors, tiers, lineup] = await Promise.all([
     all<Sponsor>("SELECT s.*, m.r2_key AS logo_key FROM sponsors s LEFT JOIN media m ON m.id = s.logo_media_id ORDER BY s.name"),
     all<SponsorTier>("SELECT * FROM sponsor_tiers ORDER BY rank, name"),
     year
@@ -28,7 +28,6 @@ export default async function AdminSponsorsPage(props: PageProps<"/admin/sponsor
           year,
         )
       : [],
-    getMediaOptions(),
   ]);
   const bySponsor = new Map(lineup.map((l) => [l.sponsor_id, l]));
   const tierOptions = tiers.map((t) => ({ value: t.id, label: t.name }));
@@ -63,7 +62,7 @@ export default async function AdminSponsorsPage(props: PageProps<"/admin/sponsor
                 {year && tiers.length > 0 && (
                   <SelectField label={`${seasonLabel(year)} tier`} name="tier_id" options={[{ value: "", label: "Not this season" }, ...tierOptions]} />
                 )}
-                <SponsorFields library={library} />
+                <SponsorFields />
               </AddButton>
             }
           >
@@ -109,7 +108,7 @@ export default async function AdminSponsorsPage(props: PageProps<"/admin/sponsor
                         <TextField label="Order within tier" name="sort_order" type="number" defaultValue={current?.sort_order ?? 0} hint="Lower shows first." />
                       </Grid>
                     )}
-                    <SponsorFields sponsor={s} library={library} />
+                    <SponsorFields sponsor={s} />
                   </ModalItem>
                 );
               })}
@@ -148,7 +147,7 @@ export default async function AdminSponsorsPage(props: PageProps<"/admin/sponsor
   );
 }
 
-function SponsorFields({ sponsor, library }: { sponsor?: Sponsor; library: { id: number; r2_key: string; filename: string }[] }) {
+function SponsorFields({ sponsor }: { sponsor?: Sponsor }) {
   return (
     <>
       <Grid>
@@ -159,8 +158,7 @@ function SponsorFields({ sponsor, library }: { sponsor?: Sponsor; library: { id:
       <MediaField
         name="logo_media_id"
         label="Logo"
-        current={library.find((m) => m.id === sponsor?.logo_media_id) ?? null}
-        library={library}
+        current={sponsor?.logo_media_id && sponsor.logo_key ? { id: sponsor.logo_media_id, r2_key: sponsor.logo_key, filename: sponsor.name } : null}
         hint="Transparent PNG or SVG works best. Shown on a light tile."
       />
     </>

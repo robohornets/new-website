@@ -103,3 +103,21 @@ export async function saveAlbumPhotoOrder(albumId: number, _prev: ActionState, f
     return "Photo order saved.";
   });
 }
+
+/** Adds photos already in the media library to an album, at the end. Ones already in it are skipped. */
+export async function addPhotosToAlbum(albumId: number, mediaIds: number[]): Promise<ActionState> {
+  return adminAction({ action: "add_photos", entity: "album", entityId: albumId }, async () => {
+    const ids = [...new Set(mediaIds)].filter((n) => Number.isInteger(n) && n > 0).slice(0, 500);
+    if (!ids.length) throw new FormError("Pick at least one photo.");
+    const row = await first<{ n: number }>("SELECT COALESCE(MAX(sort_order), 0) AS n FROM album_photos WHERE album_id = ?", albumId);
+    await batch(
+      ids.map((mediaId, i) => [
+        "INSERT OR IGNORE INTO album_photos (album_id, media_id, sort_order) SELECT ?, id, ? FROM media WHERE id = ?",
+        albumId,
+        (row?.n ?? 0) + i + 1,
+        mediaId,
+      ]),
+    );
+    return `${ids.length} ${ids.length === 1 ? "photo" : "photos"} added.`;
+  });
+}

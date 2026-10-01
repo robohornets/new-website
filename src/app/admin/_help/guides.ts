@@ -6,14 +6,14 @@
 
 export type Guide = {
   id: string;
-  group: "Start here" | "Season basics" | "Photos" | "People & sponsors" | "Outreach" | "Site text" | "Scouting";
+  group: "Start here" | "Season basics" | "Photos" | "People & sponsors" | "Impact" | "Site text" | "Scouting";
   title: string;
   pages: string[];
   steps: string[];
   tips?: string[];
 };
 
-export const GROUPS: Guide["group"][] = ["Start here", "Season basics", "Photos", "People & sponsors", "Outreach", "Site text", "Scouting"];
+export const GROUPS: Guide["group"][] = ["Start here", "Season basics", "Photos", "People & sponsors", "Impact", "Site text", "Scouting"];
 
 export const GUIDES: Guide[] = [
   // ---- Start here ------------------------------------------------------------
@@ -76,16 +76,16 @@ export const GUIDES: Guide[] = [
     id: "move-season",
     group: "Season basics",
     title: "Move something to another season",
-    pages: ["/admin/robots", "/admin/events", "/admin/outreach", "/admin/posts", "/admin/gallery/", "/admin/seasons/"],
+    pages: ["/admin/robots", "/admin/events", "/admin/impact", "/admin/gallery/", "/admin/seasons/"],
     steps: [
-      "Anything tied to a season has a **Season** box where it's edited: robots (under **Details**), events added by hand, outreach events, outreach posts and albums.",
+      "Anything tied to a season has a **Season** box where it's edited: robots (under **Details**), events added by hand, impact events and albums.",
       "Pick the right season and click **Save changes** in the bar at the bottom. It moves straight away.",
-      "A robot's or a post's own photo album moves with it (and is renamed, unless you've renamed it yourself).",
+      "A robot's or an impact event's own photo album moves with it (and is renamed, unless you've renamed it yourself).",
       "Resources have **Shows on** in their popup: a season, or **Every season** for team documents.",
     ],
     tips: [
       "Events from The Blue Alliance can't be moved: they always belong to the season of their key (2027okok is the 26-27 season), and syncing would put them back.",
-      "Moving an outreach event moves its hours to that season's totals.",
+      "Moving an impact event moves its hours to that season's totals.",
     ],
   },
   {
@@ -225,10 +225,25 @@ export const GUIDES: Guide[] = [
     tips: ["Each photo is kept exactly as uploaded. The site makes smaller copies automatically so pages load fast."],
   },
   {
+    id: "photos-from-library",
+    group: "Photos",
+    title: "Use photos that are already uploaded",
+    pages: ["/admin/gallery/", "/admin/robots", "/admin/impact/", "/admin/events/", "/admin/seasons/", "/admin/sponsors", "/admin/people"],
+    steps: [
+      "To add a few photos to an album, robot or impact event: under the upload box, click **Choose from the library**. Search by file name, description or album (or pick an album at the top), tick the photos and click **Add**.",
+      "To use a whole album instead: under **Photos come from**, click **Use an existing album** and click its card. Then click **Save changes**.",
+      "For a single picture (the season photo, a sponsor logo, someone's photo), click **Choose from library** next to it and click the one you want.",
+    ],
+    tips: [
+      "Nothing is copied: the same photo can be in several albums, and its description is kept per album.",
+      "Photos already in the album are shown faded with **Already in it**.",
+    ],
+  },
+  {
     id: "photo-details",
     group: "Photos",
     title: "Descriptions, alt text and the cover photo",
-    pages: ["/admin/gallery/", "/admin/robots", "/admin/posts/"],
+    pages: ["/admin/gallery/", "/admin/robots", "/admin/impact/"],
     steps: [
       "Open the album and click a photo. A popup opens with it large, and you can fill in:",
       "**Description**: shown when someone opens the photo on the site. Optional; a sentence about what's happening is plenty.",
@@ -430,18 +445,18 @@ export const GUIDES: Guide[] = [
     tips: ["Clear both the PDF and the link to hide the section."],
   },
 
-  // ---- Outreach ---------------------------------------------------------------
+  // ---- Impact -----------------------------------------------------------------
   {
     id: "outreach-log",
-    group: "Outreach",
-    title: "Log who went to an outreach event",
-    pages: ["/admin/outreach", "/admin/events"],
+    group: "Impact",
+    title: "Add an impact event and log who went",
+    pages: ["/admin/impact", "/admin/events"],
     steps: [
-      "Go to **Outreach hours** and check the season at the top.",
-      "New event? Click **+ Add outreach event**, fill in the name, date, **How long (hours)**, and **People reached** if you know it, and click **Add and log who went**. For one that's already listed, click it.",
+      "Go to **Impact events** and check the season at the top. Impact events are demos, school visits, recruiting, camps: anything where we shared FIRST and STEM.",
+      "New event? Click **+ Add impact event**, fill in the name, date, **How long (hours)**, and **People reached** if you know it, and click **Add event**. For one that's already listed, click it.",
       "Under **Who went**, tick everyone who helped. Students and mentors from this season's roster are listed. **Find someone** narrows the list, and **Tick everyone** / **Clear all** work on whoever is shown.",
       "Everyone ticked gets the event's **How long**. For someone who left early or stayed late, type their own hours in the box next to their name (1.5 or 1:30 both work).",
-      "Add a sentence under **What we did** if you like, then click **Save changes** in the bar at the bottom.",
+      "Click **Save changes** in the bar at the bottom. That's all an event needs: the story and photos are optional.",
     ],
     tips: [
       "Change **How long** later and everyone without their own hours changes with it.",
@@ -450,28 +465,28 @@ export const GUIDES: Guide[] = [
   },
   {
     id: "outreach-post",
-    group: "Outreach",
-    title: "Write an outreach post",
-    pages: ["/admin/posts"],
+    group: "Impact",
+    title: "Write an impact event's story",
+    pages: ["/admin/impact/"],
     steps: [
-      "Go to **Outreach posts** and click **+ New post**. Type a title, pick the season and click **Create draft**. Its page opens.",
-      "Fill in the **Summary** (shown on cards) and write the post under **Article**. **Preview** shows how it will look.",
-      "Under **Photos**, drop in as many photos as you like. The main photo is the cover at the top; all of them show in a gallery at the end of the post (click one to describe it or **Make main photo**).",
-      "When it's ready, tick **Published** and click **Save changes** in the bar at the bottom. It shows on the Impact page, the homepage and its season's page.",
+      "Open the event from **Impact events**.",
+      "Under **Story**, write a sentence or two in **What we did**. It's shown on the event's card on the Impact page and at the top of its page.",
+      "For a full story, write it under **Article** (**Preview** shows how it will look), tick **Publish the article** and click **Save changes**. Published stories are also on the homepage and the season's page.",
+      "Under **Photos**, drop in as many photos as you like, or pick an album that already has them in **Photos come from**. The main photo leads the card and the page; the rest are a gallery at the end.",
     ],
     tips: [
-      "Drafts are only visible in the admin. Untick **Published** to take a post down without deleting it.",
-      "The photos are also an album in the Gallery while the post is published.",
+      "Leave **Publish the article** off while it's a draft. The event, its summary and photos still show; only the article waits.",
+      "**Hide this event from the site** takes the whole event off the site (and its photos out of the Gallery) but keeps its hours.",
     ],
   },
   {
     id: "outreach-totals",
-    group: "Outreach",
-    title: "See and share outreach totals",
-    pages: ["/admin/outreach"],
+    group: "Impact",
+    title: "See and share impact totals",
+    pages: ["/admin/impact"],
     steps: [
-      "The four numbers at the top of **Outreach hours** are the season's volunteer hours, outreach events, people reached and how many team members helped.",
-      "The Impact page on the site shows the latest season's hours, events and people reached, then every outreach event with its **What we did** write-up (and the cover of its photo album, if it has one), with the published outreach posts as **Stories**. It never shows who went or anyone's own hours.",
+      "The four numbers at the top of **Impact events** are the season's volunteer hours, impact events, people reached and how many team members helped.",
+      "The Impact page on the site shows the latest season's hours, events and people reached, then every impact event with its summary, main photo and story. It never shows who went or anyone's own hours.",
       "**Hours by person** lists everyone's total, most hours first. It's only in the admin.",
       "**Download totals (CSV)** gives one line per person; **Download full log (CSV)** gives one line per person per event. Both open in Excel or Google Sheets, handy for service-hour forms, letters of recommendation and the Impact Award.",
     ],

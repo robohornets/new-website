@@ -1,16 +1,17 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { getSeasonYears } from "@/lib/admin-data";
 import { requireAdminPage } from "@/lib/auth";
-import { getEvent, getMatches } from "@/lib/data";
-import { all } from "@/lib/db";
+import { FIRST_IMAGE, getEvent, getMatches } from "@/lib/data";
+import { first } from "@/lib/db";
 import { formatDate, formatDateTime, seasonLabel } from "@/lib/format";
 import { EVENT_TBA_FIELDS, MATCH_TBA_FIELDS, parseOverrides, parseTba } from "@/lib/tba/fields";
 import { matchLabel } from "@/lib/tba/map";
 import type { Match } from "@/lib/types";
 import { ActionButton } from "../../_components/action-form";
 import { AddButton, Badge, ModalItem, RowContent } from "../../_components/items";
+import { AlbumField, type LibraryAlbum } from "../../_components/library-picker";
 import { EditForm } from "../../_components/unsaved";
 import { AdminPageHeader, Checkbox, DeletePanel, Grid, Panel, SelectField, TextArea, TextField } from "../../_components/fields";
 import { TbaField } from "../../_components/tba-field";
@@ -34,7 +35,7 @@ const EVENT_KINDS = [
   { value: "district", label: "District event" },
   { value: "championship", label: "Championship" },
   { value: "offseason", label: "Offseason event" },
-  { value: "outreach", label: "Outreach / demo" },
+  { value: "outreach", label: "Impact event (outreach, demo)" },
   { value: "other", label: "Other" },
 ];
 
@@ -68,12 +69,18 @@ export default async function AdminEventPage(props: PageProps<"/admin/events/[id
   const { created } = await props.searchParams;
   const event = Number.isInteger(id) ? await getEvent(id) : null;
   if (!event) notFound();
-  const [matches, albums, years] = await Promise.all([
+  // Impact events are edited on their own page; only ones from The Blue Alliance have anything here.
+  if (event.kind === "outreach" && !event.tba) redirect(`/admin/impact/${id}${created ? "?created=1" : ""}`);
+  const [matches, album, years] = await Promise.all([
     getMatches(id, true),
-    all<{ id: number; title: string; season_year: number | null }>(
-      "SELECT id, title, season_year FROM albums ORDER BY season_year = ? DESC, season_year DESC, created_at DESC",
-      event.season_year,
-    ),
+    event.album_id
+      ? first<LibraryAlbum>(
+          `SELECT a.id, a.title, a.season_year, (SELECT COUNT(*) FROM album_photos ap WHERE ap.album_id = a.id) AS photos,
+                  (SELECT mi.r2_key FROM media mi WHERE mi.id = COALESCE(a.cover_media_id, ${FIRST_IMAGE})) AS cover_key
+           FROM albums a WHERE a.id = ?`,
+          event.album_id,
+        )
+      : null,
     getSeasonYears(),
   ]);
   const season = seasonLabel(event.season_year);
@@ -131,12 +138,12 @@ export default async function AdminEventPage(props: PageProps<"/admin/events/[id
 
       {event.kind === "outreach" && (
         <div className="flex flex-col gap-3 rounded-md border border-line-strong bg-raise p-4 text-sm sm:flex-row sm:items-center sm:justify-between">
-          <span>This is an outreach event. Log who went, how long and how many people we reached on its outreach page.</span>
+          <span>This is an impact event. Log who went, write its story and add photos on its impact event page.</span>
           <Link
-            href={`/admin/outreach/${id}`}
+            href={`/admin/impact/${id}`}
             className="flex h-10 shrink-0 items-center rounded-md bg-hornet px-4 text-sm font-bold text-ink hover:bg-hornet-hover"
           >
-            Log outreach hours
+            Open impact event
           </Link>
         </div>
       )}
@@ -186,16 +193,7 @@ export default async function AdminEventPage(props: PageProps<"/admin/events/[id
               placeholder="https://youtube.com/watch?v=…"
               hint="A YouTube link or a video from the Media library. Plays at the top of the event page."
             />
-            <SelectField
-              label="Photo album"
-              name="album_id"
-              defaultValue={event.album_id ?? ""}
-              options={[
-                { value: "", label: "No album" },
-                ...albums.map((a) => ({ value: a.id, label: `${a.title}${a.season_year ? ` (${seasonLabel(a.season_year)})` : ""}` })),
-              ]}
-              hint="Photos from this album show on the event page. Make albums under Gallery."
-            />
+            <AlbumField name="album_id" current={album} noneLabel="No photos" hint="Photos from this album show on the event page. Make albums under Gallery." />
           </Grid>
           {event.tba_key ? (
             <p className="text-sm text-dust">
@@ -207,7 +205,7 @@ export default async function AdminEventPage(props: PageProps<"/admin/events/[id
               name="season_year"
               defaultValue={event.season_year}
               options={years.map((y) => ({ value: y, label: `${seasonLabel(y)} season` }))}
-              hint="Moves the event, its matches and any outreach hours logged for it to that season."
+              hint="Moves the event, its matches and any hours logged for it to that season."
               className="max-w-xs"
             />
           )}

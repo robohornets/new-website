@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { EventRow, PostCard, RobotCard, SeasonStatusCard } from "@/components/cards";
+import { EventRow, RobotCard, SeasonStatusCard } from "@/components/cards";
+import { ImpactCard } from "@/components/impact-card";
 import { LiveMatchCards } from "@/components/live-match-card";
 import { ArrowRight } from "@/components/icons";
 import { MediaImage } from "@/components/media-image";
@@ -9,7 +10,6 @@ import {
   getCurrentSeason,
   getFeaturedRobots,
   getLatestSponsors,
-  getPosts,
   getRobots,
   getSettings,
   getLiveEvents,
@@ -17,7 +17,8 @@ import {
   getUpcomingEvents,
 } from "@/lib/data";
 import { getLiveMatches } from "@/lib/live-match";
-import { formatDate, MEMBER_COUNT_TOKEN, roundedCount, seasonLabel } from "@/lib/format";
+import { getPublicOutreachEvents } from "@/lib/outreach";
+import { eventPath, formatDate, MEMBER_COUNT_TOKEN, roundedCount, seasonLabel } from "@/lib/format";
 import type { TeamEvent } from "@/lib/types";
 
 /** Shown at the top of the homepage while 1209 is at an event. */
@@ -46,7 +47,7 @@ function LiveBanner({ event }: { event: TeamEvent }) {
             </a>
           )}
           <Link
-            href={`/seasons/${event.season_year}/events/${event.id}`}
+            href={eventPath(event)}
             className="flex h-11 items-center rounded-md border border-hornet/60 px-5 text-sm font-semibold text-bone hover:border-hornet"
           >
             Follow our matches
@@ -62,7 +63,7 @@ export default async function HomePage() {
     getSettings(),
     getCurrentSeason(),
     getFeaturedRobots(3),
-    getPosts({ limit: 3 }),
+    getPublicOutreachEvents({ stories: true, limit: 3 }),
     getLatestSponsors(),
     getUpcomingEvents(3),
     getLiveEvents(),
@@ -247,16 +248,16 @@ export default async function HomePage() {
           <SectionHeading
             index="03"
             label="From the hive"
-            title="Outreach"
+            title="Impact stories"
             aside={
               <Link href="/impact" className="flex h-11 items-center rounded-full border border-line-strong px-5 text-sm font-semibold text-sand hover:border-bone hover:text-bone">
                 Our impact
               </Link>
             }
           />
-          <div className="grid gap-10 md:grid-cols-2 md:gap-6 xl:grid-cols-3">
-            {posts.map((p) => (
-              <PostCard key={p.id} post={p} />
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {posts.map((e) => (
+              <ImpactCard key={e.id} event={e} />
             ))}
           </div>
         </section>

@@ -14,13 +14,12 @@ const GROUPS = [
       { href: "/admin/roster", label: "Team roster" },
       { href: "/admin/join", label: "Join requests", badge: "join" },
       { href: "/admin/scouting", label: "Scouting" },
-      { href: "/admin/outreach", label: "Outreach hours" },
     ],
   },
   {
     label: "Content",
     items: [
-      { href: "/admin/posts", label: "Outreach posts" },
+      { href: "/admin/impact", label: "Impact events" },
       { href: "/admin/gallery", label: "Gallery" },
       { href: "/admin/sponsors", label: "Sponsors" },
       { href: "/admin/settings", label: "Site text & links" },

@@ -57,7 +57,7 @@ npm run db:migrate:remote
 ```
 
 This runs `migrations/0001_initial.sql` (the schema), `migrations/0002_seed_content.sql` (text, contacts,
-socials, the 2024–2026 robots and the posts from the previous site) and any later
+socials, the 2024–2026 robots and the posts from the previous site, which later became impact events) and any later
 migrations. Wrangler tracks which migrations have run, so this is safe to rerun after every pull.
 
 ### 4. Set up Cloudflare Access for `/admin`
@@ -166,7 +166,7 @@ Everything is in **btwrobotics.com/admin**:
 | When it changes | **Site text & links** | Mission, values and the Strategic Plan (PDF or link) on the Team page. |
 | Anytime | Google Calendar | Meetings and events added to the team's public Google Calendar show on the Team page within about 10 minutes (the calendar is set under **Site text & links → Calendar**). |
 | Rarely | **Site text & links** | Homepage hero, stats (`{members}` shows this season's student count, rounded down to the nearest 10), about text, socials, contact people, footer links, donate link. |
-| After each outreach event | **Outreach hours** | Add the event (or open it), tick who went and save. Everyone gets the event's length unless you type their own hours. The public Impact page shows the season's totals (hours, events, people reached) and each event's write-up; per-person hours and CSVs are admin-only. |
+| After each demo or outreach | **Impact events** | Add the event (or open it), tick who went and save. Everyone gets the event's length unless you type their own hours. Optionally write its story (a summary, plus an article you publish when it's ready) and add photos. The public Impact page shows the season's totals (hours, events, people reached) and every event; per-person hours and CSVs are admin-only. |
 | After kickoff | **Scouting** | Build this year's scouting form (copy last year's or start from the example), then tick **Open /scouting** and share the link. |
 | Always | **Messages** | Contact form submissions. |
 
@@ -230,7 +230,7 @@ Content is organised around **seasons**. Each FRC year is a row, and most other 
   TBA values and `overrides` lists the fields an admin changed; syncing only writes fields not in that list.
 - `matches`: per event: round, teams on each alliance, scores, our side, result, video, hidden, with the same
   `tba`/`overrides` pair
-- `outreach_attendance`: who went to each outreach event (an event with kind `outreach`) and their hours, or NULL for the event's own `outreach_hours`. `events.people_reached` is the rough head count.
+- `outreach_attendance`: who went to each impact event (an event with kind `outreach`) and their hours, or NULL for the event's own `outreach_hours`. `events.people_reached` is the rough head count.
 - `tba_cache`: the last ETag for each TBA request, so unchanged data is skipped
 - `people` + `roster_entries`: a person exists once; a roster entry puts them on a season with a role, main subteam and leadership flag. This is how the roster carries over year to year.
 - `subteams` + `roster_extra_subteams`: the subteam list admins edit (private ones can't be picked on the join form), and any extra subteams a roster entry is on
@@ -238,7 +238,7 @@ Content is organised around **seasons**. Each FRC year is a row, and most other 
 - `resources`: links and files on a season's Resources tab (`season_year` NULL for team documents shown on every season)
 - `join_requests`: students asking to join from `/join` (name, class, subteam ranking, about), with pending / added / declined status. The form only accepts requests while `site_settings.join_requests.open` is on.
 - `sponsors` + `sponsor_tiers` + `sponsor_seasons`: sponsors are stored once; each season lists who sponsored it and at what tier
-- `posts`: outreach posts (Markdown), shown on `/impact`, `/impact/<slug>`, the homepage and their season's page while published. `album_id` is the post's own album: its photos, whose main photo is the cover, shown in the Gallery while the post is published. Posts with `category = 'news'` came from the old News section and aren't shown; the admin can move them to Impact.
+- `posts`: posts from before impact events. Migration 0014 turned every outreach post into an impact event (`posts.event_id` says which, so old `/news/<slug>` and `/impact/<slug>` links redirect to it); old News posts stay here, hidden, until an admin turns one into an impact event. Export still downloads the table.
 - `albums` + `album_photos`: gallery albums, optionally tied to a season, each with a `sort_order` (albums on the Gallery and season pages; photos inside an album) set by dragging in the admin
 - `media`: every file uploaded to R2 (key, original filename, type, size, pixel width/height, alt text). Other tables point at it by id.
 - `site_settings`: key/value JSON for editable page text, including the mission, values and Strategic Plan
@@ -331,15 +331,23 @@ works while **Open /scouting** is on in the admin, and uses the current season's
   `tbaCachedJson` (`src/lib/tba/cache.ts`), which keeps each response in `tba_json_cache` for a few minutes and then
   revalidates with an ETag. Without a TBA key, scouts can still type team numbers.
 
-### Outreach hours
+### Impact events
 
-Outreach events are ordinary `events` rows with kind `outreach` (they also list on their season's page). The admin
-**Outreach hours** tab (`src/app/admin/outreach`) adds them and saves attendance together with the event, from the
-save bar. Totals are in `src/lib/outreach.ts`: a person's hours are `COALESCE(attendance.hours, events.outreach_hours)`,
-and an event counts once it has started or has anyone logged. The public **Impact** page (`/impact`; `/outreach`
-redirects there) only gets `getPublicOutreachTotals()` (hours, events, people reached for the latest season with any)
-and `getPublicOutreachEvents()` (name, date, place, write-up, album cover), never names or anyone's hours.
-CSV downloads are at `/admin/api/outreach-export?season=YYYY&part=people|log`.
+An impact event (demo, school visit, recruiting night…) is an `events` row with kind `outreach`; the admin calls them
+impact events. One page, **Impact events** (`src/app/admin/impact`), holds everything about one: its details and hours,
+who went, its story and its photos. Details, story and attendance save together from the save bar. The story is
+`events.recap` (the summary on its card) plus `events.story`, an optional Markdown article shown once
+`story_published` is 1. Photos are `events.album_id`: the event's own album (slug `impact-<id>`, made on the first
+upload, following the event's name, season and visibility) or any album picked under **Photos come from**. Events
+without a story are just tracked; they still list on the Impact page with their summary.
+
+Totals are in `src/lib/outreach.ts`: a person's hours are `COALESCE(attendance.hours, events.outreach_hours)`, and an
+event counts once it has started or has anyone logged. Each impact event's public page is `/impact/<id>-<name>`
+(`impactPath()` in `src/lib/format.ts`; `/seasons/<year>/events/<id>` redirects there). The public pages only get
+`getPublicOutreachTotals()`, `getPublicOutreachEvents()` and `getPublicImpactEvent()` (name, date, place, people
+reached, summary, story, photos), never names or anyone's hours. Published stories also show on the homepage and
+their season's page. CSV downloads are at `/admin/api/outreach-export?season=YYYY&part=people|log`. Old admin links
+(`/admin/outreach`, `/admin/posts`) redirect.
 
 ### Live match card
 
@@ -384,9 +392,14 @@ or `data-default` for widgets that control their own value, like photo pickers).
 at the bottom offers Save (every changed form, in page order) and Revert, and leaving the page is blocked: links and
 the browser Back button make the bar flash and shake, and closing the tab shows the browser's own warning. Forms that
 create something new (`ActionForm` with an "Add" button) and delete buttons still act immediately.
+Picking something already uploaded always shows pictures, not file names (`_components/library-picker.tsx`):
+`LibraryPicker` is a searchable grid of the media library (by file name, alt text, description or album, with an
+album filter), used for single images (`MediaField`: season photo, logos, people) and, ticking several, to add
+existing photos to an album (**Choose from the library** under every uploader that has an album). `AlbumPicker` /
+`AlbumField` choose a whole album from cards with covers (**Photos come from** on robots and events).
 Lists all work one way (`src/app/admin/_components/items.tsx`): every item is a row you click anywhere on. Small
 things (a sponsor, resource, photo, contact, message, match) open a popup with its own Save (`ModalItem` /
-`FormModal`, ✎ on the row); things with their own lists (a season, robot, event, album, outreach event) open their own
+`FormModal`, ✎ on the row); things with their own lists (a season, robot, event, album, impact event) open their own
 page (`LinkRow`, → on the row). Adding is a **+ Add …** button at the top of the list (`AddButton`). Delete is the
 last thing inside, in red, and asks first: in a popup's footer, or a `DeletePanel` at the end of a page. Tiny lists
 (sponsor tiers, subteams) are edited in place, with a trash button per row. The one exception is a scouting team's

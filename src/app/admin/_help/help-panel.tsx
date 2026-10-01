@@ -213,7 +213,7 @@ export function HelpStartCard() {
       <span className="flex grow flex-col gap-1">
         <span className="font-display text-3xl leading-none font-extrabold uppercase">New here? Start with the help guides</span>
         <span className="text-[15px] text-sand">
-          Step-by-step instructions for starting a season, fixing competition results, uploading photos, logging outreach, and updating the
+          Step-by-step instructions for starting a season, fixing competition results, uploading photos, logging impact events, and updating the
           roster and sponsors.
         </span>
       </span>

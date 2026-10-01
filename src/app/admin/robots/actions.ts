@@ -76,18 +76,12 @@ export async function updateRobot(id: number, _prev: ActionState, fd: FormData):
   });
 }
 
-/** Which album the robot's photos come from (one of its season's albums, or none). */
+/** Which album the robot's photos come from (any album, or none). */
 export async function setRobotAlbum(id: number, _prev: ActionState, fd: FormData): Promise<ActionState> {
   return adminAction({ action: "update", entity: "robot", entityId: id }, async () => {
     const albumId = optionalInt(fd, "album_id");
     if (albumId) {
-      // One of its season's albums, or the one it already has (which may be from another season after a move).
-      const ok = await first(
-        "SELECT 1 FROM albums a JOIN robots r ON r.id = ? WHERE a.id = ? AND (a.season_year = r.season_year OR a.id = r.album_id)",
-        id,
-        albumId,
-      );
-      if (!ok) throw new FormError("Pick an album from this robot's season.");
+      if (!(await first("SELECT 1 FROM albums WHERE id = ?", albumId))) throw new FormError("That album no longer exists.");
     }
     await run("UPDATE robots SET album_id = ? WHERE id = ?", albumId, id);
     return albumId ? "The slideshow now uses that album." : "The robot no longer has photos.";

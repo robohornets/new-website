@@ -8,9 +8,11 @@ import { ShowMore } from "@/components/show-more";
 import { AddButton, Badge, LinkRow, RowContent } from "../_components/items";
 import { AdminPageHeader, Grid, Panel, TextField } from "../_components/fields";
 import { SeasonPicker } from "../_components/season-picker";
-import { createOutreachEvent } from "./actions";
+import { all } from "@/lib/db";
+import { ActionButton } from "../_components/action-form";
+import { createOutreachEvent, newsPostToImpact } from "./actions";
 
-export const metadata: Metadata = { title: "Outreach hours" };
+export const metadata: Metadata = { title: "Impact events" };
 
 function Stat({ label, value }: { label: string; value: string | number }) {
   return (
@@ -27,14 +29,14 @@ function dates(start: string | null, end: string | null) {
   return end && end.slice(0, 10) !== start.slice(0, 10) ? `${a} – ${formatDate(end, { month: "short", day: "numeric" })}` : a;
 }
 
-export default async function AdminOutreachPage(props: PageProps<"/admin/outreach">) {
+export default async function AdminImpactPage(props: PageProps<"/admin/impact">) {
   await requireAdminPage();
   const { season } = await props.searchParams;
   const { year, years } = await resolveSeasonParam(season);
   if (!year) {
     return (
       <>
-        <AdminPageHeader title="Outreach hours" />
+        <AdminPageHeader title="Impact events" />
         <Panel title="No seasons yet">
           <Link href="/admin/seasons/new" className="font-semibold text-hornet">
             Create a season first
@@ -44,13 +46,19 @@ export default async function AdminOutreachPage(props: PageProps<"/admin/outreac
     );
   }
 
-  const [totals, events, people] = await Promise.all([getOutreachTotals(year), getOutreachEvents(year), getOutreachPeople(year)]);
+  const [totals, events, people, newsPosts] = await Promise.all([
+    getOutreachTotals(year),
+    getOutreachEvents(year),
+    getOutreachPeople(year),
+    // Posts from the old News section, which can be turned into impact events.
+    all<{ id: number; title: string; published_at: string | null }>("SELECT id, title, published_at FROM posts WHERE category = 'news' AND event_id IS NULL ORDER BY published_at DESC").catch(() => []),
+  ]);
 
   const eventRows = events.map((e) => {
     const past = e.happened === 1;
     return (
       <li key={e.id}>
-        <LinkRow href={`/admin/outreach/${e.id}`}>
+        <LinkRow href={`/admin/impact/${e.id}`}>
           <RowContent
             opens="page"
             title={e.name}
@@ -58,6 +66,9 @@ export default async function AdminOutreachPage(props: PageProps<"/admin/outreac
             badges={
               <>
                 {e.hidden === 1 && <Badge tone="muted">Hidden</Badge>}
+                {e.story === "published" && <Badge tone="accent">Story</Badge>}
+                {e.story === "draft" && <Badge tone="muted">Story draft</Badge>}
+                {e.photos > 0 && <Badge tone="muted">{e.photos} photos</Badge>}
                 {e.attendees > 0 ? (
                   <span className="font-label text-sm text-sand">
                     <strong className="text-bone">{e.attendees}</strong> went · <strong className="text-bone">{formatHours(e.hours)}</strong> hrs
@@ -97,27 +108,27 @@ export default async function AdminOutreachPage(props: PageProps<"/admin/outreac
   return (
     <>
       <AdminPageHeader
-        title="Outreach hours"
-        description="Log who went to each outreach event. The Impact page on the site shows the season's totals (hours, events, people reached) and each event's write-up, never who went or anyone's own hours."
+        title="Impact events"
+        description="Demos, school visits, recruiting, camps: everything we do in the community. For each one, log who went and for how long, and if you like, write its story and add photos. The Impact page shows each event and the season's totals, never who went or anyone's own hours."
       />
-      <SeasonPicker basePath="/admin/outreach" years={years} current={year} />
+      <SeasonPicker basePath="/admin/impact" years={years} current={year} />
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <Stat label="Volunteer hours" value={formatHours(totals.hours)} />
-        <Stat label="Outreach events" value={totals.events} />
+        <Stat label="Impact events" value={totals.events} />
         <Stat label="People reached" value={totals.reached.toLocaleString("en-US")} />
         <Stat label="Team members helped" value={totals.volunteers} />
       </div>
 
       <Panel
-        title={`${seasonLabel(year)} outreach events`}
+        title={`${seasonLabel(year)} impact events`}
         actions={
           <AddButton
-            label="Add outreach event"
-            title="Add an outreach event"
-            description="Demos, school visits, camps, community events: anything where we shared FIRST and STEM. You'll tick who went next."
+            label="Add impact event"
+            title="Add an impact event"
+            description="Demos, school visits, camps, community events: anything where we shared FIRST and STEM. Next you'll tick who went, and can write its story and add photos."
             action={createOutreachEvent.bind(null, year)}
-            submitLabel="Add and log who went"
+            submitLabel="Add event"
           >
             <TextField label="Name" name="name" required placeholder="Demo at Central Library" />
             <Grid>
@@ -130,7 +141,7 @@ export default async function AdminOutreachPage(props: PageProps<"/admin/outreac
         }
         description={
           <>
-            Outreach events also show on the {seasonLabel(year)} season page. Competitions and other events are on{" "}
+            Impact events show on the Impact page and the {seasonLabel(year)} season page. Ones with a published story are also on the homepage. Competitions are on{" "}
             <Link href={`/admin/seasons/${year}#events`} className="font-semibold text-hornet hover:text-hornet-hover">
               the season&apos;s page
             </Link>
@@ -139,11 +150,30 @@ export default async function AdminOutreachPage(props: PageProps<"/admin/outreac
         }
       >
         {events.length === 0 ? (
-          <p className="text-sm text-dust">No outreach events in {seasonLabel(year)} yet. Add one with the button above.</p>
+          <p className="text-sm text-dust">No impact events in {seasonLabel(year)} yet. Add one with the button above.</p>
         ) : (
           <ShowMore items={eventRows} initial={8} noun="events" className="flex flex-col gap-2" />
         )}
       </Panel>
+
+      {newsPosts.length > 0 && (
+        <Panel
+          title="Old news posts"
+          description="Written for the News section, which isn't on the site anymore. Turn one into an impact event (in its season, or the current one) to put it on the Impact page with its story."
+        >
+          <ul className="flex flex-col gap-2">
+            {newsPosts.map((p) => (
+              <li key={p.id} className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-line bg-ink px-4 py-3">
+                <span className="min-w-0">
+                  <span className="block truncate font-semibold">{p.title}</span>
+                  <span className="font-label text-xs text-dust">{formatDate(p.published_at) || "No date"}</span>
+                </span>
+                <ActionButton action={newsPostToImpact.bind(null, p.id)}>Make it an impact event</ActionButton>
+              </li>
+            ))}
+          </ul>
+        </Panel>
+      )}
 
       <Panel
         title="Hours by person"

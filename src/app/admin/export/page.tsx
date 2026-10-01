@@ -20,7 +20,7 @@ export default async function AdminExportPage() {
 
       <Panel
         title="All content (JSON)"
-        description="One file with every table: seasons, robots, events, roster, outreach hours, sponsors, albums, settings, messages and the media list. It also includes the database schema, so it can be loaded into another system."
+        description="One file with every table: seasons, robots, events, roster, impact events and hours, sponsors, albums, settings, messages and the media list. It also includes the database schema, so it can be loaded into another system."
       >
         <a
           href="/admin/api/export"

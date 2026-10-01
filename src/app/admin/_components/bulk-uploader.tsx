@@ -1,14 +1,18 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { Upload } from "@/components/icons";
+import { addPhotosToAlbum } from "../gallery/actions";
+import { buttonStyles } from "./items";
+import { LibraryPicker } from "./library-picker";
 import { uploadFiles, type UploadStatus } from "./upload-client";
 
 /**
  * Drag-and-drop or pick many files; uploads them one by one. Videos are
  * converted to MP4 first (see upload-client.ts). `direct` says whether files
- * go straight to R2, which allows bigger videos.
+ * go straight to R2, which allows bigger videos. With an album (or a way to
+ * make one), "Choose from the library" adds photos that are already uploaded.
  */
 export function BulkUploader({
   albumId,
@@ -28,9 +32,37 @@ export function BulkUploader({
   const [errors, setErrors] = useState<string[]>([]);
   const [notes, setNotes] = useState<string[]>([]);
   const [dragging, setDragging] = useState(false);
+  const [picking, setPicking] = useState(false);
+  const [added, setAdded] = useState<string | null>(null);
+  // Adding from the library: "Adding…" until the photos below have refreshed.
+  const [adding, startAdding] = useTransition();
+
+  /** The album to put photos in, made first if this is a robot's or event's first photos. */
+  async function targetAlbum(): Promise<number | undefined> {
+    if (albumId || !ensureAlbum) return albumId;
+    return ensureAlbum();
+  }
+
+  function addFromLibrary(ids: number[]) {
+    setErrors([]);
+    setAdded(null);
+    startAdding(async () => {
+      try {
+        const album = await targetAlbum();
+        if (!album) return;
+        const result = await addPhotosToAlbum(album, ids);
+        if (result.ok) setAdded(result.message ?? "Added.");
+        else setErrors([result.error ?? "Couldn't add those photos."]);
+        router.refresh();
+      } catch (e) {
+        setErrors([e instanceof Error ? e.message : "Couldn't add those photos."]);
+      }
+    });
+  }
 
   async function handle(files: File[]) {
     if (!files.length) return;
+    setAdded(null);
     setErrors([]);
     setNotes([]);
     setProgress({ done: 0, total: files.length });
@@ -116,6 +148,28 @@ export function BulkUploader({
           }}
         />
       </label>
+      {(albumId || ensureAlbum) && (
+        <div className="flex flex-wrap items-center gap-3">
+          <button type="button" onClick={() => setPicking(true)} disabled={busy || adding} className={buttonStyles.secondary} aria-haspopup="dialog">
+            Choose from the library
+          </button>
+          <span className="text-xs text-dust">Already uploaded? Add photos from the media library or other albums without uploading them again.</span>
+          {(adding || added) && (
+            <span role="status" className="text-sm text-sand">
+              {adding ? "Adding…" : added}
+            </span>
+          )}
+        </div>
+      )}
+      <LibraryPicker
+        open={picking}
+        onClose={() => setPicking(false)}
+        multiple
+        videos
+        targetAlbumId={albumId}
+        title="Add photos from the library"
+        onPick={(items) => addFromLibrary(items.map((i) => i.id))}
+      />
       {notes.length > 0 && (
         <ul role="status" className="flex flex-col gap-1 text-sm text-sand">
           {notes.map((n, i) => (
