@@ -5,12 +5,13 @@ import { ScoutingBrowser } from "@/components/scouting-browser";
 import { SeasonRail, SeasonSubheader, SeasonTabs } from "@/components/season-tabs";
 import { getSeason, getSeasons } from "@/lib/data";
 import { getPublicScouting, getSeasonTabs } from "@/lib/season-extras";
+import { seasonLabel } from "@/lib/format";
 
 const yearOf = (raw: string) => (/^\d{4}$/.test(raw) ? Number(raw) : null);
 
 export async function generateMetadata(props: PageProps<"/seasons/[year]/scouting">): Promise<Metadata> {
   const year = yearOf((await props.params).year);
-  return { title: year ? `${year} scouting` : "Scouting", description: `Team 1209's scouting notes on the teams at our ${year ?? ""} events.` };
+  return { title: year ? `${seasonLabel(year)} scouting` : "Scouting", description: `Team 1209's scouting notes on the teams at our ${seasonLabel(year)} events.` };
 }
 
 export default async function SeasonScoutingPage(props: PageProps<"/seasons/[year]/scouting">) {
@@ -29,7 +30,7 @@ export default async function SeasonScoutingPage(props: PageProps<"/seasons/[yea
         year={season.year}
         game={season.game_name}
         title="Scouting"
-        intro={<p>What RoboHornets scouts noted about the teams at our {season.year} events: each robot&apos;s abilities, and how it played match by match. Open a team to see everything.</p>}
+        intro={<p>What RoboHornets scouts noted about the teams at our {seasonLabel(season.year)} events: each robot&apos;s abilities, and how it played match by match. Open a team to see everything.</p>}
       />
       <Container className="pb-20">
         {data.teams.length === 0 ? (

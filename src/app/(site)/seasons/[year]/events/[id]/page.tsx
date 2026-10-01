@@ -6,7 +6,7 @@ import { Container } from "@/components/page-header";
 import { VideoEmbed } from "@/components/video-embed";
 import { getAlbumPhotos, getEvent, getMatches } from "@/lib/data";
 import { first } from "@/lib/db";
-import { formatDate } from "@/lib/format";
+import { formatDate, seasonLabel } from "@/lib/format";
 import { mediaSrcSet, mediaUrl } from "@/lib/media";
 import { matchLabel } from "@/lib/tba/map";
 import type { Match, TeamEvent } from "@/lib/types";
@@ -25,7 +25,7 @@ export async function generateMetadata(props: PageProps<"/seasons/[year]/events/
   if (!event) return { title: "Event not found" };
   const bits = [event.rank, event.playoff_result, event.awards].filter(Boolean).join(" · ");
   return {
-    title: `${event.name} ${event.season_year}`,
+    title: `${event.name} (${seasonLabel(event.season_year)})`,
     description: `Team 1209 at ${event.name}${bits ? `: ${bits}` : ""}.`,
   };
 }
@@ -69,7 +69,7 @@ export default async function EventPage(props: PageProps<"/seasons/[year]/events
           </Link>
           <span className="px-2 text-ash">/</span>
           <Link href={`/seasons/${event.season_year}#events`} className="hover:text-bone">
-            {event.season_year}
+            {seasonLabel(event.season_year)} season
           </Link>
         </nav>
         <h1 className="font-display text-5xl leading-[0.95] font-black uppercase md:text-7xl">{event.name}</h1>

@@ -5,6 +5,7 @@ import { AlbumGrid } from "@/components/album-grid";
 import { Container, EmptyState } from "@/components/page-header";
 import { getAlbum, getAlbumPhotos } from "@/lib/data";
 import { isVideo } from "@/lib/media";
+import { seasonLabel } from "@/lib/format";
 
 export async function generateMetadata(props: PageProps<"/gallery/[slug]">): Promise<Metadata> {
   const album = await getAlbum((await props.params).slug);
@@ -27,7 +28,7 @@ export default async function AlbumPage(props: PageProps<"/gallery/[slug]">) {
             <>
               <span className="px-2 text-ash">/</span>
               <Link href={`/gallery?season=${album.season_year}`} className="hover:text-bone">
-                {album.season_year}
+                {seasonLabel(album.season_year)}
               </Link>
             </>
           )}

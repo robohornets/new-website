@@ -4,7 +4,7 @@ import { resolveSeasonParam } from "@/lib/admin-data";
 import { requireAdminPage } from "@/lib/auth";
 import { getSettings } from "@/lib/data";
 import { all, first, parseJson } from "@/lib/db";
-import { formatDateTime } from "@/lib/format";
+import { formatDateTime, seasonLabel } from "@/lib/format";
 import { cleanForm, EMPTY_FORM, STARTER_FORM } from "@/lib/scouting";
 import { cachedNicknames, getScoutingForm } from "@/lib/scouting-data";
 import { isScoutingPublished } from "@/lib/season-extras";
@@ -83,17 +83,17 @@ export default async function AdminScoutingPage(props: PageProps<"/admin/scoutin
         </EditForm>
         <CopyLink path="/scouting" />
         {open && questions === 0 && (
-          <p className="text-sm text-hornet">Scouting is open, but the {year} form has no questions yet. Build it below.</p>
+          <p className="text-sm text-hornet">Scouting is open, but the {seasonLabel(year)} form has no questions yet. Build it below.</p>
         )}
       </Panel>
 
       <Panel
         title="On the season page"
-        description={`Shows everything scouted in ${year} (robot sheets and match reports, notes included, without scouts' names) on a Scouting tab of the ${year} season page. Read-only: it doesn't link to /scouting.`}
+        description={`Shows everything scouted in ${seasonLabel(year)} (robot sheets and match reports, notes included, without scouts' names) on a Scouting tab of the ${seasonLabel(year)} season page. Read-only: it doesn't link to /scouting.`}
       >
         <EditForm action={setScoutingPublished.bind(null, year)}>
           <div className="flex flex-wrap items-center gap-4">
-            <Checkbox label={`Show ${year} scouting on the season page`} name="published" defaultChecked={published} hint="Look through the results below first: notes are public once this is on." />
+            <Checkbox label={`Show ${seasonLabel(year)} scouting on the season page`} name="published" defaultChecked={published} hint="Look through the results below first: notes are public once this is on." />
             <span className={`rounded px-2.5 py-1 font-label text-xs font-bold tracking-wider ${published ? "bg-rust text-white" : "bg-raise text-dust"}`}>
               {published ? "PUBLIC" : "PRIVATE"}
             </span>
@@ -107,7 +107,7 @@ export default async function AdminScoutingPage(props: PageProps<"/admin/scoutin
       </Panel>
 
       <Panel
-        title={`${year} form`}
+        title={`${seasonLabel(year)} form`}
         description="Each season gets its own form, since the game changes. Robot questions are one shared sheet per team; match reports can be added as often as you like."
       >
         <EditForm action={saveScoutingForm.bind(null, year)}>
@@ -116,7 +116,7 @@ export default async function AdminScoutingPage(props: PageProps<"/admin/scoutin
       </Panel>
 
       <Panel
-        title={`${year} results`}
+        title={`${seasonLabel(year)} results`}
         description={teams.length ? `${teams.length} teams scouted.` : "Nothing scouted yet this season."}
         actions={
           teams.length > 0 ? (

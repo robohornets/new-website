@@ -3,7 +3,7 @@ import { Plus } from "@/components/icons";
 import { MediaImage } from "@/components/media-image";
 import { getCurrentSeason, getEvents, getRobots, getRoster, getSeasonSponsors } from "@/lib/data";
 import { all, first } from "@/lib/db";
-import { formatBytes, formatDateTime } from "@/lib/format";
+import { formatBytes, formatDateTime, seasonLabel } from "@/lib/format";
 import { formatHours, getOutreachTotals } from "@/lib/outreach";
 import { SEASON_STATUS_LABEL, type Message } from "@/lib/types";
 import { AdminPageHeader, Panel } from "./_components/fields";
@@ -64,7 +64,7 @@ export default async function AdminDashboard() {
               href={`/admin/seasons/new?year=${nextYear}`}
               className="flex h-11 items-center gap-2 rounded-md bg-hornet px-4 text-sm font-bold text-ink hover:bg-hornet-hover"
             >
-              <Plus size={16} /> Start {nextYear} season
+              <Plus size={16} /> Start {seasonLabel(nextYear)} season
             </Link>
           </>
         }
@@ -87,7 +87,7 @@ export default async function AdminDashboard() {
                 <span className="text-[13px] text-dust">{SEASON_STATUS_LABEL[season.status]}</span>
               </div>
               <div className="flex flex-wrap items-baseline gap-x-3">
-                <span className="font-display text-5xl leading-none font-black">{season.year}</span>
+                <span className="font-display text-5xl leading-none font-black">{seasonLabel(season.year)}</span>
                 <span className="font-display text-2xl font-bold text-hornet uppercase">
                   {season.game_name || "TBA"}
                   {mainRobot ? ` · ${mainRobot.name}` : ""}
@@ -116,7 +116,7 @@ export default async function AdminDashboard() {
                   ))}
               </ul>
               <Link href={`/admin/seasons/${season.year}`} className="mt-auto text-sm font-semibold text-hornet hover:text-hornet-hover">
-                Edit {season.year} season
+                Edit {seasonLabel(season.year)} season
               </Link>
             </div>
           </section>
@@ -142,7 +142,7 @@ export default async function AdminDashboard() {
         <Stat href="/admin/sponsors" label="Sponsors" value={counts?.sponsors ?? 0} sub={`${sponsors.length} this season`} />
         <Stat
           href="/admin/outreach"
-          label={`Outreach hours${season ? ` · ${season.year}` : ""}`}
+          label={`Outreach hours${season ? ` · ${seasonLabel(season.year)}` : ""}`}
           value={formatHours(outreach?.hours ?? 0)}
           sub={`${outreach?.events ?? 0} events · ${outreach?.volunteers ?? 0} helped`}
         />

@@ -57,7 +57,7 @@ npm run db:migrate:remote
 ```
 
 This runs `migrations/0001_initial.sql` (the schema), `migrations/0002_seed_content.sql` (text, contacts,
-socials, the 2024–2026 robots and the old news posts from the previous site, which the site no longer shows) and any later
+socials, the 2024–2026 robots and the posts from the previous site) and any later
 migrations. Wrangler tracks which migrations have run, so this is safe to rerun after every pull.
 
 ### 4. Set up Cloudflare Access for `/admin`
@@ -223,7 +223,7 @@ no ISR cache bucket is needed.
 
 Content is organised around **seasons**. Each FRC year is a row, and most other content hangs off it:
 
-- `seasons`: year (PK), game name, summary, status (`pre_kickoff` / `build` / `competition` / `offseason`), kickoff date, reveal video, hero photo, engineering notebook (uploaded PDF and/or link), `is_current` (at most one)
+- `seasons`: year (PK: the year of the FRC game, so 2027 is the 2026-27 season; shown everywhere as "26-27" by `seasonLabel()` in `src/lib/format.ts`, while URLs keep the year, `/seasons/2027`), game name, summary, status (`pre_kickoff` / `build` / `competition` / `offseason`), kickoff date, reveal video, hero photo, engineering notebook (uploaded PDF and/or link), `is_current` (at most one)
 - `robots`: per season: name, kind (competition / kitbot / …), description, specs JSON, tags JSON, code and CAD links, and `album_id`: the album its photos come from (the season page slideshow; its cover or first photo is the robot's main photo). `photo_media_id` is the single photo robots had before albums, still used if a robot has no album.
 - `events`: per season: name, kind, location, dates, website, webcast, Blue Alliance key, rank, record, alliance,
   playoff result, awards, plus admin-only extras (write-up, highlight video, album, hidden). `tba` holds the latest
@@ -238,7 +238,7 @@ Content is organised around **seasons**. Each FRC year is a row, and most other 
 - `resources`: links and files on a season's Resources tab (`season_year` NULL for team documents shown on every season)
 - `join_requests`: students asking to join from `/join` (name, class, subteam ranking, about), with pending / added / declined status. The form only accepts requests while `site_settings.join_requests.open` is on.
 - `sponsors` + `sponsor_tiers` + `sponsor_seasons`: sponsors are stored once; each season lists who sponsored it and at what tier
-- `posts`: news posts from the old site. Nothing shows them any more (News was removed); they're kept only so Export can still download them.
+- `posts`: outreach posts (Markdown), shown on `/impact`, `/impact/<slug>`, the homepage and their season's page while published. `album_id` is the post's own album: its photos, whose main photo is the cover, shown in the Gallery while the post is published. Posts with `category = 'news'` came from the old News section and aren't shown; the admin can move them to Impact.
 - `albums` + `album_photos`: gallery albums, optionally tied to a season, each with a `sort_order` (albums on the Gallery and season pages; photos inside an album) set by dragging in the admin
 - `media`: every file uploaded to R2 (key, original filename, type, size, pixel width/height, alt text). Other tables point at it by id.
 - `site_settings`: key/value JSON for editable page text, including the mission, values and Strategic Plan

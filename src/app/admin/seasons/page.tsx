@@ -10,6 +10,7 @@ import { HistoryImporter } from "../_components/history-importer";
 import { requireAdminPage } from "@/lib/auth";
 import { getEnv } from "@/lib/cf";
 import { tbaConfigured } from "@/lib/tba/client";
+import { seasonLabel } from "@/lib/format";
 
 export const metadata: Metadata = { title: "Seasons" };
 
@@ -42,7 +43,7 @@ export default async function AdminSeasonsPage() {
             href={`/admin/seasons/new?year=${nextYear}`}
             className="flex h-11 items-center gap-2 rounded-md bg-hornet px-4 text-sm font-bold text-ink hover:bg-hornet-hover"
           >
-            <Plus size={16} /> Start {nextYear} season
+            <Plus size={16} /> Start {seasonLabel(nextYear)} season
           </Link>
         }
       />
@@ -64,7 +65,7 @@ export default async function AdminSeasonsPage() {
             <LinkRow href={`/admin/seasons/${s.year}`}>
               <RowContent
                 opens="page"
-                media={<span className="block w-16 font-display text-2xl leading-none font-extrabold">{s.year}</span>}
+                media={<span className="block w-16 font-display text-2xl leading-none font-extrabold">{seasonLabel(s.year)}</span>}
                 title={s.game_name || "No game name yet"}
                 meta={[SEASON_STATUS_LABEL[s.status], s.robots || "No robot", `${s.events} events`, `${s.roster} on the roster`].join(" · ")}
                 badges={s.is_current === 1 ? <Badge tone="accent">Current</Badge> : undefined}

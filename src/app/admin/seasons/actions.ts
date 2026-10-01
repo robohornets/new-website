@@ -16,6 +16,7 @@ import {
 } from "@/lib/admin";
 import { batch, first, run } from "@/lib/db";
 import type { EventKind, SeasonStatus } from "@/lib/types";
+import { seasonLabel } from "@/lib/format";
 
 const STATUSES: SeasonStatus[] = ["pre_kickoff", "build", "competition", "offseason"];
 const EVENT_KINDS: EventKind[] = ["regional", "district", "championship", "offseason", "outreach", "other"];
@@ -32,7 +33,7 @@ export async function createSeason(_prev: ActionState, fd: FormData): Promise<Ac
   let year = 0;
   const result = await adminAction({ action: "create", entity: "season", entityId: str(fd, "year") }, async () => {
     year = yearFrom(fd);
-    if (await first("SELECT 1 FROM seasons WHERE year = ?", year)) throw new FormError(`There is already a ${year} season.`);
+    if (await first("SELECT 1 FROM seasons WHERE year = ?", year)) throw new FormError(`There is already a ${seasonLabel(year)} season.`);
 
     const previous = await first<{ year: number }>(
       "SELECT year FROM seasons WHERE year < ? ORDER BY is_current DESC, year DESC LIMIT 1",
@@ -100,7 +101,7 @@ export async function createSeason(_prev: ActionState, fd: FormData): Promise<Ac
       }
     }
     await batch(statements);
-    return `${year} season created.`;
+    return `${seasonLabel(year)} season created.`;
   });
   if (result.ok) redirect(`/admin/seasons/${year}`);
   return result;
@@ -131,7 +132,7 @@ export async function makeCurrentSeason(year: number, _prev: ActionState): Promi
       ["UPDATE seasons SET is_current = 0 WHERE is_current = 1"],
       ["UPDATE seasons SET is_current = 1 WHERE year = ?", year],
     ]);
-    return `${year} is now the current season.`;
+    return `${seasonLabel(year)} is now the current season.`;
   });
 }
 

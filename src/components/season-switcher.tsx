@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useId, useRef, useState } from "react";
+import { seasonLabel } from "@/lib/format";
 
 const RECENT = 3;
 
@@ -92,7 +93,7 @@ export function SeasonSwitcher({
       aria-current={y === current ? "page" : undefined}
       className={`${style.chip} ${y === current ? style.active : style.idle}`}
     >
-      {y}
+      {seasonLabel(y)}
     </Link>
   );
 
@@ -139,7 +140,7 @@ export function SeasonSwitcher({
                       y === current ? "bg-hornet font-bold text-ink" : "bg-ink text-sand hover:bg-raise hover:text-bone"
                     }`}
                   >
-                    {y}
+                    {seasonLabel(y)}
                   </Link>
                 ))}
               </div>

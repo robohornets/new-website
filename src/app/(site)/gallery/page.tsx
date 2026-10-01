@@ -5,6 +5,7 @@ import { SeasonSwitcher } from "@/components/season-switcher";
 import { Container, EmptyState, PageHeader } from "@/components/page-header";
 import { getAlbums } from "@/lib/data";
 import { all } from "@/lib/db";
+import { seasonLabel } from "@/lib/format";
 
 export const metadata: Metadata = {
   title: "Gallery",
@@ -46,7 +47,7 @@ export default async function GalleryPage(props: PageProps<"/gallery">) {
                     />
                   </div>
                   <div className="flex items-center gap-2.5 font-label text-xs tracking-wider text-dust uppercase">
-                    {a.season_year && <span className="text-hornet">{a.season_year}</span>}
+                    {a.season_year && <span className="text-hornet">{seasonLabel(a.season_year)}</span>}
                     <span>{a.photo_count} photos</span>
                   </div>
                   <h2 className="font-display text-3xl leading-none font-bold uppercase group-hover:text-hornet">{a.title}</h2>

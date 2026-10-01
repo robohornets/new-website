@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { monthDay } from "@/lib/format";
-import { SEASON_STATUS_LABEL, type Robot, type Season, type TeamEvent } from "@/lib/types";
+import { formatDate, monthDay, seasonLabel } from "@/lib/format";
+import { SEASON_STATUS_LABEL, type Post, type Robot, type Season, type TeamEvent } from "@/lib/types";
 import { MediaImage } from "./media-image";
 
 export function SeasonStatusCard({
@@ -25,7 +25,7 @@ export function SeasonStatusCard({
         </span>
       </div>
       <div className="flex flex-wrap items-baseline gap-x-3">
-        <span className="font-display text-5xl leading-[0.9] font-black md:text-[56px]">{season.year}</span>
+        <span className="font-display text-5xl leading-[0.9] font-black md:text-[56px]">{seasonLabel(season.year)}</span>
         <span className="font-display text-2xl font-bold tracking-wide text-hornet uppercase md:text-[30px]">
           {season.game_name || "TBA"}
         </span>
@@ -54,12 +54,12 @@ export function RobotCard({ robot, gameName }: { robot: Robot; gameName?: string
       <div className="relative h-60 md:h-[300px]">
         <MediaImage
           mediaKey={robot.photo_key}
-          alt={`${robot.name}, the ${robot.season_year} robot`}
+          alt={`${robot.name}, the ${seasonLabel(robot.season_year)} robot`}
           placeholder={`${robot.name} photo coming soon`}
           className="size-full"
         />
         <span className="absolute top-4 left-4 rounded border border-line-strong bg-ink px-2.5 py-1 font-label text-xs">
-          {robot.season_year}
+          {seasonLabel(robot.season_year)}
           {gameName ? ` · ${gameName}` : ""}
         </span>
       </div>
@@ -78,6 +78,30 @@ export function RobotCard({ robot, gameName }: { robot: Robot; gameName?: string
           </ul>
         )}
       </div>
+    </Link>
+  );
+}
+
+/** An outreach post on the Impact page, the homepage and its season's page. */
+export function PostCard({ post }: { post: Post }) {
+  return (
+    <Link href={`/impact/${post.slug}`} className="group flex flex-col gap-4.5 text-bone">
+      <div className="h-60 overflow-hidden rounded-md">
+        <MediaImage mediaKey={post.cover_key} alt="" className="size-full transition-transform duration-300 group-hover:scale-[1.03]" />
+      </div>
+      <div className="flex items-center gap-2.5 font-label text-xs tracking-wider uppercase">
+        <span className="text-hornet">Outreach</span>
+        {post.published_at && (
+          <>
+            <span className="text-ash">·</span>
+            <time dateTime={post.published_at} className="text-dust">
+              {formatDate(post.published_at)}
+            </time>
+          </>
+        )}
+      </div>
+      <h3 className="font-display text-[32px] leading-[1.05] font-bold uppercase group-hover:text-hornet">{post.title}</h3>
+      {post.excerpt && <p className="text-[15px] leading-relaxed text-dust">{post.excerpt}</p>}
     </Link>
   );
 }

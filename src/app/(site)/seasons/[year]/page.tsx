@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { EventRow } from "@/components/cards";
+import { seasonLabel } from "@/lib/format";
+import { EventRow, PostCard } from "@/components/cards";
 import type { LightboxItem } from "@/components/lightbox";
 import { RobotSlideshow } from "@/components/robot-slideshow";
 import { SeasonRail, SeasonTabs } from "@/components/season-tabs";
@@ -13,6 +14,7 @@ import { RosterGrid } from "@/components/roster-grid";
 import { SponsorWall } from "@/components/sponsor-wall";
 import {
   getAlbums,
+  getPosts,
   getAlbumPhotos,
   getEventMatchSummary,
   getEvents,
@@ -37,8 +39,8 @@ export async function generateMetadata(props: PageProps<"/seasons/[year]">): Pro
   const season = year ? await getSeason(year) : null;
   if (!season) return { title: "Season not found" };
   return {
-    title: `${season.year} ${season.game_name}`.trim(),
-    description: `Team 1209's ${season.year} FRC season${season.game_name ? `, ${season.game_name}` : ""}: robot, competitions, roster and photos.`,
+    title: `${seasonLabel(season.year)} ${season.game_name}`.trim(),
+    description: `Team 1209's ${seasonLabel(season.year)} FRC season${season.game_name ? `, ${season.game_name}` : ""}: robot, competitions, roster and photos.`,
   };
 }
 
@@ -47,7 +49,7 @@ export default async function SeasonPage(props: PageProps<"/seasons/[year]">) {
   const season = year ? await getSeason(year) : null;
   if (!season) notFound();
 
-  const [seasons, robots, events, roster, sponsors, photos, albums, subteams, matchSummary, tabs] = await Promise.all([
+  const [seasons, robots, events, roster, sponsors, photos, albums, posts, subteams, matchSummary, tabs] = await Promise.all([
     getSeasons(),
     getRobots(season.year),
     getEvents(season.year),
@@ -55,6 +57,7 @@ export default async function SeasonPage(props: PageProps<"/seasons/[year]">) {
     getSeasonSponsors(season.year),
     getSeasonPhotos(season.year, 4),
     getAlbums(season.year),
+    getPosts({ seasonYear: season.year, limit: 3 }),
     getSubteams(),
     getEventMatchSummary(season.year),
     getSeasonTabs(season.year),
@@ -89,7 +92,7 @@ export default async function SeasonPage(props: PageProps<"/seasons/[year]">) {
             <span className="eyebrow text-dust">{SEASON_STATUS_LABEL[season.status]}</span>
           </div>
           <h1 className="flex flex-col font-display leading-[0.86] uppercase">
-            <span className="text-[120px] font-black md:text-[168px]">{season.year}</span>
+            <span className="text-[96px] font-black sm:text-[120px] md:text-[150px]">{seasonLabel(season.year)}</span>
             <span className="text-6xl font-extrabold text-hornet md:text-8xl">{season.game_name || "TBA"}</span>
           </h1>
           {season.summary && <p className="text-lg leading-relaxed whitespace-pre-line text-sand">{season.summary}</p>}
@@ -127,11 +130,11 @@ export default async function SeasonPage(props: PageProps<"/seasons/[year]">) {
         </div>
         <div className="relative h-[320px] grow overflow-hidden rounded-md border border-line md:h-[560px]">
           {slides.length > 0 ? (
-            <RobotSlideshow slides={slides} label={mainRobot ? `${mainRobot.name}, the ${season.year} robot` : `${season.year} season`} />
+            <RobotSlideshow slides={slides} label={mainRobot ? `${mainRobot.name}, the ${seasonLabel(season.year)} robot` : `${seasonLabel(season.year)} season`} />
           ) : (
             <MediaImage
               mediaKey={heroKey}
-              alt={mainRobot ? `${mainRobot.name}, the ${season.year} robot` : `${season.year} season`}
+              alt={mainRobot ? `${mainRobot.name}, the ${seasonLabel(season.year)} robot` : `${seasonLabel(season.year)} season`}
               placeholder={mainRobot ? `${mainRobot.name} photo coming soon` : "Photo coming soon"}
               className="size-full"
               loading="eager"
@@ -214,7 +217,7 @@ export default async function SeasonPage(props: PageProps<"/seasons/[year]">) {
       {roster.length > 0 && (
         <section className="border-t border-line">
           <Container className="flex flex-col gap-10 py-16 md:py-24">
-            <h2 className="font-display text-5xl leading-[0.95] font-extrabold uppercase md:text-7xl">The {season.year} crew</h2>
+            <h2 className="font-display text-5xl leading-[0.95] font-extrabold uppercase md:text-7xl">The {seasonLabel(season.year)} crew</h2>
             {students.length > 0 && <RosterGrid members={students} subteams={subteams} />}
             {mentors.length > 0 && (
               <div className="flex flex-col gap-6">
@@ -237,10 +240,23 @@ export default async function SeasonPage(props: PageProps<"/seasons/[year]">) {
         </Container>
       )}
 
+      {posts.length > 0 && (
+        <section className="border-t border-line">
+          <Container className="flex flex-col gap-10 py-16 md:py-24">
+            <h2 className="font-display text-5xl leading-[0.95] font-extrabold uppercase md:text-6xl">{seasonLabel(season.year)} stories</h2>
+            <div className="grid gap-10 md:grid-cols-2 md:gap-6 xl:grid-cols-3">
+              {posts.map((p) => (
+                <PostCard key={p.id} post={p} />
+              ))}
+            </div>
+          </Container>
+        </section>
+      )}
+
       {sponsors.length > 0 && (
         <section className="border-t border-line">
           <Container className="flex flex-col gap-10 py-16 md:py-24">
-            <h2 className="font-display text-5xl leading-[0.95] font-extrabold uppercase md:text-6xl">{season.year} sponsors</h2>
+            <h2 className="font-display text-5xl leading-[0.95] font-extrabold uppercase md:text-6xl">{seasonLabel(season.year)} sponsors</h2>
             <SponsorWall sponsors={sponsors} />
           </Container>
         </section>
@@ -250,7 +266,7 @@ export default async function SeasonPage(props: PageProps<"/seasons/[year]">) {
       <section id="gallery" className="border-t border-line bg-panel">
         <Container className="flex flex-col gap-8 py-16 md:py-20">
           <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-            <h2 className="font-display text-5xl font-extrabold uppercase md:text-[56px]">{season.year} gallery</h2>
+            <h2 className="font-display text-5xl font-extrabold uppercase md:text-[56px]">{seasonLabel(season.year)} gallery</h2>
             {albums.length > 0 && (
               <Link
                 href={albums.length === 1 ? `/gallery/${albums[0].slug}` : `/gallery?season=${season.year}`}
@@ -278,7 +294,7 @@ export default async function SeasonPage(props: PageProps<"/seasons/[year]">) {
               ))}
             </ul>
           ) : (
-            <EmptyState>No photos from {season.year} yet.</EmptyState>
+            <EmptyState>No photos from {seasonLabel(season.year)} yet.</EmptyState>
           )}
         </Container>
       </section>

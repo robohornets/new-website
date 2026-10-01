@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { adminAction, FormError, int, oneOf, optionalInt, parseList, parseSpecs, str, url, type ActionState } from "@/lib/admin";
 import { requireAdmin } from "@/lib/auth";
 import { first, run } from "@/lib/db";
+import { seasonLabel } from "@/lib/format";
 import type { RobotKind } from "@/lib/types";
 
 const ROBOT_KINDS: RobotKind[] = ["competition", "kitbot", "offseason", "prototype"];
@@ -28,13 +29,25 @@ export async function createRobot(year: number, _prev: ActionState, fd: FormData
   return result;
 }
 
+/** "26-27 robot: Roomba", the title of the album made for a robot's photos. */
+function robotAlbumTitle(year: number, name: string) {
+  return `${seasonLabel(year)} robot: ${name}`;
+}
+
 export async function updateRobot(id: number, _prev: ActionState, fd: FormData): Promise<ActionState> {
   return adminAction({ action: "update", entity: "robot", entityId: id }, async () => {
     const name = str(fd, "name", 120);
     if (!name) throw new FormError("Give the robot a name.");
+    const before = await first<{ season_year: number; name: string; album_id: number | null }>("SELECT season_year, name, album_id FROM robots WHERE id = ?", id);
+    if (!before) throw new FormError("That robot no longer exists.");
+    const year = optionalInt(fd, "season_year") ?? before.season_year;
+    if (year !== before.season_year && !(await first("SELECT 1 FROM seasons WHERE year = ?", year))) throw new FormError("Pick a season that exists.");
+    const moved = year !== before.season_year;
     await run(
-      `UPDATE robots SET name = ?, kind = ?, description = ?, specs = ?, tags = ?, code_url = ?, cad_url = ?, sort_order = ?
+      `UPDATE robots SET season_year = ?, name = ?, kind = ?, description = ?, specs = ?, tags = ?, code_url = ?, cad_url = ?,
+         sort_order = CASE WHEN ? THEN (SELECT COALESCE(MAX(sort_order), -1) + 1 FROM robots WHERE season_year = ?) ELSE ? END
        WHERE id = ?`,
+      year,
       name,
       oneOf(fd, "kind", ROBOT_KINDS, "competition"),
       str(fd, "description", 2000),
@@ -42,9 +55,24 @@ export async function updateRobot(id: number, _prev: ActionState, fd: FormData):
       JSON.stringify(parseList(str(fd, "tags", 400))),
       url(fd, "code_url"),
       url(fd, "cad_url"),
+      moved ? 1 : 0,
+      year,
       int(fd, "sort_order", 0),
       id,
     );
+    // The album made for this robot moves and is renamed with it (unless someone renamed it).
+    if (before.album_id && (moved || name !== before.name)) {
+      await run(
+        `UPDATE albums SET season_year = ?, title = CASE WHEN title = ? THEN ? ELSE title END
+         WHERE id = ? AND slug LIKE ?`,
+        year,
+        robotAlbumTitle(before.season_year, before.name),
+        robotAlbumTitle(year, name),
+        before.album_id,
+        `%-robot-${id}`,
+      );
+    }
+    if (moved) return `Moved to the ${seasonLabel(year)} season.`;
   });
 }
 
@@ -53,7 +81,12 @@ export async function setRobotAlbum(id: number, _prev: ActionState, fd: FormData
   return adminAction({ action: "update", entity: "robot", entityId: id }, async () => {
     const albumId = optionalInt(fd, "album_id");
     if (albumId) {
-      const ok = await first("SELECT 1 FROM albums a JOIN robots r ON r.id = ? WHERE a.id = ? AND a.season_year = r.season_year", id, albumId);
+      // One of its season's albums, or the one it already has (which may be from another season after a move).
+      const ok = await first(
+        "SELECT 1 FROM albums a JOIN robots r ON r.id = ? WHERE a.id = ? AND (a.season_year = r.season_year OR a.id = r.album_id)",
+        id,
+        albumId,
+      );
       if (!ok) throw new FormError("Pick an album from this robot's season.");
     }
     await run("UPDATE robots SET album_id = ? WHERE id = ?", albumId, id);
@@ -63,7 +96,7 @@ export async function setRobotAlbum(id: number, _prev: ActionState, fd: FormData
 
 /**
  * The album a robot's uploads go into, made the first time it's needed
- * ("2026 robot: Roomba", shown in the Gallery too). The robot's old single
+ * ("26-27 robot: Roomba", shown in the Gallery too). The robot's old single
  * photo, if any, becomes its first photo.
  */
 export async function ensureRobotAlbum(id: number): Promise<number> {
@@ -81,7 +114,7 @@ export async function ensureRobotAlbum(id: number): Promise<number> {
      ON CONFLICT(slug) DO UPDATE SET slug = excluded.slug
      RETURNING id`,
     `${robot.season_year}-robot-${id}`,
-    `${robot.season_year} robot: ${robot.name}`,
+    robotAlbumTitle(robot.season_year, robot.name),
     robot.season_year,
   );
   if (!album) throw new Error("Couldn't make the robot's album.");

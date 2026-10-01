@@ -29,10 +29,12 @@ export const GUIDES: Guide[] = [
       "Click **Save changes** in that bar to save everything at once, or **Revert** to put it all back. Nothing changes on the site until you save. (Ctrl+S or Cmd+S saves too.)",
       "Adding something new (like **Add to roster** or **Add sponsor**) and deleting still happen straight away with their own buttons.",
       "Every list works the same way: click anything in it to open it. Rows with a ✎ open a popup; rows with a → open their own page. **+ Add …** is always at the top of the list, and **Delete** is always the last thing inside, in red, and asks first.",
+      "Every page is laid out the same way: its settings and details are at the top, and lists that keep growing (photos, the roster, matches) are underneath.",
       "If you try to leave a page with unsaved changes, the bar flashes red and shakes. Save or revert first.",
       "Click **View site** (top right of the dashboard) to check how it looks.",
     ],
     tips: [
+      "Seasons are shown the way FRC counts them: the 2027 game is the **26-27** season, from fall 2026 to spring 2027.",
       "Deleting always asks you to confirm first, and can't be undone. If you're unsure, hide things instead of deleting them.",
       "Press the **? Help** button on any page to see the guides for that page.",
     ],
@@ -45,8 +47,8 @@ export const GUIDES: Guide[] = [
     title: "Start a new season",
     pages: ["/admin", "/admin/seasons"],
     steps: [
-      "Go to **Seasons, robots & events** and click **Start 2027 season** (the year changes to whatever's next). The dashboard has the same button.",
-      "Check the **Season year**. Type the **Game name** if you know it; you can add it after kickoff.",
+      "Go to **Seasons, robots & events** and click **Start 26-27 season** (it's always whichever season is next). The dashboard has the same button.",
+      "Check the **Season year**: it's the year the season ends, which is the year of the game (2027 for the 26-27 season). Type the **Game name** if you know it; you can add it after kickoff.",
       "Leave the **Carry over** boxes ticked to bring returning students, mentors and sponsors with you. Anyone whose graduation year has passed is left off.",
       "Keep **Make this the current season on the homepage right away** ticked so the homepage switches to the new year.",
       "Click **Create season**. You land on the new season's page, where you add the robot and events.",
@@ -61,13 +63,29 @@ export const GUIDES: Guide[] = [
     steps: [
       "Open **Seasons, robots & events** and click the season.",
       "Under **Robots**, click **+ Add robot**, type its name, pick the type and click **Add robot**. Its page opens.",
-      "Under **Photos**, drop in as many photos as you like. The first upload makes an album for them (\"2026 robot: Roomba\"), which also shows in the Gallery. Already have them in an album? Pick it in **Photos come from** instead.",
-      "The photos are a slideshow at the top of the season page, in the order shown: drag them by **⠿** (or use **◀ ▶**) and save. Click a photo to describe it or **Make main photo** (used on the homepage and lists).",
       "Under **Details**, fill in the description, tags, code and CAD links, and **Specs** (one per line as Label: value, for example Drivetrain: Swerve), then click **Save changes** in the bar at the bottom.",
+      "Under **Photos**, drop in as many photos as you like. The first upload makes an album for them (\"26-27 robot: Roomba\"), which also shows in the Gallery. Already have them in an album? Pick it in **Photos come from** instead.",
+      "The photos are a slideshow at the top of the season page, in the order shown: drag them by **⠿** (or use **◀ ▶**) and save. Click a photo to describe it or **Make main photo** (used on the homepage and lists).",
     ],
     tips: [
       "The first competition robot is the one featured on the homepage and season page. Use **Order** (lower numbers first) to change which one comes first.",
       "The code and CAD links are listed on the season's Resources tab automatically.",
+    ],
+  },
+  {
+    id: "move-season",
+    group: "Season basics",
+    title: "Move something to another season",
+    pages: ["/admin/robots", "/admin/events", "/admin/outreach", "/admin/posts", "/admin/gallery/", "/admin/seasons/"],
+    steps: [
+      "Anything tied to a season has a **Season** box where it's edited: robots (under **Details**), events added by hand, outreach events, outreach posts and albums.",
+      "Pick the right season and click **Save changes** in the bar at the bottom. It moves straight away.",
+      "A robot's or a post's own photo album moves with it (and is renamed, unless you've renamed it yourself).",
+      "Resources have **Shows on** in their popup: a season, or **Every season** for team documents.",
+    ],
+    tips: [
+      "Events from The Blue Alliance can't be moved: they always belong to the season of their key (2027okok is the 26-27 season), and syncing would put them back.",
+      "Moving an outreach event moves its hours to that season's totals.",
     ],
   },
   {
@@ -201,7 +219,7 @@ export const GUIDES: Guide[] = [
     steps: [
       "Go to **Gallery**, click **+ New album**, type a title (for example the event name), pick the season, and click **Create album**.",
       "Drag photos from your computer into the dashed box, or click the box to choose them. You can pick lots at once.",
-      "Wait for **Uploading 12 of 12…** to finish. The photos then appear below.",
+      "Wait for **Uploading 12 of 12…** to finish. The photos then appear below. You can add more to an album at any time the same way.",
       "Photos straight from a phone are fine (up to 20 MB each, including iPhone HEIC). Videos work too: they're converted to MP4 in your browser first so every browser can play them (keep the tab open while it says **Converting**).",
     ],
     tips: ["Each photo is kept exactly as uploaded. The site makes smaller copies automatically so pages load fast."],
@@ -210,7 +228,7 @@ export const GUIDES: Guide[] = [
     id: "photo-details",
     group: "Photos",
     title: "Descriptions, alt text and the cover photo",
-    pages: ["/admin/gallery/", "/admin/robots"],
+    pages: ["/admin/gallery/", "/admin/robots", "/admin/posts/"],
     steps: [
       "Open the album and click a photo. A popup opens with it large, and you can fill in:",
       "**Description**: shown when someone opens the photo on the site. Optional; a sentence about what's happening is plenty.",
@@ -431,13 +449,29 @@ export const GUIDES: Guide[] = [
     ],
   },
   {
+    id: "outreach-post",
+    group: "Outreach",
+    title: "Write an outreach post",
+    pages: ["/admin/posts"],
+    steps: [
+      "Go to **Outreach posts** and click **+ New post**. Type a title, pick the season and click **Create draft**. Its page opens.",
+      "Fill in the **Summary** (shown on cards) and write the post under **Article**. **Preview** shows how it will look.",
+      "Under **Photos**, drop in as many photos as you like. The main photo is the cover at the top; all of them show in a gallery at the end of the post (click one to describe it or **Make main photo**).",
+      "When it's ready, tick **Published** and click **Save changes** in the bar at the bottom. It shows on the Impact page, the homepage and its season's page.",
+    ],
+    tips: [
+      "Drafts are only visible in the admin. Untick **Published** to take a post down without deleting it.",
+      "The photos are also an album in the Gallery while the post is published.",
+    ],
+  },
+  {
     id: "outreach-totals",
     group: "Outreach",
     title: "See and share outreach totals",
     pages: ["/admin/outreach"],
     steps: [
       "The four numbers at the top of **Outreach hours** are the season's volunteer hours, outreach events, people reached and how many team members helped.",
-      "The Impact page on the site shows the latest season's hours, events and people reached, then every outreach event with its **What we did** write-up (and the cover of its photo album, if it has one). It never shows who went or anyone's own hours.",
+      "The Impact page on the site shows the latest season's hours, events and people reached, then every outreach event with its **What we did** write-up (and the cover of its photo album, if it has one), with the published outreach posts as **Stories**. It never shows who went or anyone's own hours.",
       "**Hours by person** lists everyone's total, most hours first. It's only in the admin.",
       "**Download totals (CSV)** gives one line per person; **Download full log (CSV)** gives one line per person per event. Both open in Excel or Google Sheets, handy for service-hour forms, letters of recommendation and the Impact Award.",
     ],

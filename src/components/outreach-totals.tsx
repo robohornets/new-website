@@ -1,4 +1,5 @@
 import type { OutreachTotals } from "@/lib/outreach";
+import { seasonLabel } from "@/lib/format";
 
 /** The season's outreach in three numbers. Only totals: nobody's own hours. */
 export function OutreachTotalsStrip({ totals }: { totals: OutreachTotals }) {
@@ -9,9 +10,9 @@ export function OutreachTotalsStrip({ totals }: { totals: OutreachTotals }) {
   ].filter((s) => s.value > 0);
   if (stats.length === 0) return null;
   return (
-    <section aria-label={`Outreach in the ${totals.year} season`} className="border-b border-line bg-panel">
+    <section aria-label={`Outreach in the ${seasonLabel(totals.year)} season`} className="border-b border-line bg-panel">
       <div className="mx-auto flex max-w-[1440px] flex-col gap-2 px-4 pt-6 md:px-8 md:pt-8 xl:px-16">
-        <span className="eyebrow text-[11px] text-ash">{totals.year} season so far</span>
+        <span className="eyebrow text-[11px] text-ash">{seasonLabel(totals.year)} season so far</span>
       </div>
       <dl className={`mx-auto grid max-w-[1440px] md:px-8 xl:px-16 ${["", "grid-cols-1", "grid-cols-2", "grid-cols-3"][stats.length]}`}>
         {stats.map((s) => (

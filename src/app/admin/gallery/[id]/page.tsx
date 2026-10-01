@@ -11,6 +11,7 @@ import { AdminPageHeader, Checkbox, DeletePanel, Grid, Panel, SelectField, TextA
 import { PhotosEditor } from "../../_components/photos-editor";
 import { deleteAlbum, updateAlbum } from "../actions";
 import { requireAdminPage } from "@/lib/auth";
+import { seasonLabel } from "@/lib/format";
 
 export const metadata: Metadata = { title: "Edit album" };
 
@@ -44,19 +45,6 @@ export default async function AdminAlbumPage(props: PageProps<"/admin/gallery/[i
         }
       />
 
-      <BulkUploader albumId={id} label="Add photos and videos to this album" direct={direct} />
-
-      <Panel
-        title="Photos"
-        description="The site shows them in this order. Drag a photo by ⠿ (or use ◀ ▶) and save. Click a photo to add a description, make it the cover or remove it."
-      >
-        {photos.length === 0 ? (
-          <p className="text-sm text-dust">No photos yet. Upload some above.</p>
-        ) : (
-          <PhotosEditor albumId={id} coverId={album.cover_media_id} photos={photos} />
-        )}
-      </Panel>
-
       <Panel title="Album details">
         <EditForm action={updateAlbum.bind(null, id)}>
           <input type="hidden" name="cover_media_id" value={album.cover_media_id ?? ""} />
@@ -66,13 +54,21 @@ export default async function AdminAlbumPage(props: PageProps<"/admin/gallery/[i
               label="Season"
               name="season_year"
               defaultValue={album.season_year ?? ""}
-              options={[{ value: "", label: "No season" }, ...years.map((y) => ({ value: y, label: String(y) }))]}
+              options={[{ value: "", label: "No season" }, ...years.map((y) => ({ value: y, label: seasonLabel(y) }))]}
             />
             <TextField label="URL slug" name="slug" defaultValue={album.slug} />
           </Grid>
           <TextArea label="Description" name="description" rows={2} defaultValue={album.description} />
           <Checkbox label="Visible on the site" name="published" defaultChecked={album.published === 1} />
         </EditForm>
+      </Panel>
+
+      <Panel
+        title="Photos"
+        description="The site shows them in this order. Drag a photo by ⠿ (or use ◀ ▶) and save. Click a photo to add a description, make it the cover or remove it."
+      >
+        <BulkUploader albumId={id} label="Add photos and videos to this album" direct={direct} />
+        {photos.length > 0 && <PhotosEditor albumId={id} coverId={album.cover_media_id} photos={photos} />}
       </Panel>
 
       <DeletePanel title="Delete this album" description="Removes the album from the Gallery. The photos stay in the Media library.">

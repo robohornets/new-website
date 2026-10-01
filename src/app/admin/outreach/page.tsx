@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { resolveSeasonParam } from "@/lib/admin-data";
 import { requireAdminPage } from "@/lib/auth";
-import { formatDate } from "@/lib/format";
+import { formatDate, seasonLabel } from "@/lib/format";
 import { formatHours, getOutreachEvents, getOutreachPeople, getOutreachTotals } from "@/lib/outreach";
 import { ShowMore } from "@/components/show-more";
 import { AddButton, Badge, LinkRow, RowContent } from "../_components/items";
@@ -110,7 +110,7 @@ export default async function AdminOutreachPage(props: PageProps<"/admin/outreac
       </div>
 
       <Panel
-        title={`${year} outreach events`}
+        title={`${seasonLabel(year)} outreach events`}
         actions={
           <AddButton
             label="Add outreach event"
@@ -130,7 +130,7 @@ export default async function AdminOutreachPage(props: PageProps<"/admin/outreac
         }
         description={
           <>
-            Outreach events also show on the {year} season page. Competitions and other events are on{" "}
+            Outreach events also show on the {seasonLabel(year)} season page. Competitions and other events are on{" "}
             <Link href={`/admin/seasons/${year}#events`} className="font-semibold text-hornet hover:text-hornet-hover">
               the season&apos;s page
             </Link>
@@ -139,7 +139,7 @@ export default async function AdminOutreachPage(props: PageProps<"/admin/outreac
         }
       >
         {events.length === 0 ? (
-          <p className="text-sm text-dust">No outreach events in {year} yet. Add one with the button above.</p>
+          <p className="text-sm text-dust">No outreach events in {seasonLabel(year)} yet. Add one with the button above.</p>
         ) : (
           <ShowMore items={eventRows} initial={8} noun="events" className="flex flex-col gap-2" />
         )}
@@ -162,7 +162,7 @@ export default async function AdminOutreachPage(props: PageProps<"/admin/outreac
         }
       >
         {people.length === 0 ? (
-          <p className="text-sm text-dust">Nobody has been logged for {year} yet.</p>
+          <p className="text-sm text-dust">Nobody has been logged for {seasonLabel(year)} yet.</p>
         ) : (
           <div className="-mx-5 overflow-x-auto md:-mx-6">
             <table className="w-full min-w-[480px] text-left">

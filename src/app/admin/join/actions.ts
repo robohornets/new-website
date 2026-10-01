@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { adminAction, FormError, optionalInt, str, type ActionState } from "@/lib/admin";
 import { batch, first, run } from "@/lib/db";
 import { getCurrentSeason } from "@/lib/data";
+import { seasonLabel } from "@/lib/format";
 
 type Request = { id: number; first_name: string; last_name: string; graduation_year: number; status: string };
 
@@ -30,7 +31,7 @@ export async function addJoinToRoster(requestId: number, _prev: ActionState, fd:
       request.graduation_year,
     );
     if (person && (await first("SELECT 1 FROM roster_entries WHERE person_id = ? AND season_year = ?", person.id, season.year))) {
-      throw new FormError(`${request.first_name} ${request.last_name} is already on the ${season.year} roster. Decline this request instead.`);
+      throw new FormError(`${request.first_name} ${request.last_name} is already on the ${seasonLabel(season.year)} roster. Decline this request instead.`);
     }
     if (!person) {
       person = await first<{ id: number }>(
@@ -59,7 +60,7 @@ export async function addJoinToRoster(requestId: number, _prev: ActionState, fd:
         requestId,
       ],
     ]);
-    return `${request.first_name} is on the ${season.year} roster.`;
+    return `${request.first_name} is on the ${seasonLabel(season.year)} roster.`;
   });
   // The card leaves the Pending list, so say what happened at the top instead.
   if (result.ok) redirect(`/admin/join?done=added&id=${requestId}`);

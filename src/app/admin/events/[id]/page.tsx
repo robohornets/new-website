@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { getSeasonYears } from "@/lib/admin-data";
 import { requireAdminPage } from "@/lib/auth";
 import { getEvent, getMatches } from "@/lib/data";
 import { all } from "@/lib/db";
-import { formatDate, formatDateTime } from "@/lib/format";
+import { formatDate, formatDateTime, seasonLabel } from "@/lib/format";
 import { EVENT_TBA_FIELDS, MATCH_TBA_FIELDS, parseOverrides, parseTba } from "@/lib/tba/fields";
 import { matchLabel } from "@/lib/tba/map";
 import type { Match } from "@/lib/types";
@@ -67,13 +68,15 @@ export default async function AdminEventPage(props: PageProps<"/admin/events/[id
   const { created } = await props.searchParams;
   const event = Number.isInteger(id) ? await getEvent(id) : null;
   if (!event) notFound();
-  const [matches, albums] = await Promise.all([
+  const [matches, albums, years] = await Promise.all([
     getMatches(id, true),
     all<{ id: number; title: string; season_year: number | null }>(
       "SELECT id, title, season_year FROM albums ORDER BY season_year = ? DESC, season_year DESC, created_at DESC",
       event.season_year,
     ),
+    getSeasonYears(),
   ]);
+  const season = seasonLabel(event.season_year);
   const synced = Boolean(event.tba);
   const tba = parseTba(event.tba);
   const overrides = parseOverrides(event.overrides);
@@ -85,7 +88,7 @@ export default async function AdminEventPage(props: PageProps<"/admin/events/[id
       <AdminPageHeader
         breadcrumb={
           <>
-            <Link href="/admin/seasons">Seasons</Link> / <Link href={`/admin/seasons/${event.season_year}#events`}>{event.season_year}</Link> /
+            <Link href="/admin/seasons">Seasons</Link> / <Link href={`/admin/seasons/${event.season_year}#events`}>{season}</Link> /
           </>
         }
         title={event.name}
@@ -189,11 +192,25 @@ export default async function AdminEventPage(props: PageProps<"/admin/events/[id
               defaultValue={event.album_id ?? ""}
               options={[
                 { value: "", label: "No album" },
-                ...albums.map((a) => ({ value: a.id, label: `${a.title}${a.season_year ? ` (${a.season_year})` : ""}` })),
+                ...albums.map((a) => ({ value: a.id, label: `${a.title}${a.season_year ? ` (${seasonLabel(a.season_year)})` : ""}` })),
               ]}
               hint="Photos from this album show on the event page. Make albums under Gallery."
             />
           </Grid>
+          {event.tba_key ? (
+            <p className="text-sm text-dust">
+              Season: <strong className="text-bone">{season}</strong>. Events from The Blue Alliance stay in the season of their key ({event.tba_key}).
+            </p>
+          ) : (
+            <SelectField
+              label="Season"
+              name="season_year"
+              defaultValue={event.season_year}
+              options={years.map((y) => ({ value: y, label: `${seasonLabel(y)} season` }))}
+              hint="Moves the event, its matches and any outreach hours logged for it to that season."
+              className="max-w-xs"
+            />
+          )}
           <Checkbox
             label="Hide this event from the site"
             name="hidden"

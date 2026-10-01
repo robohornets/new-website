@@ -6,6 +6,7 @@ import type {
   AlbumPhoto,
   Contact,
   Match,
+  Post,
   Robot,
   RosterMember,
   Season,
@@ -228,6 +229,39 @@ export const getStudentCount = cache(async (): Promise<number> => {
 
 export const getSubteams = cache(async (): Promise<Subteam[]> =>
   all<Subteam>("SELECT id, name, private, sort_order FROM subteams ORDER BY sort_order, name"),
+);
+
+/**
+ * A post's cover: its album's main photo (or first photo), else the cover
+ * picked before posts had albums. Needs the post as `p`.
+ */
+const POST_COVER = `COALESCE(
+  (SELECT mi.r2_key FROM albums pa JOIN media mi ON mi.id = COALESCE(pa.cover_media_id,
+     (SELECT ap.media_id FROM album_photos ap JOIN media x ON x.id = ap.media_id
+      WHERE ap.album_id = pa.id AND x.content_type LIKE 'image/%' ORDER BY ap.sort_order LIMIT 1))
+   WHERE pa.id = p.album_id),
+  (SELECT mc.r2_key FROM media mc WHERE mc.id = p.cover_media_id))`;
+
+export const POST_COLUMNS = `p.id, p.slug, p.title, p.category, p.excerpt, p.body, p.album_id, ${POST_COVER} AS cover_key,
+  p.season_year, p.published, p.published_at, p.created_at, p.updated_at`;
+
+/** Published outreach posts, newest first. */
+export const getPosts = cache(async (opts: { limit?: number; seasonYear?: number } = {}): Promise<Post[]> => {
+  const where = ["p.published = 1", "p.category = 'outreach'"];
+  const params: (string | number)[] = [];
+  if (opts.seasonYear) {
+    where.push("p.season_year = ?");
+    params.push(opts.seasonYear);
+  }
+  params.push(opts.limit ?? 100);
+  return all<Post>(
+    `SELECT ${POST_COLUMNS} FROM posts p WHERE ${where.join(" AND ")} ORDER BY p.published_at DESC, p.id DESC LIMIT ?`,
+    ...params,
+  );
+});
+
+export const getPost = cache(async (slug: string): Promise<Post | null> =>
+  first<Post>(`SELECT ${POST_COLUMNS} FROM posts p WHERE p.slug = ? AND p.published = 1 AND p.category = 'outreach'`, slug),
 );
 
 export const getSeasonSponsors = cache(async (year: number): Promise<SeasonSponsor[]> =>

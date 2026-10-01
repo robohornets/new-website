@@ -1,8 +1,9 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { adminAction, date, FormError, str, type ActionState } from "@/lib/admin";
+import { adminAction, date, FormError, optionalInt, str, type ActionState } from "@/lib/admin";
 import { batch, first, run } from "@/lib/db";
+import { seasonLabel } from "@/lib/format";
 
 /** Hours as typed ("2", "1.5", "1:30"). Empty is null. */
 function hours(fd: FormData, key: string, label: string): number | null {
@@ -62,8 +63,14 @@ export async function createOutreachEvent(year: number, _prev: ActionState, fd: 
 /** The event's details and who went, saved together from the save bar. */
 export async function saveOutreachEvent(id: number, _prev: ActionState, fd: FormData): Promise<ActionState> {
   return adminAction({ action: "update", entity: "outreach", entityId: id }, async () => {
-    const ev = await first<{ tba: string | null }>("SELECT tba FROM events WHERE id = ? AND kind = 'outreach'", id);
+    const ev = await first<{ tba: string | null; tba_key: string | null; season_year: number }>(
+      "SELECT tba, tba_key, season_year FROM events WHERE id = ? AND kind = 'outreach'",
+      id,
+    );
     if (!ev) throw new FormError("That outreach event no longer exists.");
+    // Events from The Blue Alliance stay in their key's season.
+    const year = ev.tba_key ? ev.season_year : (optionalInt(fd, "season_year") ?? ev.season_year);
+    if (year !== ev.season_year && !(await first("SELECT 1 FROM seasons WHERE year = ?", year))) throw new FormError("Pick a season that exists.");
 
     const went = [...new Set(fd.getAll("went").map(Number).filter((n) => Number.isInteger(n) && n > 0))];
     const statements: [string, ...(string | number | null)[]][] = [];
@@ -71,7 +78,8 @@ export async function saveOutreachEvent(id: number, _prev: ActionState, fd: Form
     if (!ev.tba) {
       const f = eventFields(fd);
       statements.push([
-        "UPDATE events SET name = ?, start_date = ?, end_date = ?, location = ?, outreach_hours = ?, people_reached = ?, recap = ? WHERE id = ?",
+        "UPDATE events SET season_year = ?, name = ?, start_date = ?, end_date = ?, location = ?, outreach_hours = ?, people_reached = ?, recap = ? WHERE id = ?",
+        year,
         f.name,
         f.start,
         f.end,
@@ -101,6 +109,7 @@ export async function saveOutreachEvent(id: number, _prev: ActionState, fd: Form
       ]);
     }
     await batch(statements);
+    if (year !== ev.season_year) return `Moved to the ${seasonLabel(year)} season. ${went.length} ${went.length === 1 ? "person" : "people"} logged.`;
     return `Saved. ${went.length} ${went.length === 1 ? "person" : "people"} logged.`;
   });
 }

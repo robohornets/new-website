@@ -3,7 +3,7 @@ import Link from "next/link";
 import { requireAdminPage } from "@/lib/auth";
 import { getCurrentSeason, getSettings, getSubteams } from "@/lib/data";
 import { all, first, parseJson } from "@/lib/db";
-import { formatDate } from "@/lib/format";
+import { formatDate, seasonLabel } from "@/lib/format";
 import type { JoinRequest, JoinRequestStatus, Subteam } from "@/lib/types";
 import { ActionButton } from "../_components/action-form";
 import { ModalItem, RowContent } from "../_components/items";
@@ -68,7 +68,7 @@ export default async function AdminJoinPage(props: PageProps<"/admin/join">) {
         <div role="status" className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-md border border-line-strong bg-raise px-5 py-4">
           <span className="font-semibold">
             {done === "added"
-              ? `${doneRequest.first_name} ${doneRequest.last_name} is on the ${doneRequest.season_year} roster.`
+              ? `${doneRequest.first_name} ${doneRequest.last_name} is on the ${seasonLabel(doneRequest.season_year)} roster.`
               : `Declined ${doneRequest.first_name} ${doneRequest.last_name}'s request.`}
           </span>
           {done === "added" && doneRequest.person_id && (
@@ -167,7 +167,7 @@ function RequestItem({
         ? `1st choice: ${nameFor(firstPick)}`
         : "No subteams ranked"
       : r.status === "added"
-        ? `Added${r.subteam_name ? ` to ${r.subteam_name}` : ""}${r.season_year ? `, ${r.season_year} roster` : ""}`
+        ? `Added${r.subteam_name ? ` to ${r.subteam_name}` : ""}${r.season_year ? `, ${seasonLabel(r.season_year)} roster` : ""}`
         : `Declined ${formatDate(r.decided_at)}`;
 
   const details = (
@@ -204,7 +204,7 @@ function RequestItem({
         description={`Class of ${r.graduation_year} · sent ${formatDate(r.created_at)}`}
         size="lg"
         action={addJoinToRoster.bind(null, r.id)}
-        submitLabel={seasonYear ? `Add to ${seasonYear} roster` : "Add to roster"}
+        submitLabel={seasonYear ? `Add to ${seasonLabel(seasonYear)} roster` : "Add to roster"}
         destroy={{ label: "Decline", confirm: `Decline ${r.first_name}'s request? You can move it back to Pending later.`, action: declineJoin.bind(null, r.id) }}
       >
         {details}

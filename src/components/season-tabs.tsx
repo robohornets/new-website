@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Container } from "./page-header";
 import { SeasonSwitcher } from "./season-switcher";
+import { seasonLabel } from "@/lib/format";
 
 /**
  * Overview | Scouting | Resources under the season rail. Each is its own
@@ -15,7 +16,7 @@ export function SeasonTabs({ year, active, tabs }: { year: number; active: "over
   ];
   if (items.length === 1) return null;
   return (
-    <nav aria-label={`${year} season`} className="border-b border-line">
+    <nav aria-label={`${seasonLabel(year)} season`} className="border-b border-line">
       <Container className="flex gap-1 overflow-x-auto">
         {items.map((t) => (
           <Link
@@ -50,7 +51,7 @@ export function SeasonSubheader({ year, game, title, intro }: { year: number; ga
   return (
     <Container className="flex flex-col gap-4 pt-10 pb-8 md:pt-14">
       <span className="eyebrow text-dust">
-        {year} {game}
+        {seasonLabel(year)} {game}
       </span>
       <h1 className="font-display text-5xl leading-[0.95] font-black uppercase md:text-7xl">{title}</h1>
       <div className="max-w-2xl text-[17px] leading-relaxed text-sand">{intro}</div>

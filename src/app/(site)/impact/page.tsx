@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { PostCard } from "@/components/cards";
 import { MediaImage } from "@/components/media-image";
 import { OutreachTotalsStrip } from "@/components/outreach-totals";
 import { Container, EmptyState, PageHeader } from "@/components/page-header";
+import { getPosts } from "@/lib/data";
 import { formatDate } from "@/lib/format";
 import { getPublicOutreachEvents, getPublicOutreachTotals, type PublicOutreachEvent } from "@/lib/outreach";
 
@@ -19,7 +21,7 @@ function when(e: PublicOutreachEvent) {
 }
 
 export default async function ImpactPage() {
-  const [totals, events] = await Promise.all([getPublicOutreachTotals(), getPublicOutreachEvents()]);
+  const [totals, events, posts] = await Promise.all([getPublicOutreachTotals(), getPublicOutreachEvents(), getPosts()]);
   const upcoming = events.filter((e) => e.upcoming === 1).reverse();
   const past = events.filter((e) => e.upcoming !== 1);
 
@@ -53,6 +55,16 @@ export default async function ImpactPage() {
           <section className="flex flex-col gap-6">
             <h2 className="font-display text-4xl font-extrabold uppercase">Coming up</h2>
             <ul className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">{upcoming.map(card)}</ul>
+          </section>
+        )}
+        {posts.length > 0 && (
+          <section className="flex flex-col gap-8">
+            <h2 className="font-display text-4xl font-extrabold uppercase">Stories</h2>
+            <div className="grid gap-12 md:grid-cols-2 md:gap-x-6 xl:grid-cols-3">
+              {posts.map((p) => (
+                <PostCard key={p.id} post={p} />
+              ))}
+            </div>
           </section>
         )}
         <section className="flex flex-col gap-6">

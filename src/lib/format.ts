@@ -80,3 +80,13 @@ export const MEMBER_COUNT_TOKEN = "{members}";
 export function roundedCount(n: number): string {
   return n < 10 ? String(n) : `${Math.floor(n / 10) * 10}+`;
 }
+
+/**
+ * How a season is shown: FRC seasons run from fall to spring, so the season
+ * stored (and linked) as 2027 is the 2026-27 season, shown as "26-27".
+ */
+export function seasonLabel(year: number | null | undefined): string {
+  if (year == null || !Number.isFinite(year)) return "";
+  const yy = (n: number) => String(((n % 100) + 100) % 100).padStart(2, "0");
+  return `${yy(year - 1)}-${yy(year)}`;
+}

@@ -5,6 +5,7 @@ import { all, first, parseJson } from "./db";
 import { documentLink, downloadUrl } from "./media";
 import { matchKeyLabel, type ScoutingData, type ScoutingForm } from "./scouting";
 import { cachedNicknames, getScoutingForm } from "./scouting-data";
+import { seasonLabel } from "@/lib/format";
 
 // What a season page's Scouting and Resources tabs show.
 
@@ -141,10 +142,10 @@ export const getSeasonResources = cache(async (year: number): Promise<{ season: 
   }
   const notebook = season ? documentLink(season.notebook_key, season.notebook_url) : null;
   if (notebook) {
-    auto.push({ key: "notebook", title: `${year} engineering notebook`, description: "How we designed, built and improved the robot this season.", href: notebook.href, kind: notebook.external ? linkKind(notebook.href) : "PDF", external: notebook.external, team: false });
+    auto.push({ key: "notebook", title: `${seasonLabel(year)} engineering notebook`, description: "How we designed, built and improved the robot this season.", href: notebook.href, kind: notebook.external ? linkKind(notebook.href) : "PDF", external: notebook.external, team: false });
   }
   if (scouting) {
-    auto.push({ key: "scouting", title: `${year} scouting data`, description: "What our scouts noted about every team we scouted, match by match.", href: `/seasons/${year}/scouting`, kind: "Scouting tab", external: false, team: false });
+    auto.push({ key: "scouting", title: `${seasonLabel(year)} scouting data`, description: "What our scouts noted about every team we scouted, match by match.", href: `/seasons/${year}/scouting`, kind: "Scouting tab", external: false, team: false });
   }
 
   const items = stored.map((r) => storedToItem(r)).filter((r): r is ResourceItem => r !== null);

@@ -1,5 +1,5 @@
 import type { TbaStatus } from "@/lib/admin-data";
-import { formatDateTime } from "@/lib/format";
+import { formatDateTime, seasonLabel } from "@/lib/format";
 import { syncSeasonFromTba } from "../events/actions";
 import { ActionButton } from "./action-form";
 
@@ -32,7 +32,7 @@ export function TbaSyncPanel({ year, status, connected }: { year: number; status
         </span>
       </div>
       <ActionButton action={syncSeasonFromTba.bind(null, year)} variant="primary">
-        Sync {year} now
+        Sync {seasonLabel(year)} now
       </ActionButton>
     </div>
   );

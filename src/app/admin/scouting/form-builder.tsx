@@ -4,6 +4,7 @@ import { useState } from "react";
 import { FIELD_TYPES, newFieldId, type FieldType, type ScoutingField, type ScoutingForm } from "@/lib/scouting";
 import { inputClass } from "../_components/fields";
 import { useConfirm } from "../_components/modal";
+import { seasonLabel } from "@/lib/format";
 
 type Part = "robot" | "match";
 
@@ -76,8 +77,8 @@ export function FormBuilder({
           {empty ? "Start from the example form" : "Reset to the example form"}
         </button>
         {previous && (
-          <button type="button" onClick={() => replaceWith(previous.form, `the ${previous.year} form`)} className={smallButton}>
-            Copy the {previous.year} form
+          <button type="button" onClick={() => replaceWith(previous.form, `the ${seasonLabel(previous.year)} form`)} className={smallButton}>
+            Copy the {seasonLabel(previous.year)} form
           </button>
         )}
       </div>

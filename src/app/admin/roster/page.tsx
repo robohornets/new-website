@@ -8,6 +8,7 @@ import { AdminPageHeader, Panel } from "../_components/fields";
 import { SeasonPicker } from "../_components/season-picker";
 import { RosterManager } from "./roster-manager";
 import { requireAdminPage } from "@/lib/auth";
+import { seasonLabel } from "@/lib/format";
 
 export const metadata: Metadata = { title: "Team roster" };
 
@@ -47,7 +48,7 @@ export default async function AdminRosterPage(props: PageProps<"/admin/roster">)
         description="Students appear on the site as first name and last initial. Their photos only show if 'Show photo on the public site' is on."
       />
       <SeasonPicker basePath="/admin/roster" years={years} current={year} />
-      <Panel title={`${year} roster`}>
+      <Panel title={`${seasonLabel(year)} roster`}>
         <RosterManager members={roster} subteams={subteams} others={others} year={year} />
       </Panel>
     </>

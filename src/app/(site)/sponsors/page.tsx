@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Container, PageHeader } from "@/components/page-header";
 import { SponsorWall } from "@/components/sponsor-wall";
 import { getLatestSponsors, getSettings } from "@/lib/data";
+import { seasonLabel } from "@/lib/format";
 
 export const metadata: Metadata = {
   title: "Sponsors",
@@ -15,7 +16,7 @@ export default async function SponsorsPage() {
   return (
     <>
       <PageHeader
-        label={year ? `${year} season` : "Sponsors"}
+        label={year ? `${seasonLabel(year)} season` : "Sponsors"}
         title="Our sponsors"
         intro={<p>Robots are expensive. These partners cover parts, tools, event fees and travel, and give our students a place to build.</p>}
       />

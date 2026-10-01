@@ -11,6 +11,7 @@ import { MediaField } from "../_components/media-field";
 import { SeasonPicker } from "../_components/season-picker";
 import { createSponsor, createTier, deleteSponsor, deleteTier, updateSponsor, updateTier } from "./actions";
 import { requireAdminPage } from "@/lib/auth";
+import { seasonLabel } from "@/lib/format";
 
 export const metadata: Metadata = { title: "Sponsors" };
 
@@ -56,11 +57,11 @@ export default async function AdminSponsorsPage(props: PageProps<"/admin/sponsor
         <div className="flex min-w-0 flex-col gap-6">
           <Panel
             title="Sponsors"
-            description={year ? `Tiers shown are for ${year}. Pick another season at the top to see or change its tiers.` : undefined}
+            description={year ? `Tiers shown are for ${seasonLabel(year)}. Pick another season at the top to see or change its tiers.` : undefined}
             actions={
               <AddButton label="Add sponsor" title="Add a sponsor" action={createSponsor.bind(null, year)} size="lg">
                 {year && tiers.length > 0 && (
-                  <SelectField label={`${year} tier`} name="tier_id" options={[{ value: "", label: "Not this season" }, ...tierOptions]} />
+                  <SelectField label={`${seasonLabel(year)} tier`} name="tier_id" options={[{ value: "", label: "Not this season" }, ...tierOptions]} />
                 )}
                 <SponsorFields library={library} />
               </AddButton>
@@ -93,14 +94,14 @@ export default async function AdminSponsorsPage(props: PageProps<"/admin/sponsor
                         }
                         title={s.name}
                         meta={s.url ?? undefined}
-                        badges={year ? tier ? <Badge>{tier.name}</Badge> : <span className="font-label text-xs text-ash">Not in {year}</span> : undefined}
+                        badges={year ? tier ? <Badge>{tier.name}</Badge> : <span className="font-label text-xs text-ash">Not in {seasonLabel(year)}</span> : undefined}
                       />
                     }
                   >
                     {year && tiers.length > 0 && (
                       <Grid>
                         <SelectField
-                          label={`${year} tier`}
+                          label={`${seasonLabel(year)} tier`}
                           name="tier_id"
                           defaultValue={current?.tier_id ?? ""}
                           options={[{ value: "", label: "Not this season" }, ...tierOptions]}
@@ -116,7 +117,8 @@ export default async function AdminSponsorsPage(props: PageProps<"/admin/sponsor
           </Panel>
         </div>
 
-        <div className="flex min-w-0 flex-col gap-6">
+        {/* Settings before the list: beside it on wide screens, above it otherwise. */}
+        <div className="order-first flex min-w-0 flex-col gap-6 xl:order-none">
           <Panel title="Tiers" description="Lower rank shows first. The top tier gets large tiles.">
             <ActionForm action={createTier} submitLabel="Add tier" submitVariant="secondary" resetOnSuccess>
               <div className="grid grid-cols-[1fr_80px] gap-2">

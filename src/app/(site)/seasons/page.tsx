@@ -5,6 +5,7 @@ import { ShowMore } from "@/components/show-more";
 import { Container, EmptyState, PageHeader } from "@/components/page-header";
 import { all } from "@/lib/db";
 import { getSeasons, ROBOT_PHOTO } from "@/lib/data";
+import { seasonLabel } from "@/lib/format";
 
 export const metadata: Metadata = {
   title: "Seasons",
@@ -58,7 +59,7 @@ export default async function SeasonsPage() {
                     </div>
                     <div className="flex grow flex-col gap-2 p-6">
                       <div className="flex items-baseline gap-3">
-                        <span className="font-display text-6xl leading-none font-black">{s.year}</span>
+                        <span className="font-display text-6xl leading-none font-black">{seasonLabel(s.year)}</span>
                         <span className="font-display text-2xl font-bold text-hornet uppercase">{s.game_name || "TBA"}</span>
                       </div>
                       <p className="text-sand">

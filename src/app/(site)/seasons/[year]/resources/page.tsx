@@ -6,12 +6,13 @@ import { Container } from "@/components/page-header";
 import { SeasonRail, SeasonSubheader, SeasonTabs } from "@/components/season-tabs";
 import { getSeason, getSeasons } from "@/lib/data";
 import { getSeasonResources, getSeasonTabs, type ResourceItem } from "@/lib/season-extras";
+import { seasonLabel } from "@/lib/format";
 
 const yearOf = (raw: string) => (/^\d{4}$/.test(raw) ? Number(raw) : null);
 
 export async function generateMetadata(props: PageProps<"/seasons/[year]/resources">): Promise<Metadata> {
   const year = yearOf((await props.params).year);
-  return { title: year ? `${year} resources` : "Resources", description: `Team 1209's ${year ?? ""} robot code, CAD, engineering notebook and more, free for any team to use.` };
+  return { title: year ? `${seasonLabel(year)} resources` : "Resources", description: `Team 1209's ${seasonLabel(year)} robot code, CAD, engineering notebook and more, free for any team to use.` };
 }
 
 function ResourceCard({ item }: { item: ResourceItem }) {
@@ -66,7 +67,7 @@ export default async function SeasonResourcesPage(props: PageProps<"/seasons/[ye
       <Container className="flex flex-col gap-12 pb-20">
         {resources.season.length > 0 && (
           <section className="flex flex-col gap-4">
-            <h2 className="font-display text-3xl font-extrabold uppercase">{season.year} season</h2>
+            <h2 className="font-display text-3xl font-extrabold uppercase">{seasonLabel(season.year)} season</h2>
             <ul className="grid gap-3 md:grid-cols-2">
               {resources.season.map((r) => (
                 <ResourceCard key={r.key} item={r} />

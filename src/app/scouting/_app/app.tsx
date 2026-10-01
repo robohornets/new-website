@@ -6,6 +6,7 @@ import type { ScoutEntry, ScoutEvent, ScoutMatch, ScoutTeamRow, TeamDetail } fro
 import { summarize, type ScoutingData, type ScoutingForm, type ScoutingValue } from "@/lib/scouting";
 import { FormFields } from "./fields";
 import { enqueue, getName, getQueue, isPending, load, newId, onNameChange, onQueueChange, read, setName, sync, withQueued, type Op } from "./store";
+import { seasonLabel } from "@/lib/format";
 
 type Boot =
   | { open: false; year: number }
@@ -168,7 +169,7 @@ export function ScoutingApp() {
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/brand/hornet.svg" alt="" width={425} height={599} className="h-10 w-auto" />
             <span className="font-display text-xl font-extrabold whitespace-nowrap uppercase sm:text-2xl">
-              Scouting<span className="hidden sm:inline">{b ? ` ${b.year}` : ""}</span>
+              Scouting<span className="hidden sm:inline">{b ? ` ${seasonLabel(b.year)}` : ""}</span>
             </span>
           </button>
           <div className="ml-auto flex items-center gap-2">
@@ -292,7 +293,7 @@ function Home({ boot }: { boot: Extract<Boot, { open: true }> }) {
       <section className="flex flex-col gap-3">
         <h2 className="eyebrow eyebrow-bar text-bone">Our events</h2>
         {boot.events.length === 0 ? (
-          <p className="text-sm text-dust">No events for {boot.year} yet. They show up here once 1209 is registered on The Blue Alliance.</p>
+          <p className="text-sm text-dust">No events for {seasonLabel(boot.year)} yet. They show up here once 1209 is registered on The Blue Alliance.</p>
         ) : (
           <ul className="grid gap-2 sm:grid-cols-2">
             {boot.events.map((e) => {

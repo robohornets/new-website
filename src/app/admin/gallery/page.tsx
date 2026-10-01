@@ -10,6 +10,7 @@ import { AdminPageHeader, Checkbox, Panel, SelectField, TextArea, TextField } fr
 import { SortableGrid } from "../_components/sortable";
 import { createAlbum, saveAlbumOrder } from "./actions";
 import { requireAdminPage } from "@/lib/auth";
+import { seasonLabel } from "@/lib/format";
 
 export const metadata: Metadata = { title: "Gallery" };
 
@@ -35,7 +36,7 @@ export default async function AdminGalleryPage() {
               label="Season"
               name="season_year"
               defaultValue={years[0] ?? ""}
-              options={[{ value: "", label: "No season" }, ...years.map((y) => ({ value: y, label: String(y) }))]}
+              options={[{ value: "", label: "No season" }, ...years.map((y) => ({ value: y, label: seasonLabel(y) }))]}
             />
             <TextArea label="Description" name="description" rows={2} />
             <TextField label="URL slug" name="slug" hint="Optional: made from the title if left blank." />
@@ -59,7 +60,7 @@ export default async function AdminGalleryPage() {
                   <div className="flex flex-col gap-1 p-4">
                     <span className="font-semibold group-hover:text-hornet">{a.title}</span>
                     <span className="font-label text-xs text-dust">
-                      {a.season_year ?? "No season"} · {a.photo_count} photos {a.published ? "" : "· HIDDEN"}
+                      {a.season_year ? seasonLabel(a.season_year) : "No season"} · {a.photo_count} photos {a.published ? "" : "· HIDDEN"}
                     </span>
                   </div>
                 </Link>

@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { importYearFromTba, listTbaYears } from "../events/actions";
+import { seasonLabel } from "@/lib/format";
 
 /** Imports every past season from The Blue Alliance, one year per request. */
 export function HistoryImporter({ disabled }: { disabled?: boolean }) {
@@ -48,7 +49,7 @@ export function HistoryImporter({ disabled }: { disabled?: boolean }) {
         <ul className="flex max-h-56 flex-col gap-1 overflow-y-auto rounded-md border border-line bg-ink p-3 font-label text-xs" role="status">
           {log.map((l) => (
             <li key={l.year} className={l.ok ? "text-sand" : "text-danger"}>
-              {l.year}: {l.message}
+              {seasonLabel(l.year)}: {l.message}
             </li>
           ))}
           {!busy && <li className="text-hornet">Done. Safe to run again any time; it only fills in and updates.</li>}

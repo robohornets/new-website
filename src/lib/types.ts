@@ -162,6 +162,27 @@ export type JoinRequest = {
   created_at: string;
 };
 
+/**
+ * An outreach post (a story on the Impact page). Posts written for the old
+ * News section have category "news" and aren't shown on the site.
+ */
+export type Post = {
+  id: number;
+  slug: string;
+  title: string;
+  category: "news" | "outreach";
+  excerpt: string;
+  body: string;
+  /** Its photos (uploaded on the post); the album's main photo is the cover. */
+  album_id: number | null;
+  cover_key: string | null;
+  season_year: number | null;
+  published: number;
+  published_at: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
 export type SponsorTier = { id: number; name: string; rank: number };
 
 export type Sponsor = {

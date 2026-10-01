@@ -3,6 +3,7 @@
 import { adminAction, bool, FormError, type ActionState } from "@/lib/admin";
 import { batch, first, parseJson, run } from "@/lib/db";
 import { cleanForm } from "@/lib/scouting";
+import { seasonLabel } from "@/lib/format";
 
 export async function saveScoutingForm(year: number, _prev: ActionState, fd: FormData): Promise<ActionState> {
   return adminAction({ action: "update", entity: "scouting_form", entityId: year }, async () => {
@@ -85,6 +86,6 @@ export async function setScoutingPublished(year: number, _prev: ActionState, fd:
       year,
       published,
     );
-    return published ? `${year} scouting is on the season page.` : `${year} scouting is off the season page.`;
+    return published ? `${seasonLabel(year)} scouting is on the season page.` : `${seasonLabel(year)} scouting is off the season page.`;
   });
 }

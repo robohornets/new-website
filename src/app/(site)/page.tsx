@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { EventRow, RobotCard, SeasonStatusCard } from "@/components/cards";
+import { EventRow, PostCard, RobotCard, SeasonStatusCard } from "@/components/cards";
 import { LiveMatchCards } from "@/components/live-match-card";
 import { ArrowRight } from "@/components/icons";
 import { MediaImage } from "@/components/media-image";
@@ -9,6 +9,7 @@ import {
   getCurrentSeason,
   getFeaturedRobots,
   getLatestSponsors,
+  getPosts,
   getRobots,
   getSettings,
   getLiveEvents,
@@ -16,7 +17,7 @@ import {
   getUpcomingEvents,
 } from "@/lib/data";
 import { getLiveMatches } from "@/lib/live-match";
-import { formatDate, MEMBER_COUNT_TOKEN, roundedCount } from "@/lib/format";
+import { formatDate, MEMBER_COUNT_TOKEN, roundedCount, seasonLabel } from "@/lib/format";
 import type { TeamEvent } from "@/lib/types";
 
 /** Shown at the top of the homepage while 1209 is at an event. */
@@ -57,10 +58,11 @@ function LiveBanner({ event }: { event: TeamEvent }) {
 }
 
 export default async function HomePage() {
-  const [settings, season, featured, sponsors, upcoming, live, studentCount, liveMatches] = await Promise.all([
+  const [settings, season, featured, posts, sponsors, upcoming, live, studentCount, liveMatches] = await Promise.all([
     getSettings(),
     getCurrentSeason(),
     getFeaturedRobots(3),
+    getPosts({ limit: 3 }),
     getLatestSponsors(),
     getUpcomingEvents(3),
     getLiveEvents(),
@@ -130,7 +132,7 @@ export default async function HomePage() {
               {season?.hero_key ? (
                 <MediaImage
                   mediaKey={season.hero_key}
-                  alt={`Team 1209 in ${season.year}`}
+                  alt={`Team 1209 in the ${seasonLabel(season.year)} season`}
                   className="size-full"
                   loading="eager"
                   sizes="(min-width: 1024px) 55vw, 100vw"
@@ -239,11 +241,32 @@ export default async function HomePage() {
         </section>
       )}
 
+      {/* FROM THE HIVE */}
+      {posts.length > 0 && (
+        <section className="mx-auto flex max-w-[1440px] flex-col gap-12 px-4 py-16 md:px-8 md:py-28 xl:px-16">
+          <SectionHeading
+            index="03"
+            label="From the hive"
+            title="Outreach"
+            aside={
+              <Link href="/impact" className="flex h-11 items-center rounded-full border border-line-strong px-5 text-sm font-semibold text-sand hover:border-bone hover:text-bone">
+                Our impact
+              </Link>
+            }
+          />
+          <div className="grid gap-10 md:grid-cols-2 md:gap-6 xl:grid-cols-3">
+            {posts.map((p) => (
+              <PostCard key={p.id} post={p} />
+            ))}
+          </div>
+        </section>
+      )}
+
       {/* SPONSORS */}
       <section className="border-t border-line bg-panel">
         <div className="mx-auto flex max-w-[1440px] flex-col gap-11 px-4 py-16 md:px-8 md:py-24 xl:px-16">
           <SectionHeading
-            index="03"
+            index={posts.length > 0 ? "04" : "03"}
             label="Sponsors"
             title="Powered by our partners"
             aside={

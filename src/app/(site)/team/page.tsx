@@ -7,6 +7,7 @@ import { TeamCalendar } from "@/components/team-calendar";
 import { calendarLinks, getUpcomingCalendar } from "@/lib/calendar";
 import { getCurrentSeason, getMediaFile, getRoster, getSeasons, getSettings, getSubteams } from "@/lib/data";
 import { documentLink } from "@/lib/media";
+import { seasonLabel } from "@/lib/format";
 
 export const metadata: Metadata = {
   title: "Team",
@@ -140,8 +141,8 @@ export default async function TeamPage() {
                       {...(n.external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
                       className="group flex min-h-13 items-center gap-4 py-3"
                     >
-                      <span className="font-label text-lg font-bold text-hornet">{n.year}</span>
-                      <span className="grow font-semibold group-hover:text-hornet">{n.game || `${n.year} season`}</span>
+                      <span className="font-label text-lg font-bold text-hornet">{seasonLabel(n.year)}</span>
+                      <span className="grow font-semibold group-hover:text-hornet">{n.game || `${seasonLabel(n.year)} season`}</span>
                       <span className="flex items-center gap-1.5 text-sm text-dust group-hover:text-bone">
                         {n.external ? "Open" : "PDF"} {n.external ? <External size={14} /> : <Download size={14} />}
                       </span>
@@ -157,12 +158,12 @@ export default async function TeamPage() {
       <Container className="flex flex-col gap-10 py-16 md:py-24">
         <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div className="flex flex-col gap-4">
-            <span className="eyebrow eyebrow-bar text-bone">{season ? `${season.year} season` : "Roster"}</span>
+            <span className="eyebrow eyebrow-bar text-bone">{season ? `${seasonLabel(season.year)} season` : "Roster"}</span>
             <h2 className="font-display text-5xl leading-[0.95] font-extrabold uppercase md:text-7xl">The crew</h2>
           </div>
           {season && (
             <Link href={`/seasons/${season.year}`} className="flex items-center gap-2 font-semibold text-hornet hover:text-hornet-hover">
-              {season.year} season details <ArrowRight size={16} />
+              {seasonLabel(season.year)} season details <ArrowRight size={16} />
             </Link>
           )}
         </div>

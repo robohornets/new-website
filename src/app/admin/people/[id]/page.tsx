@@ -10,6 +10,7 @@ import { AdminPageHeader, Checkbox, DeletePanel, Grid, Panel, SelectField, TextA
 import { MediaField } from "../../_components/media-field";
 import { deletePerson, updatePerson } from "../../roster/actions";
 import { requireAdminPage } from "@/lib/auth";
+import { seasonLabel } from "@/lib/format";
 
 export const metadata: Metadata = { title: "Edit person" };
 
@@ -28,7 +29,7 @@ export default async function PersonPage(props: PageProps<"/admin/people/[id]">)
       <AdminPageHeader
         breadcrumb={<Link href="/admin/roster">Team roster /</Link>}
         title={`${person.first_name} ${person.last_name}`}
-        description={seasons.length ? `On the team: ${seasons.map((s) => `${s.season_year} (${s.role})`).join(", ")}` : "Not on any season roster."}
+        description={seasons.length ? `On the team: ${seasons.map((s) => `${seasonLabel(s.season_year)} (${s.role})`).join(", ")}` : "Not on any season roster."}
       />
       <Panel title="Details">
         <EditForm action={updatePerson.bind(null, id)}>

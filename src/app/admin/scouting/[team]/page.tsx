@@ -5,7 +5,7 @@ import { ScoutingAnswers } from "@/components/scouting-answers";
 import { resolveSeasonParam } from "@/lib/admin-data";
 import { requireAdminPage } from "@/lib/auth";
 import { all, parseJson } from "@/lib/db";
-import { formatDateTime } from "@/lib/format";
+import { formatDateTime, seasonLabel } from "@/lib/format";
 import { matchKeyLabel, type ScoutingData, type ScoutingField } from "@/lib/scouting";
 import { cachedNicknames, getScoutingForm } from "@/lib/scouting-data";
 import { ActionButton } from "../../_components/action-form";
@@ -65,7 +65,7 @@ export default async function AdminScoutingTeamPage(props: PageProps<"/admin/sco
         description={
           <>
             {names.get(team) ? `${names.get(team)} · ` : ""}
-            {year} season ·{" "}
+            {seasonLabel(year)} season ·{" "}
             <a href={`/scouting#team=${team}`} target="_blank" rel="noopener noreferrer" className="font-semibold text-hornet hover:text-hornet-hover">
               Open on /scouting
             </a>

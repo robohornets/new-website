@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { getSeasonYears } from "@/lib/admin-data";
 import { requireAdminPage } from "@/lib/auth";
 import { getEvent, getRoster } from "@/lib/data";
 import { all } from "@/lib/db";
+import { seasonLabel } from "@/lib/format";
 import { formatHours } from "@/lib/outreach";
 import { ActionButton } from "../../_components/action-form";
-import { AdminPageHeader, DeletePanel, Grid, Panel, TextArea, TextField } from "../../_components/fields";
+import { AdminPageHeader, DeletePanel, Grid, Panel, SelectField, TextArea, TextField } from "../../_components/fields";
 import { EditForm } from "../../_components/unsaved";
 import { deleteOutreachEvent, saveOutreachEvent } from "../actions";
 import { AttendeePicker, type PickerPerson } from "./attendee-picker";
@@ -20,14 +22,16 @@ export default async function AdminOutreachEventPage(props: PageProps<"/admin/ou
   const event = Number.isInteger(id) ? await getEvent(id) : null;
   if (!event || event.kind !== "outreach") notFound();
 
-  const [roster, attendance] = await Promise.all([
+  const [roster, attendance, years] = await Promise.all([
     getRoster(event.season_year),
     all<{ person_id: number; hours: number | null; first_name: string; last_name: string; kind: "student" | "mentor"; graduation_year: number | null }>(
       `SELECT a.person_id, a.hours, p.first_name, p.last_name, p.kind, p.graduation_year
        FROM outreach_attendance a JOIN people p ON p.id = a.person_id WHERE a.event_id = ?`,
       id,
     ),
+    getSeasonYears(),
   ]);
+  const season = seasonLabel(event.season_year);
 
   const fullName = (p: { first_name: string; last_name: string }) => `${p.first_name} ${p.last_name}`.trim();
   const byName = (a: PickerPerson, b: PickerPerson) => a.name.localeCompare(b.name);
@@ -53,7 +57,7 @@ export default async function AdminOutreachEventPage(props: PageProps<"/admin/ou
         id: a.person_id,
         name: fullName(a),
         detail: a.kind === "mentor" ? "Mentor" : a.graduation_year ? `Class of ${a.graduation_year}` : "",
-        group: `Not on the ${event.season_year} roster`,
+        group: `Not on the ${season} roster`,
       }))
       .sort(byName),
   ];
@@ -65,7 +69,7 @@ export default async function AdminOutreachEventPage(props: PageProps<"/admin/ou
       <AdminPageHeader
         breadcrumb={
           <>
-            <Link href={`/admin/outreach?season=${event.season_year}`}>Outreach hours</Link> / {event.season_year} /
+            <Link href={`/admin/outreach?season=${event.season_year}`}>Outreach hours</Link> / {season} /
           </>
         }
         title={event.name}
@@ -106,12 +110,22 @@ export default async function AdminOutreachEventPage(props: PageProps<"/admin/ou
             </p>
           ) : (
             <>
-              <TextField label="Name" name="name" defaultValue={event.name} required />
-              <Grid cols={3}>
+              <Grid cols={4}>
+                <TextField label="Name" name="name" defaultValue={event.name} required />
                 <TextField label="Date" name="start_date" type="date" defaultValue={event.start_date?.slice(0, 10)} />
                 <TextField label="Last day" name="end_date" type="date" defaultValue={event.end_date?.slice(0, 10)} hint="Only for events over more than one day." />
                 <TextField label="Where" name="location" defaultValue={event.location} />
               </Grid>
+              {!event.tba_key && (
+                <SelectField
+                  label="Season"
+                  name="season_year"
+                  defaultValue={event.season_year}
+                  options={years.map((y) => ({ value: y, label: `${seasonLabel(y)} season` }))}
+                  hint="Its hours count toward that season."
+                  className="max-w-xs"
+                />
+              )}
             </>
           )}
           <Grid cols={3}>
@@ -139,10 +153,10 @@ export default async function AdminOutreachEventPage(props: PageProps<"/admin/ou
           />
         </Panel>
 
-        <Panel title="Who went" description={`Everyone on the ${event.season_year} roster, students and mentors.`}>
+        <Panel title="Who went" description={`Everyone on the ${season} roster, students and mentors.`}>
           {people.length === 0 ? (
             <p className="text-sm text-dust">
-              Nobody is on the {event.season_year} roster yet.{" "}
+              Nobody is on the {season} roster yet.{" "}
               <Link href={`/admin/roster?season=${event.season_year}`} className="font-semibold text-hornet hover:text-hornet-hover">
                 Add the roster first
               </Link>

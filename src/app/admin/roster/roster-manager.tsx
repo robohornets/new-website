@@ -20,6 +20,7 @@ import {
   saveRosterMember,
   saveSubteams,
 } from "./actions";
+import { seasonLabel } from "@/lib/format";
 
 const ANY = "";
 const NONE = "none";
@@ -89,7 +90,7 @@ export function RosterManager({
     const name = `${m.first_name} ${m.last_name}`.trim();
     const ok = await confirm({
       title: `Remove ${m.first_name}?`,
-      message: `${name} comes off the ${year} roster. Earlier seasons keep them, and you can add them back from "Someone from another season".`,
+      message: `${name} comes off the ${seasonLabel(year)} roster. Earlier seasons keep them, and you can add them back from "Someone from another season".`,
       confirmLabel: "Remove",
       danger: true,
     });
@@ -97,7 +98,7 @@ export function RosterManager({
     startTransition(async () => {
       const result = await removeRosterEntry(m.entry_id, { ok: false });
       if (result.ok) setEditing(null);
-      flash(result.ok ? `${m.first_name} removed from ${year}.` : (result.error ?? "That didn't work."));
+      flash(result.ok ? `${m.first_name} removed from ${seasonLabel(year)}.` : (result.error ?? "That didn't work."));
     });
   }
 
@@ -172,7 +173,7 @@ export function RosterManager({
 
       {members.length === 0 ? (
         <p className="rounded-md border border-dashed border-edge p-8 text-center text-sm text-dust">
-          Nobody on the {year} roster yet. Click <span className="font-semibold text-bone">Add person</span> to start.
+          Nobody on the {seasonLabel(year)} roster yet. Click <span className="font-semibold text-bone">Add person</span> to start.
         </p>
       ) : shown.length === 0 ? (
         <p className="text-sm text-dust">Nobody matches those filters.</p>
@@ -192,7 +193,7 @@ export function RosterManager({
           action={saveRosterMember.bind(null, editing.entry_id, editing.id)}
           danger={
             <button type="button" onClick={() => remove(editing)} className={dangerButton}>
-              Remove from {year}
+              Remove from {seasonLabel(year)}
             </button>
           }
           onClose={() => setEditing(null)}
@@ -203,7 +204,7 @@ export function RosterManager({
         >
           <MemberFields member={editing} subteams={subteams} year={year} />
           <p className="text-xs text-dust">
-            Name, class, photo and bio are the same in every season. Role and subteams are just for {year}.{" "}
+            Name, class, photo and bio are the same in every season. Role and subteams are just for {seasonLabel(year)}.{" "}
             <Link href={`/admin/people/${editing.id}`} className="font-semibold text-hornet hover:text-hornet-hover">
               See all their seasons
             </Link>
@@ -428,7 +429,7 @@ function AddModal({
   return (
     <MemberModal
       key={mode}
-      title={`Add to ${year}`}
+      title={`Add to ${seasonLabel(year)}`}
       submitLabel="Add to roster"
       action={mode === "new" ? addNewPerson.bind(null, year) : addExistingPerson.bind(null, year)}
       onClose={onClose}
@@ -522,7 +523,7 @@ function MemberFields({ member: m, subteams, year }: { member?: RosterMember; su
           <textarea name="bio" rows={2} defaultValue={m?.bio} maxLength={1000} className={`${inputClass} h-auto py-2.5`} />
         </Field>
       </Section>
-      <Section title={`${year} season`}>
+      <Section title={`${seasonLabel(year)} season`}>
         <SeasonFields member={m} subteams={subteams} />
       </Section>
     </>
@@ -709,7 +710,7 @@ function SubteamsModal({
       message:
         n > 0
           ? `${n} ${n === 1 ? "person is" : "people are"} on ${t.name} this season. They stay on the roster with no subteam.`
-          : `Nobody on the ${year} roster is on ${t.name}.`,
+          : `Nobody on the ${seasonLabel(year)} roster is on ${t.name}.`,
       confirmLabel: "Delete",
       danger: true,
     });

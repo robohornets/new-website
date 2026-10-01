@@ -8,8 +8,9 @@ const nextConfig: NextConfig = {
       // The Outreach page is now called Impact.
       { source: "/outreach", destination: "/impact", permanent: true },
       // News was removed; old links land on the homepage instead of a 404.
+      // Outreach posts used to live under /news and are now on the Impact page.
       { source: "/news", destination: "/", permanent: true },
-      { source: "/news/:slug*", destination: "/", permanent: true },
+      { source: "/news/:slug", destination: "/impact/:slug", permanent: true },
     ];
   },
 };

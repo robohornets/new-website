@@ -5,6 +5,7 @@ import { adminAction, bool, date, FormError, int, oneOf, optionalInt, str, url, 
 import { requireAdmin } from "@/lib/auth";
 import { getEnv } from "@/lib/cf";
 import { batch, first, run } from "@/lib/db";
+import { seasonLabel } from "@/lib/format";
 import { tbaConfigured } from "@/lib/tba/client";
 import { EVENT_TBA_FIELDS, MATCH_TBA_FIELDS, nextOverrides, parseOverrides, parseTba } from "@/lib/tba/fields";
 import { saveSyncStatus, syncEventDetails, syncYear, yearsParticipated, describe } from "@/lib/tba/sync";
@@ -29,7 +30,7 @@ export async function syncSeasonFromTba(year: number, _prev: ActionState): Promi
     const summary = await syncYear(env, year, { force: true });
     await saveSyncStatus(env, "manual", summary);
     if (summary.errors.length) throw new FormError(`Synced with problems: ${summary.errors.slice(0, 3).join("; ")}`);
-    return `Synced ${year} from The Blue Alliance: ${describe(summary)}.`;
+    return `Synced ${seasonLabel(year)} from The Blue Alliance: ${describe(summary)}.`;
   });
 }
 
@@ -88,7 +89,10 @@ function eventValue(fd: FormData, name: string): Value {
 
 export async function updateEvent(id: number, _prev: ActionState, fd: FormData): Promise<ActionState> {
   return adminAction({ action: "update", entity: "event", entityId: id }, async () => {
-    const row = await first<{ tba: string | null; overrides: string }>("SELECT tba, overrides FROM events WHERE id = ?", id);
+    const row = await first<{ tba: string | null; overrides: string; tba_key: string | null; season_year: number }>(
+      "SELECT tba, overrides, tba_key, season_year FROM events WHERE id = ?",
+      id,
+    );
     if (!row) throw new FormError("That event no longer exists.");
     const names = EVENT_TBA_FIELDS.map((f) => f.name);
     const submitted: Record<string, Value> = {};
@@ -103,7 +107,12 @@ export async function updateEvent(id: number, _prev: ActionState, fd: FormData):
 
     const tbaKey = str(fd, "tba_key", 40).toLowerCase() || null;
     if (tbaKey && !/^\d{4}[a-z0-9]+$/.test(tbaKey)) throw new FormError("A Blue Alliance key looks like 2026okok.");
+    // Events from The Blue Alliance belong to the season of their key (2027okok is 26-27);
+    // a hand-added event can move to any season.
+    const year = row.tba_key || tbaKey ? row.season_year : (optionalInt(fd, "season_year") ?? row.season_year);
+    if (year !== row.season_year && !(await first("SELECT 1 FROM seasons WHERE year = ?", year))) throw new FormError("Pick a season that exists.");
     const cols: [string, Value][] = [
+      ["season_year", year],
       ...names.map((n) => [n, n === "rank" || n === "record" || n === "alliance" || n === "playoff_result" || n === "awards" ? (submitted[n] ?? "") : submitted[n]] as [string, Value]),
       ["recap", str(fd, "recap", 4000)],
       ["highlight_video_url", url(fd, "highlight_video_url")],
@@ -114,6 +123,7 @@ export async function updateEvent(id: number, _prev: ActionState, fd: FormData):
       ["overrides", JSON.stringify(overrides)],
     ];
     await run(`UPDATE events SET ${cols.map(([c]) => `${c} = ?`).join(", ")} WHERE id = ?`, ...cols.map(([, v]) => v), id);
+    if (year !== row.season_year) return `Moved to the ${seasonLabel(year)} season.`;
     return overrides.length ? `Saved. ${overrides.length} field${overrides.length === 1 ? "" : "s"} now use your value instead of TBA's.` : "Saved.";
   });
 }
