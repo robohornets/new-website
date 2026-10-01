@@ -8,8 +8,6 @@ The website for **FRC Team 1209 - RoboHornets** (Booker T. Washington High Schoo
 - **Cloudflare Images** (transformations) resizes photos on the fly for each spot on the site
 - **Cloudflare Access** protects the `/admin` panel, where the team updates the site without touching code
 
-The design lives on the canvas at https://claude.ai/artifact/LohXt4TmvEyeQAZ4nF1DWw.
-
 ---
 
 ## One-time setup
