@@ -1,14 +1,17 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { originalUrl } from "@/lib/media";
 import { inputClass } from "./fields";
-import { uploadFiles, type MediaOption } from "./media-field";
+import { LibraryPicker } from "./library-picker";
+import type { MediaOption } from "./media-field";
 
 /**
- * A document that can either be a PDF uploaded to R2 or a link to somewhere
- * else (Google Drive, Onshape, a website). Submits `${name}_media_id` and
- * `${name}_url`; the public site prefers the uploaded PDF when both are set.
+ * A document that can either be a PDF in the media library or a link to
+ * somewhere else (Google Drive, Onshape, a website). Choosing opens the
+ * library, filtered to PDFs, where a new one can be uploaded too. Submits
+ * `${name}_media_id` and `${name}_url`; the public site prefers the PDF when
+ * both are set.
  */
 export function DocumentField({
   name,
@@ -24,29 +27,7 @@ export function DocumentField({
   hint?: string;
 }) {
   const [selected, setSelected] = useState<MediaOption | null>(current);
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const fileRef = useRef<HTMLInputElement>(null);
-
-  async function onFile(files: FileList | null) {
-    const file = files?.[0];
-    if (!file) return;
-    setError(null);
-    if (file.type && file.type !== "application/pdf") {
-      setError("That isn't a PDF. Export or print it to PDF first, or paste a link instead.");
-      return;
-    }
-    setBusy(true);
-    try {
-      const [m] = await uploadFiles([new File([file], file.name, { type: "application/pdf" })]);
-      setSelected(m);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Upload failed");
-    } finally {
-      setBusy(false);
-      if (fileRef.current) fileRef.current.value = "";
-    }
-  }
+  const [picking, setPicking] = useState(false);
 
   return (
     <fieldset className="flex flex-col gap-3">
@@ -64,19 +45,16 @@ export function DocumentField({
             {selected.filename}
           </a>
         ) : (
-          <span className="grow text-sm text-ash">No PDF uploaded</span>
+          <span className="grow text-sm text-ash">No PDF</span>
         )}
-        <label className="flex h-10 cursor-pointer items-center rounded-md border border-line-strong px-4 text-sm font-semibold hover:border-bone">
-          {busy ? "Uploading…" : selected ? "Replace PDF" : "Upload PDF"}
-          <input
-            ref={fileRef}
-            type="file"
-            accept="application/pdf,.pdf"
-            className="sr-only"
-            disabled={busy}
-            onChange={(e) => onFile(e.target.files)}
-          />
-        </label>
+        <button
+          type="button"
+          onClick={() => setPicking(true)}
+          aria-haspopup="dialog"
+          className="flex h-10 items-center rounded-md border border-line-strong px-4 text-sm font-semibold hover:border-bone"
+        >
+          {selected ? "Change PDF" : "Choose or upload a PDF"}
+        </button>
         {selected && (
           <button type="button" onClick={() => setSelected(null)} className="flex h-10 items-center px-2 text-sm text-dust hover:text-bone">
             Remove
@@ -94,7 +72,13 @@ export function DocumentField({
         />
       </label>
       {hint && <span className="text-xs text-dust">{hint}</span>}
-      {error && <span className="text-sm text-danger">{error}</span>}
+      <LibraryPicker
+        open={picking}
+        onClose={() => setPicking(false)}
+        title={label}
+        kinds={["pdf"]}
+        onPick={([m]) => m && setSelected({ id: m.id, r2_key: m.r2_key, filename: m.filename })}
+      />
     </fieldset>
   );
 }

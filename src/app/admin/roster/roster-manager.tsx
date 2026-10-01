@@ -7,7 +7,7 @@ import { mediaUrl } from "@/lib/media";
 import type { Person, RosterMember, Subteam } from "@/lib/types";
 import { Pencil } from "@/components/icons";
 import { inputClass } from "../_components/fields";
-import { uploadFiles } from "../_components/media-field";
+import { LibraryPicker } from "../_components/library-picker";
 import { Modal, useConfirm } from "../_components/modal";
 import { TrashButton } from "../_components/items";
 import { hasChanges } from "../_components/unsaved";
@@ -596,24 +596,7 @@ function PhotoField({
   kind: string;
 }) {
   const [photo, setPhoto] = useState(current);
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const fileRef = useRef<HTMLInputElement>(null);
-
-  async function onFile(files: FileList | null) {
-    if (!files?.length) return;
-    setBusy(true);
-    setError(null);
-    try {
-      const [m] = await uploadFiles([files[0]]);
-      setPhoto({ id: m.id, key: m.r2_key });
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Upload failed");
-    } finally {
-      setBusy(false);
-      if (fileRef.current) fileRef.current.value = "";
-    }
-  }
+  const [picking, setPicking] = useState(false);
 
   return (
     <div className="flex flex-wrap items-center gap-5">
@@ -621,22 +604,20 @@ function PhotoField({
       <Avatar photoKey={photo?.key ?? null} initials={initials} size="lg" />
       <div className="flex min-w-0 grow flex-col gap-3">
         <div className="flex flex-wrap gap-2">
-          <button type="button" onClick={() => fileRef.current?.click()} disabled={busy} className={secondaryButton}>
-            {busy ? "Uploading…" : photo ? "Replace photo" : "Add photo"}
+          <button type="button" onClick={() => setPicking(true)} aria-haspopup="dialog" className={secondaryButton}>
+            {photo ? "Change photo" : "Add photo"}
           </button>
           {photo && (
-            <button type="button" onClick={() => setPhoto(null)} disabled={busy} className="flex h-10 items-center rounded-md px-3 text-sm font-semibold text-danger hover:bg-danger/10">
+            <button type="button" onClick={() => setPhoto(null)} className="flex h-10 items-center rounded-md px-3 text-sm font-semibold text-danger hover:bg-danger/10">
               Remove photo
             </button>
           )}
-          <input
-            ref={fileRef}
-            type="file"
-            accept="image/*,.heic,.heif"
-            className="sr-only"
-            tabIndex={-1}
-            aria-label="Photo file"
-            onChange={(e) => onFile(e.target.files)}
+          <LibraryPicker
+            open={picking}
+            onClose={() => setPicking(false)}
+            title="Photo"
+            kinds={["image"]}
+            onPick={([m]) => m && setPhoto({ id: m.id, key: m.r2_key })}
           />
         </div>
         <label className="flex items-start gap-3 text-[15px]">
@@ -648,7 +629,6 @@ function PhotoField({
             </span>
           </span>
         </label>
-        {error && <span className="text-sm text-danger">{error}</span>}
       </div>
     </div>
   );

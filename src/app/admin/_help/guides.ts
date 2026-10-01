@@ -218,11 +218,15 @@ export const GUIDES: Guide[] = [
     pages: ["/admin/gallery", "/admin/media"],
     steps: [
       "Go to **Gallery**, click **+ New album**, type a title (for example the event name), pick the season, and click **Create album**.",
-      "Drag photos from your computer into the dashed box, or click the box to choose them. You can pick lots at once.",
+      "Drag photos from your computer onto the dashed box: they upload straight into the album. You can drop lots at once, which is quickest after an event.",
+      "Or click the box: the library opens. Click **Upload new** there (or drop files on it); each one is ticked for you once it's uploaded. Tick any others already in the library too, then click **Add**.",
       "Wait for **Uploading 12 of 12…** to finish. The photos then appear below. You can add more to an album at any time the same way.",
       "Photos straight from a phone are fine (up to 20 MB each, including iPhone HEIC). Videos work too: they're converted to MP4 in your browser first so every browser can play them (keep the tab open while it says **Converting**).",
     ],
-    tips: ["Each photo is kept exactly as uploaded. The site makes smaller copies automatically so pages load fast."],
+    tips: [
+      "Each photo is kept exactly as uploaded. The site makes smaller copies automatically so pages load fast.",
+      "A photo that's already in the library isn't stored twice: the one already there is used instead, and a note shows both. If they're really different photos, click **Upload mine anyway**.",
+    ],
   },
   {
     id: "photos-from-library",
@@ -230,14 +234,39 @@ export const GUIDES: Guide[] = [
     title: "Use photos that are already uploaded",
     pages: ["/admin/gallery/", "/admin/robots", "/admin/impact/", "/admin/events/", "/admin/seasons/", "/admin/sponsors", "/admin/people"],
     steps: [
-      "To add a few photos to an album, robot or impact event: under the upload box, click **Choose from the library**. Search by file name, description or album (or pick an album at the top), tick the photos and click **Add**.",
+      "To add a few photos to an album, robot or impact event: click the dashed upload box. The library opens: search by file name, description or album, or narrow it by type, album, season or **Not used anywhere**, then tick the photos and click **Add**.",
       "To use a whole album instead: under **Photos come from**, click **Use an existing album** and click its card. Then click **Save changes**.",
-      "For a single picture (the season photo, a sponsor logo, someone's photo), click **Choose from library** next to it and click the one you want.",
+      "For a single picture (the season photo, a sponsor logo, someone's photo) or a PDF (the notebook, a resource), click **Choose or upload** next to it, click the one you want (or upload a new one) and click **Use this photo**. Then click **Save changes**.",
     ],
     tips: [
       "Nothing is copied: the same photo can be in several albums, and its description is kept per album.",
       "Photos already in the album are shown faded with **Already in it**.",
     ],
+  },
+  {
+    id: "where-used",
+    group: "Photos",
+    title: "See where a photo is used",
+    pages: ["/admin/media"],
+    steps: [
+      "Go to **Media library**. Each file says **Used in 3 places** or **Not used**.",
+      "Click a file. **Where it's used** lists every place: albums, a robot's photos, an impact event, a cover, a logo, the season photo, someone's photo, a resource. Click one to go there.",
+      "Use the menus above the files to show just photos, videos or PDFs, one album or season, or only **Not used anywhere** (handy for tidying up), biggest first.",
+    ],
+  },
+  {
+    id: "duplicates",
+    group: "Photos",
+    title: "Find and merge duplicate photos",
+    pages: ["/admin/media"],
+    steps: [
+      "Go to **Media library** and click **Find duplicates**.",
+      "The first time, click **Scan** so it looks at the photos uploaded before duplicate checks. Keep the page open until it's done.",
+      "Each group is copies of the same photo. The suggested one to keep is picked (the most used, then the biggest); pick another if you like.",
+      "Click **Keep the one picked, remove the copies**. Everything that used a copy now uses the one you kept, and the copies are deleted.",
+      "Not really the same photo (two shots a second apart)? Click **They're different photos** and they won't be suggested again.",
+    ],
+    tips: ["**Merge all** does every group at once, keeping the suggested one in each. Look through the groups first."],
   },
   {
     id: "photo-details",
@@ -274,7 +303,8 @@ export const GUIDES: Guide[] = [
     pages: ["/admin/media"],
     steps: [
       "Go to **Media library** and click the file.",
-      "Click **Delete file** at the bottom of the popup and confirm. It's removed everywhere it was used.",
+      "Check **Where it's used**: those places lose the photo.",
+      "Click **Delete file** at the bottom of the popup. The confirmation lists what it's used in; confirm to delete it.",
     ],
     tips: ["This can't be undone. Click **Download original** first if you might want it later."],
   },

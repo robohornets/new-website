@@ -240,7 +240,7 @@ Content is organised around **seasons**. Each FRC year is a row, and most other 
 - `sponsors` + `sponsor_tiers` + `sponsor_seasons`: sponsors are stored once; each season lists who sponsored it and at what tier
 - `posts`: posts from before impact events. Migration 0014 turned every outreach post into an impact event (`posts.event_id` says which, so old `/news/<slug>` and `/impact/<slug>` links redirect to it); old News posts stay here, hidden, until an admin turns one into an impact event. Export still downloads the table.
 - `albums` + `album_photos`: gallery albums, optionally tied to a season, each with a `sort_order` (albums on the Gallery and season pages; photos inside an album) set by dragging in the admin
-- `media`: every file uploaded to R2 (key, original filename, type, size, pixel width/height, alt text). Other tables point at it by id.
+- `media`: every file uploaded to R2 (key, original filename, type, size, pixel width/height, alt text, and the browser's fingerprints `sha256` and `phash` for spotting duplicates). Other tables point at it by id. `media_distinct` holds pairs an admin said aren't duplicates.
 - `site_settings`: key/value JSON for editable page text, including the mission, values and Strategic Plan
 - `contacts`: people listed on the Contact page
 - `messages`: contact form submissions (the sender IP is stored only as a hash, for rate limiting)
@@ -392,11 +392,29 @@ or `data-default` for widgets that control their own value, like photo pickers).
 at the bottom offers Save (every changed form, in page order) and Revert, and leaving the page is blocked: links and
 the browser Back button make the bar flash and shake, and closing the tab shows the browser's own warning. Forms that
 create something new (`ActionForm` with an "Add" button) and delete buttons still act immediately.
-Picking something already uploaded always shows pictures, not file names (`_components/library-picker.tsx`):
-`LibraryPicker` is a searchable grid of the media library (by file name, alt text, description or album, with an
-album filter), used for single images (`MediaField`: season photo, logos, people) and, ticking several, to add
-existing photos to an album (**Choose from the library** under every uploader that has an album). `AlbumPicker` /
-`AlbumField` choose a whole album from cards with covers (**Photos come from** on robots and events).
+Picking or uploading a file always goes through the library, with pictures, not file names
+(`_components/library-picker.tsx`). `LibraryPicker` is a grid of the media library with search (file name, alt text,
+description, album) and filters (`media-filters.tsx`, shared with the Media library page: type, album, season, used or
+not, order); it's also where new files are uploaded, and each is picked automatically once it's in. It's used for
+single images (`MediaField`: season photo, logos; people's photos), PDFs (`DocumentField`: notebook, Strategic Plan,
+resources) and, ticking several, to add photos to an album: clicking an album's drop box opens it, while dropping files
+on the box still uploads them straight in. `AlbumPicker` / `AlbumField` choose a whole album from cards with covers
+(**Photos come from** on robots and events).
+
+**Where a file is used** (`src/lib/media-usage.ts`) is worked out from every column that points at media (albums and
+the robots and events using them, covers, robots, seasons, sponsors, people, resources, the Strategic Plan, event
+videos). The Media library shows it on each file and in its delete confirmation, and the "Not used anywhere" filter
+uses it. Keep it in step when adding a new media column (and `mergeMedia` in `admin/media/actions.ts`).
+
+**Duplicates.** Before uploading, the browser fingerprints each file (`_components/fingerprint.ts`): SHA-256 of the file
+as picked, and for photos a 64-bit difference hash plus the average colour (`media.sha256`, `media.phash`, migration
+0015). `findDuplicate()` checks the library first: the same bytes, or a photo whose hash is at most 5 bits away with the
+same colour and shape (`src/lib/phash.ts`); four expression indexes on quarters of the hash find candidates without
+scanning. On a match the existing file is used (and put in the album), and the uploader offers "Upload mine anyway".
+**Media library → Find duplicates** (`/admin/media/duplicates`) fingerprints older photos from their thumbnails in the
+browser, groups copies (`src/lib/duplicates.ts`), and merges a group: the kept file replaces the copies in every
+column above, then the copies are deleted from D1 and R2. "They're different photos" is remembered in `media_distinct`.
+
 Lists all work one way (`src/app/admin/_components/items.tsx`): every item is a row you click anywhere on. Small
 things (a sponsor, resource, photo, contact, message, match) open a popup with its own Save (`ModalItem` /
 `FormModal`, ✎ on the row); things with their own lists (a season, robot, event, album, impact event) open their own

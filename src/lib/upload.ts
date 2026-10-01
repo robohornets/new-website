@@ -64,7 +64,19 @@ type Details = {
   alt: string;
   albumId: number;
   uploader: string;
+  /** The browser's fingerprints of the file (see src/lib/fingerprint.ts). */
+  sha256: string | null;
+  phash: string | null;
 };
+
+const fingerprint = (raw: unknown, pattern: RegExp) => {
+  const v = typeof raw === "string" ? raw.trim().toLowerCase() : "";
+  return pattern.test(v) ? v : null;
+};
+/** "abc…" (64 hex), or "s:abc…" for a big file hashed in samples. */
+const sha = (raw: unknown) => fingerprint(raw, /^(s:)?[0-9a-f]{64}$/);
+/** 22 hex digits (pattern and colour), or '' when the browser couldn't read the photo. */
+const phash = (raw: unknown) => (raw === "" ? "" : fingerprint(raw, /^[0-9a-f]{22}$/));
 
 /** Adds an uploaded file to the media table (and to an album). */
 async function record(env: UploadEnv, d: Details): Promise<Response> {
@@ -88,10 +100,10 @@ async function record(env: UploadEnv, d: Details): Promise<Response> {
   }
 
   const inserted = await env.DB.prepare(
-    `INSERT INTO media (r2_key, filename, content_type, size_bytes, alt, uploaded_by, width, height)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?) RETURNING id`,
+    `INSERT INTO media (r2_key, filename, content_type, size_bytes, alt, uploaded_by, width, height, sha256, phash)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id`,
   )
-    .bind(d.key, d.filename, d.type, d.size, d.alt.slice(0, 300), d.uploader, width, height)
+    .bind(d.key, d.filename, d.type, d.size, d.alt.slice(0, 300), d.uploader, width, height, d.sha256, d.phash)
     .first<{ id: number }>();
   if (!inserted) return json({ error: "Saved the file but couldn't record it." }, 500);
 
@@ -145,6 +157,8 @@ export async function handleUpload(request: Request, env: UploadEnv, uploader: s
     alt: url.searchParams.get("alt") ?? "",
     albumId: Number(url.searchParams.get("album_id")),
     uploader,
+    sha256: sha(url.searchParams.get("sha256")),
+    phash: phash(url.searchParams.get("phash")),
   });
 }
 
@@ -171,7 +185,17 @@ async function receipt(env: UploadEnv, claim: { key: string; type: string; size:
 }
 
 type StartBody = { filename?: unknown; type?: unknown; size?: unknown };
-type FinishBody = StartBody & { key?: unknown; exp?: unknown; receipt?: unknown; width?: unknown; height?: unknown; album_id?: unknown; alt?: unknown };
+type FinishBody = StartBody & {
+  key?: unknown;
+  exp?: unknown;
+  receipt?: unknown;
+  width?: unknown;
+  height?: unknown;
+  album_id?: unknown;
+  alt?: unknown;
+  sha256?: unknown;
+  phash?: unknown;
+};
 
 /** Signs an R2 upload address for one file, good for an hour. */
 export async function startDirectUpload(request: Request, env: UploadEnv, uploader: string): Promise<Response> {
@@ -225,6 +249,8 @@ export async function finishDirectUpload(request: Request, env: UploadEnv, uploa
     alt: String(body.alt ?? ""),
     albumId: Number(body.album_id),
     uploader,
+    sha256: sha(body.sha256),
+    phash: phash(body.phash),
   });
 }
 

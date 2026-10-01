@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { adminAction, bool, FormError, optionalInt, str, type ActionState } from "@/lib/admin";
+import { requireAdmin } from "@/lib/auth";
 import { batch, first, run } from "@/lib/db";
 import { slugify } from "@/lib/format";
 
@@ -120,4 +121,18 @@ export async function addPhotosToAlbum(albumId: number, mediaIds: number[]): Pro
     );
     return `${ids.length} ${ids.length === 1 ? "photo" : "photos"} added.`;
   });
+}
+
+/** Puts one photo at the end of an album unless it's already in it. True when it was added. */
+export async function addToAlbumIfMissing(albumId: number, mediaId: number): Promise<boolean> {
+  await requireAdmin();
+  const res = await first<{ media_id: number }>(
+    `INSERT OR IGNORE INTO album_photos (album_id, media_id, sort_order)
+     SELECT ?, id, (SELECT COALESCE(MAX(sort_order), 0) + 1 FROM album_photos WHERE album_id = ?) FROM media WHERE id = ?
+     RETURNING media_id`,
+    albumId,
+    albumId,
+    mediaId,
+  );
+  return Boolean(res);
 }

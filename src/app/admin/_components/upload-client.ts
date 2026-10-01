@@ -6,12 +6,33 @@
 // src/lib/upload.ts for the server side.
 
 import { formatLimit, maxBytesFor } from "@/lib/media";
+import { addToAlbumIfMissing } from "../gallery/actions";
+import { findDuplicate, type DuplicateMatch } from "./duplicate-actions";
+import { fileSha256, photoHash } from "./fingerprint";
 
-export type Uploaded = { id: number; r2_key: string; filename: string };
+export type Uploaded = {
+  id: number;
+  r2_key: string;
+  filename: string;
+  /** Set when the file was already in the library, so the existing one is used instead. */
+  duplicate?: {
+    of: DuplicateMatch;
+    /** The file that wasn't uploaded, for "Upload mine anyway". */
+    file: File;
+    /** Whether it was put in the album just now (rather than being in it already). */
+    addedToAlbum: boolean;
+  };
+};
 
 /** What's happening to the file right now, for progress messages. */
 export type UploadStatus = { file: string; stage: "converting" | "uploading"; progress: number };
-export type UploadOptions = { extra?: Record<string, string>; onStatus?: (s: UploadStatus) => void; onNote?: (note: string) => void };
+export type UploadOptions = {
+  extra?: Record<string, string>;
+  onStatus?: (s: UploadStatus) => void;
+  onNote?: (note: string) => void;
+  /** Upload even if the library already has it ("Upload mine anyway"). */
+  allowDuplicate?: boolean;
+};
 
 // Some browsers leave File.type empty for HEIC photos from iPhones.
 function guessType(name: string): string {
@@ -151,9 +172,25 @@ async function postJson<T>(path: string, body: unknown): Promise<{ res: Response
 // Remembered for the page's lifetime once the server says direct uploads aren't set up.
 let directAvailable = true;
 
-async function uploadOne(original: File, { extra = {}, onStatus, onNote }: UploadOptions): Promise<Uploaded> {
+async function uploadOne(original: File, { extra = {}, onStatus, onNote, allowDuplicate }: UploadOptions): Promise<Uploaded> {
   let file = original;
   let type = file.type || guessType(file.name);
+
+  // Fingerprint the file as picked (before any video conversion), and use the
+  // library's copy if it's already there.
+  const [sha256, phash, picked] = await Promise.all([fileSha256(original), photoHash(original, type), pixelSize(original, type)]);
+  const prints: Record<string, string> = { ...(sha256 ? { sha256 } : {}), ...(phash !== null ? { phash } : {}) };
+  if (!allowDuplicate && (sha256 || phash)) {
+    const match = await findDuplicate({ sha256, phash, width: picked?.width, height: picked?.height }).catch(() => null);
+    if (match) {
+      const albumId = Number(extra.album_id);
+      let addedToAlbum = false;
+      if (albumId > 0) addedToAlbum = await addToAlbumIfMissing(albumId, match.id);
+      return { id: match.id, r2_key: match.r2_key, filename: match.filename, duplicate: { of: match, file: original, addedToAlbum } };
+    }
+  }
+  extra = { ...extra, ...prints };
+
   if (type.startsWith("video/")) {
     onStatus?.({ file: file.name, stage: "converting", progress: 0 });
     const prepared = await prepareVideo(file, (p) => onStatus?.({ file: original.name, stage: "converting", progress: p }));
@@ -161,7 +198,7 @@ async function uploadOne(original: File, { extra = {}, onStatus, onNote }: Uploa
     type = file.type || guessType(file.name);
     if (prepared.note) onNote?.(prepared.note);
   }
-  const size = await pixelSize(file, type);
+  const size = file === original ? picked : await pixelSize(file, type);
   const dims = size ? { width: size.width, height: size.height } : {};
   const status = (progress: number) => onStatus?.({ file: original.name, stage: "uploading", progress });
   status(0);

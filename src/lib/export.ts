@@ -8,6 +8,7 @@ import { originalUrl } from "./media";
  */
 export const EXPORT_TABLES: { name: string; label: string; omit?: string[] }[] = [
   { name: "media", label: "Media files" },
+  { name: "media_distinct", label: "Media pairs marked as not duplicates" },
   { name: "site_settings", label: "Site text & links" },
   { name: "seasons", label: "Seasons" },
   { name: "robots", label: "Robots" },
