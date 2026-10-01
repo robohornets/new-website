@@ -111,30 +111,57 @@ export function PostCard({ post }: { post: Post }) {
   );
 }
 
-export function EventRow({ event }: { event: TeamEvent }) {
+/**
+ * An event in a list, linking to its page on our site. Pass `matches` (the
+ * season page does) to say on the row that the match list is there.
+ */
+export function EventRow({ event, matches }: { event: TeamEvent; matches?: { count: number; ended: boolean } }) {
   const md = monthDay(event.start_date);
+  const results = event.rank || event.awards || event.record || event.playoff_result;
+  const cta = matches
+    ? matches.count > 0
+      ? `${matches.count} ${matches.count === 1 ? "match" : "matches"}`
+      : matches.ended
+        ? "Event details"
+        : "Results soon"
+    : null;
   return (
     <li>
       <Link
         href={`/seasons/${event.season_year}/events/${event.id}`}
-        className="group flex items-center gap-5 rounded-md border border-line bg-ink px-5 py-4.5 hover:border-edge"
+        className="group flex items-center gap-4 rounded-md border border-line bg-ink px-4 py-4.5 hover:border-edge sm:gap-5 sm:px-5"
       >
-        <div className="flex w-16 shrink-0 flex-col items-center gap-0.5">
+        <div className="flex w-14 shrink-0 flex-col items-center gap-0.5 sm:w-16">
           <span className="font-label text-xs text-dust">{md?.month ?? "TBD"}</span>
           <span className="font-display text-[34px] leading-none font-extrabold">{md?.day ?? "–"}</span>
         </div>
-        <div className="flex min-w-0 grow flex-col gap-1">
-          <span className="text-[17px] font-semibold group-hover:text-hornet">{event.name}</span>
-          {event.location && <span className="text-sm text-dust">{event.location}</span>}
-        </div>
-        {(event.rank || event.awards || event.record || event.playoff_result) && (
-          <div className="flex flex-col items-end gap-1 text-right">
-            {event.rank && <span className="font-label text-sm font-bold text-hornet">{event.rank}</span>}
-            {event.record && <span className="font-label text-xs text-dust">{event.record}</span>}
-            {event.playoff_result && <span className="text-[13px] text-sand">{event.playoff_result}</span>}
-            {event.awards && <span className="text-[13px] text-dust">{event.awards}</span>}
+        {/* On phones the results sit under the name; from sm up, on the right. */}
+        <div className="flex min-w-0 grow flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-5">
+          <div className="flex min-w-0 flex-col gap-1">
+            <span className="text-[17px] font-semibold group-hover:text-hornet">{event.name}</span>
+            {event.location && <span className="text-sm text-dust">{event.location}</span>}
           </div>
-        )}
+          {(results || cta) && (
+            <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 sm:shrink-0 sm:flex-col sm:items-end sm:text-right">
+              {event.rank && <span className="font-label text-sm font-bold text-hornet">{event.rank}</span>}
+              {event.record && <span className="font-label text-xs text-dust">{event.record}</span>}
+              {event.playoff_result && <span className="text-[13px] text-sand">{event.playoff_result}</span>}
+              {event.awards && <span className="text-[13px] text-dust">{event.awards}</span>}
+              {cta && (
+                <span
+                  className={`flex basis-full items-center gap-1.5 text-sm font-semibold sm:mt-1 sm:basis-auto ${
+                    matches!.count > 0 ? "text-bone group-hover:text-hornet" : "text-dust group-hover:text-bone"
+                  }`}
+                >
+                  {cta}
+                  <span aria-hidden="true" className="transition-transform group-hover:translate-x-0.5">
+                    →
+                  </span>
+                </span>
+              )}
+            </div>
+          )}
+        </div>
       </Link>
     </li>
   );

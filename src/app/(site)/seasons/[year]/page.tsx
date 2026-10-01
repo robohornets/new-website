@@ -10,6 +10,7 @@ import { SeasonSwitcher } from "@/components/season-switcher";
 import { SponsorWall } from "@/components/sponsor-wall";
 import {
   getAlbums,
+  getEventMatchSummary,
   getEvents,
   getPosts,
   getRobots,
@@ -43,7 +44,7 @@ export default async function SeasonPage(props: PageProps<"/seasons/[year]">) {
   const season = year ? await getSeason(year) : null;
   if (!season) notFound();
 
-  const [seasons, robots, events, roster, sponsors, photos, albums, posts, subteams] = await Promise.all([
+  const [seasons, robots, events, roster, sponsors, photos, albums, posts, subteams, matchSummary] = await Promise.all([
     getSeasons(),
     getRobots(season.year),
     getEvents(season.year),
@@ -53,6 +54,7 @@ export default async function SeasonPage(props: PageProps<"/seasons/[year]">) {
     getAlbums(season.year),
     getPosts({ seasonYear: season.year, limit: 3 }),
     getSubteams(),
+    getEventMatchSummary(season.year),
   ]);
   const [mainRobot, ...otherRobots] = robots;
   const students = roster.filter((m) => m.kind === "student");
@@ -157,19 +159,20 @@ export default async function SeasonPage(props: PageProps<"/seasons/[year]">) {
           {competitions.length > 0 ? (
             <ul className="flex flex-col gap-3">
               {competitions.map((e) => (
-                <EventRow key={e.id} event={e} />
+                <EventRow key={e.id} event={e} matches={matchSummary.get(e.id) ?? { count: 0, ended: false }} />
               ))}
             </ul>
           ) : (
             <p className="text-dust">Events will be announced soon.</p>
           )}
+          {competitions.length > 0 && <p className="text-sm text-dust">Open a competition for every match we played, with scores and videos.</p>}
           <a
             href={`https://www.thebluealliance.com/team/1209/${season.year}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-auto flex items-center gap-2 font-semibold text-hornet hover:text-hornet-hover"
+            className="mt-auto flex items-center gap-1.5 self-start text-sm text-dust hover:text-bone hover:underline"
           >
-            Full match history on The Blue Alliance <External size={16} />
+            Also on The Blue Alliance <External size={13} />
           </a>
         </section>
       </Container>

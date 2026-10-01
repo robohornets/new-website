@@ -132,6 +132,21 @@ export const getEvent = cache(async (id: number): Promise<TeamEvent | null> =>
 // "Today" in Tulsa, for SQLite: UTC minus 5 hours (6 in winter) is close enough.
 export const TODAY = "date('now', '-5 hours')";
 
+/**
+ * For the season page's competition rows: how many matches each event has on
+ * the site, and whether it's over (so an empty one says "Results soon" or not).
+ */
+export const getEventMatchSummary = cache(async (year: number): Promise<Map<number, { count: number; ended: boolean }>> => {
+  const rows = await all<{ id: number; count: number; ended: number | null }>(
+    `SELECT e.id,
+            (SELECT COUNT(*) FROM matches m WHERE m.event_id = e.id AND m.hidden = 0) AS count,
+            date(COALESCE(e.end_date, e.start_date)) < ${TODAY} AS ended
+     FROM events e WHERE e.season_year = ?`,
+    year,
+  );
+  return new Map(rows.map((r) => [r.id, { count: r.count, ended: r.ended === 1 }]));
+});
+
 export const getUpcomingEvents = cache(async (limit = 3): Promise<TeamEvent[]> =>
   all<TeamEvent>(
     `SELECT * FROM events WHERE hidden = 0 AND date(start_date) > ${TODAY} ORDER BY start_date LIMIT ?`,
