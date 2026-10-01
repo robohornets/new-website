@@ -9,7 +9,8 @@ import { ActionButton } from "../../_components/action-form";
 import { EditForm } from "../../_components/unsaved";
 import { BulkUploader } from "../../_components/bulk-uploader";
 import { AdminPageHeader, Checkbox, Grid, Panel, SelectField, TextArea, TextField } from "../../_components/fields";
-import { deleteAlbum, removeAlbumPhoto, setAlbumCover, updateAlbum, updateAlbumPhoto } from "../actions";
+import { SortableGrid } from "../../_components/sortable";
+import { deleteAlbum, removeAlbumPhoto, saveAlbumPhotoOrder, setAlbumCover, updateAlbum, updateAlbumPhoto } from "../actions";
 import { requireAdminPage } from "@/lib/auth";
 
 export const metadata: Metadata = { title: "Edit album" };
@@ -45,43 +46,51 @@ export default async function AdminAlbumPage(props: PageProps<"/admin/gallery/[i
 
       <BulkUploader albumId={id} label="Add photos to this album" />
 
-      <Panel title="Photos" description="Alt text describes the photo for screen readers. Captions show under the photo.">
+      <Panel
+        title="Photos"
+        description="The site shows them in this order. Drag a photo by ⠿ (or use ◀ ▶) and save. Alt text describes the photo for screen readers; captions show under it."
+      >
         {photos.length === 0 ? (
           <p className="text-sm text-dust">No photos yet. Upload some above.</p>
         ) : (
-          <ul className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-            {photos.map((p) => (
-              <li key={p.media_id} className="flex flex-col gap-3 rounded-md border border-line bg-ink p-3">
-                <div className="relative">
-                  {isVideo(p.r2_key) ? (
-                    <video src={originalUrl(p.r2_key) ?? ""} preload="metadata" muted controls className="h-44 w-full rounded bg-panel object-cover" />
-                  ) : (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={mediaUrl(p.r2_key, 640) ?? ""} alt={p.alt} loading="lazy" className="h-44 w-full rounded object-cover" />
-                  )}
-                  {album.cover_media_id === p.media_id && (
-                    <span className="absolute top-2 left-2 rounded bg-ink/90 px-2 py-0.5 font-label text-[10px] text-hornet">COVER</span>
-                  )}
+          <SortableGrid
+            action={saveAlbumPhotoOrder.bind(null, id)}
+            className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4"
+            items={photos.map((p, i) => ({
+              id: p.media_id,
+              label: p.alt || `photo ${i + 1}`,
+              node: (
+                <div className="flex h-full flex-col gap-3 rounded-md border border-line bg-ink p-3">
+                  <div className="relative">
+                    {isVideo(p.r2_key) ? (
+                      <video src={originalUrl(p.r2_key) ?? ""} preload="metadata" muted controls className="h-44 w-full rounded bg-panel object-cover" />
+                    ) : (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={mediaUrl(p.r2_key, 640) ?? ""} alt={p.alt} loading="lazy" className="h-44 w-full rounded object-cover" />
+                    )}
+                    {album.cover_media_id === p.media_id && (
+                      <span className="absolute top-2 left-2 rounded bg-ink/90 px-2 py-0.5 font-label text-[10px] text-hornet">COVER</span>
+                    )}
+                  </div>
+                  <EditForm action={updateAlbumPhoto.bind(null, id, p.media_id)}>
+                    <TextField label="Alt text" name="alt" defaultValue={p.alt} placeholder="Drive team celebrating in the pits" />
+                    <TextField label="Caption" name="caption" defaultValue={p.caption} />
+                  </EditForm>
+                  <a href={downloadUrl(p.r2_key) ?? ""} className="text-sm font-semibold text-hornet hover:text-hornet-hover">
+                    Download original · {p.filename}
+                  </a>
+                  <div className="flex flex-wrap gap-2 border-t border-line pt-3">
+                    {album.cover_media_id !== p.media_id && !isVideo(p.r2_key) && (
+                      <ActionButton action={setAlbumCover.bind(null, id, p.media_id)}>Make cover</ActionButton>
+                    )}
+                    <ActionButton action={removeAlbumPhoto.bind(null, id, p.media_id)} variant="danger" confirm="Remove this photo from the album? It stays in the media library.">
+                      Remove
+                    </ActionButton>
+                  </div>
                 </div>
-                <EditForm action={updateAlbumPhoto.bind(null, id, p.media_id)}>
-                  <TextField label="Alt text" name="alt" defaultValue={p.alt} placeholder="Drive team celebrating in the pits" />
-                  <TextField label="Caption" name="caption" defaultValue={p.caption} />
-                  <TextField label="Order" name="sort_order" type="number" defaultValue={p.sort_order} />
-                </EditForm>
-                <a href={downloadUrl(p.r2_key) ?? ""} className="text-sm font-semibold text-hornet hover:text-hornet-hover">
-                  Download original · {p.filename}
-                </a>
-                <div className="flex flex-wrap gap-2 border-t border-line pt-3">
-                  {album.cover_media_id !== p.media_id && !isVideo(p.r2_key) && (
-                    <ActionButton action={setAlbumCover.bind(null, id, p.media_id)}>Make cover</ActionButton>
-                  )}
-                  <ActionButton action={removeAlbumPhoto.bind(null, id, p.media_id)} variant="danger" confirm="Remove this photo from the album? It stays in the media library.">
-                    Remove
-                  </ActionButton>
-                </div>
-              </li>
-            ))}
-          </ul>
+              ),
+            }))}
+          />
         )}
       </Panel>
 

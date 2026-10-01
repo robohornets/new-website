@@ -135,7 +135,7 @@ export default async function AdminOutreachEventPage(props: PageProps<"/admin/ou
             name="recap"
             rows={3}
             defaultValue={event.recap}
-            hint="A sentence or two. Shown on the event's page on the site, and handy for Impact Award write-ups."
+            hint="A sentence or two. Shown on the Impact page and the event's page, and handy for Impact Award write-ups."
           />
         </Panel>
 

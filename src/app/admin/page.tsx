@@ -4,6 +4,7 @@ import { MediaImage } from "@/components/media-image";
 import { getCurrentSeason, getEvents, getRobots, getRoster, getSeasonSponsors } from "@/lib/data";
 import { all, first } from "@/lib/db";
 import { formatBytes, formatDateTime } from "@/lib/format";
+import { formatHours, getOutreachTotals } from "@/lib/outreach";
 import { SEASON_STATUS_LABEL, type Message } from "@/lib/types";
 import { AdminPageHeader, Panel } from "./_components/fields";
 import { HelpStartCard } from "./_help/help-panel";
@@ -12,20 +13,19 @@ import { requireAdminPage } from "@/lib/auth";
 export default async function AdminDashboard() {
   await requireAdminPage();
   const season = await getCurrentSeason();
-  const [robots, events, roster, sponsors, counts, messages] = await Promise.all([
+  const [robots, events, roster, sponsors, counts, messages, outreach] = await Promise.all([
     season ? getRobots(season.year) : [],
     season ? getEvents(season.year) : [],
     season ? getRoster(season.year) : [],
     season ? getSeasonSponsors(season.year) : [],
-    first<{ posts: number; drafts: number; albums: number; media: number; bytes: number; sponsors: number }>(
-      `SELECT (SELECT COUNT(*) FROM posts WHERE published = 1) AS posts,
-              (SELECT COUNT(*) FROM posts WHERE published = 0) AS drafts,
-              (SELECT COUNT(*) FROM albums) AS albums,
+    first<{ albums: number; media: number; bytes: number; sponsors: number }>(
+      `SELECT (SELECT COUNT(*) FROM albums) AS albums,
               (SELECT COUNT(*) FROM media) AS media,
               (SELECT COALESCE(SUM(size_bytes), 0) FROM media) AS bytes,
               (SELECT COUNT(*) FROM sponsors) AS sponsors`,
     ),
     all<Message>("SELECT * FROM messages WHERE archived = 0 ORDER BY created_at DESC LIMIT 6"),
+    season ? getOutreachTotals(season.year) : null,
   ]);
   const seasonPhotos = season
     ? await first<{ n: number }>(
@@ -140,7 +140,12 @@ export default async function AdminDashboard() {
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <Stat href={season ? `/admin/roster?season=${season.year}` : "/admin/roster"} label={`Roster${season ? ` · ${season.year}` : ""}`} value={roster.length} sub={`${roster.filter((r) => r.kind === "student").length} students · ${roster.filter((r) => r.kind === "mentor").length} mentors`} />
         <Stat href="/admin/sponsors" label="Sponsors" value={counts?.sponsors ?? 0} sub={`${sponsors.length} this season`} />
-        <Stat href="/admin/posts" label="Posts" value={counts?.posts ?? 0} sub={`${counts?.drafts ?? 0} drafts`} />
+        <Stat
+          href="/admin/outreach"
+          label={`Outreach hours${season ? ` · ${season.year}` : ""}`}
+          value={formatHours(outreach?.hours ?? 0)}
+          sub={`${outreach?.events ?? 0} events · ${outreach?.volunteers ?? 0} helped`}
+        />
         <Stat href="/admin/gallery" label="Gallery albums" value={counts?.albums ?? 0} sub={`${seasonPhotos?.n ?? 0} photos this season`} />
       </div>
 
@@ -173,7 +178,7 @@ export default async function AdminDashboard() {
   );
 }
 
-function Stat({ href, label, value, sub }: { href: string; label: string; value: number; sub: string }) {
+function Stat({ href, label, value, sub }: { href: string; label: string; value: number | string; sub: string }) {
   return (
     <Link href={href} className="flex flex-col gap-1.5 rounded-md border border-line bg-panel p-5 hover:border-edge">
       <span className="text-[13px] text-dust">{label}</span>

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { EventRow, PostCard } from "@/components/cards";
+import { EventRow } from "@/components/cards";
 import { ArrowRight, Download, External } from "@/components/icons";
 import { MediaImage } from "@/components/media-image";
 import { Container, EmptyState } from "@/components/page-header";
@@ -12,7 +12,6 @@ import {
   getAlbums,
   getEventMatchSummary,
   getEvents,
-  getPosts,
   getRobots,
   getRoster,
   getSeason,
@@ -44,7 +43,7 @@ export default async function SeasonPage(props: PageProps<"/seasons/[year]">) {
   const season = year ? await getSeason(year) : null;
   if (!season) notFound();
 
-  const [seasons, robots, events, roster, sponsors, photos, albums, posts, subteams, matchSummary] = await Promise.all([
+  const [seasons, robots, events, roster, sponsors, photos, albums, subteams, matchSummary] = await Promise.all([
     getSeasons(),
     getRobots(season.year),
     getEvents(season.year),
@@ -52,7 +51,6 @@ export default async function SeasonPage(props: PageProps<"/seasons/[year]">) {
     getSeasonSponsors(season.year),
     getSeasonPhotos(season.year, 4),
     getAlbums(season.year),
-    getPosts({ seasonYear: season.year, limit: 3 }),
     getSubteams(),
     getEventMatchSummary(season.year),
   ]);
@@ -225,19 +223,6 @@ export default async function SeasonPage(props: PageProps<"/seasons/[year]">) {
             ))}
           </ul>
         </Container>
-      )}
-
-      {posts.length > 0 && (
-        <section className="border-t border-line">
-          <Container className="flex flex-col gap-10 py-16 md:py-24">
-            <h2 className="font-display text-5xl leading-[0.95] font-extrabold uppercase md:text-6xl">{season.year} stories</h2>
-            <div className="grid gap-10 md:grid-cols-2 md:gap-6 xl:grid-cols-3">
-              {posts.map((p) => (
-                <PostCard key={p.id} post={p} />
-              ))}
-            </div>
-          </Container>
-        </section>
       )}
 
       {sponsors.length > 0 && (

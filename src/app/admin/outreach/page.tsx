@@ -99,7 +99,7 @@ export default async function AdminOutreachPage(props: PageProps<"/admin/outreac
     <>
       <AdminPageHeader
         title="Outreach hours"
-        description="Log who went to each outreach event. The Outreach page on the site shows the season's totals (hours, events, people reached), never anyone's own hours."
+        description="Log who went to each outreach event. The Impact page on the site shows the season's totals (hours, events, people reached) and each event's write-up, never who went or anyone's own hours."
       />
       <SeasonPicker basePath="/admin/outreach" years={years} current={year} />
 

@@ -2,21 +2,10 @@ import "server-only";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { cache } from "react";
-import { createRemoteJWKSet, jwtVerify } from "jose";
+import { accessConfigured, verifyAccessToken } from "./access";
 import { getEnv } from "./cf";
 
 export type AdminUser = { email: string };
-
-const jwksByTeam = new Map<string, ReturnType<typeof createRemoteJWKSet>>();
-
-function jwksFor(teamDomain: string) {
-  let jwks = jwksByTeam.get(teamDomain);
-  if (!jwks) {
-    jwks = createRemoteJWKSet(new URL(`https://${teamDomain}/cdn-cgi/access/certs`));
-    jwksByTeam.set(teamDomain, jwks);
-  }
-  return jwks;
-}
 
 /**
  * Cloudflare Access sits in front of /admin and adds a signed JWT to every
@@ -32,23 +21,8 @@ export const getAdminUser = cache(async (): Promise<AdminUser | null> => {
   if (process.env.NODE_ENV === "development") return { email: "dev@localhost" };
 
   const env = await getEnv();
-  const teamDomain = env.CF_ACCESS_TEAM_DOMAIN?.trim().replace(/^https?:\/\//, "").replace(/\/$/, "");
-  const aud = env.CF_ACCESS_AUD?.trim();
-  if (!teamDomain || !aud) return null;
-
-  const token = (await headers()).get("cf-access-jwt-assertion");
-  if (!token) return null;
-
-  try {
-    const { payload } = await jwtVerify(token, jwksFor(teamDomain), {
-      issuer: `https://${teamDomain}`,
-      audience: aud,
-    });
-    const email = typeof payload.email === "string" ? payload.email : null;
-    return email ? { email } : null;
-  } catch {
-    return null;
-  }
+  const email = await verifyAccessToken(env, (await headers()).get("cf-access-jwt-assertion"));
+  return email ? { email } : null;
 });
 
 export class UnauthorizedError extends Error {
@@ -76,6 +50,5 @@ export async function requireAdminPage(): Promise<AdminUser> {
 }
 
 export async function isAccessConfigured(): Promise<boolean> {
-  const env = await getEnv();
-  return Boolean(env.CF_ACCESS_TEAM_DOMAIN?.trim() && env.CF_ACCESS_AUD?.trim());
+  return accessConfigured(await getEnv());
 }

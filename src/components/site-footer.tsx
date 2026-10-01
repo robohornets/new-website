@@ -62,8 +62,7 @@ export function SiteFooter({ settings }: { settings: SiteSettings }) {
               links={[
                 { label: "Team", url: "/team" },
                 { label: "Seasons", url: "/seasons" },
-                { label: "News", url: "/news" },
-                { label: "Outreach", url: "/outreach" },
+                { label: "Impact", url: "/impact" },
                 { label: "Gallery", url: "/gallery" },
               ]}
             />

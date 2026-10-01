@@ -17,15 +17,54 @@ function guessType(name: string): string {
   );
 }
 
+/**
+ * The picture's size in pixels, read by the browser (it only needs the file's
+ * header, not a full decode). Sent with the upload so the server doesn't have
+ * to read the file back to measure it. Null when the browser can't tell, like
+ * HEIC outside Safari; the server measures those itself.
+ */
+function pixelSize(file: File, type: string): Promise<{ width: number; height: number } | null> {
+  const isImage = type.startsWith("image/") && type !== "image/svg+xml";
+  const isVideo = type.startsWith("video/");
+  if (!isImage && !isVideo) return Promise.resolve(null);
+  return new Promise((resolve) => {
+    const src = URL.createObjectURL(file);
+    const done = (size: { width: number; height: number } | null) => {
+      clearTimeout(timer);
+      URL.revokeObjectURL(src);
+      resolve(size && size.width > 0 && size.height > 0 ? size : null);
+    };
+    const timer = setTimeout(() => done(null), 4000);
+    if (isImage) {
+      const img = new Image();
+      img.onload = () => done({ width: img.naturalWidth, height: img.naturalHeight });
+      img.onerror = () => done(null);
+      img.src = src;
+    } else {
+      const video = document.createElement("video");
+      video.preload = "metadata";
+      video.onloadedmetadata = () => done({ width: video.videoWidth, height: video.videoHeight });
+      video.onerror = () => done(null);
+      video.src = src;
+    }
+  });
+}
+
 export async function uploadFiles(files: File[], extra: Record<string, string> = {}): Promise<Uploaded[]> {
   const out: Uploaded[] = [];
   for (const file of files) {
-    const params = new URLSearchParams({ filename: file.name, ...extra });
+    const type = file.type || guessType(file.name);
+    const size = await pixelSize(file, type);
+    const params = new URLSearchParams({
+      filename: file.name,
+      ...(size ? { width: String(size.width), height: String(size.height) } : {}),
+      ...extra,
+    });
     // The file is the whole request body, so the Worker can stream it into R2.
     const res = await fetch(`/admin/api/upload?${params}`, {
       method: "POST",
       body: file,
-      headers: { "content-type": file.type || guessType(file.name) },
+      headers: { "content-type": type },
     });
     const json = (await res.json().catch(() => ({}))) as { media?: Uploaded; error?: string };
     if (!res.ok || !json.media) throw new Error(json.error ?? `Upload failed (${res.status})`);

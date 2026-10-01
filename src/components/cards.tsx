@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { formatDate, monthDay } from "@/lib/format";
-import { SEASON_STATUS_LABEL, type Post, type Robot, type Season, type TeamEvent } from "@/lib/types";
+import { monthDay } from "@/lib/format";
+import { SEASON_STATUS_LABEL, type Robot, type Season, type TeamEvent } from "@/lib/types";
 import { MediaImage } from "./media-image";
 
 export function SeasonStatusCard({
@@ -78,35 +78,6 @@ export function RobotCard({ robot, gameName }: { robot: Robot; gameName?: string
           </ul>
         )}
       </div>
-    </Link>
-  );
-}
-
-export function PostCard({ post }: { post: Post }) {
-  return (
-    <Link href={`/news/${post.slug}`} className="group flex flex-col gap-4.5 text-bone">
-      <div className="h-60 overflow-hidden rounded-md">
-        <MediaImage
-          mediaKey={post.cover_key}
-          alt=""
-          className="size-full transition-transform duration-300 group-hover:scale-[1.03]"
-        />
-      </div>
-      <div className="flex items-center gap-2.5 font-label text-xs tracking-wider uppercase">
-        <span className="text-hornet">{post.category}</span>
-        {post.published_at && (
-          <>
-            <span className="text-ash">·</span>
-            <time dateTime={post.published_at} className="text-dust">
-              {formatDate(post.published_at)}
-            </time>
-          </>
-        )}
-      </div>
-      <h3 className="font-display text-[32px] leading-[1.05] font-bold uppercase group-hover:text-hornet">
-        {post.title}
-      </h3>
-      {post.excerpt && <p className="text-[15px] leading-relaxed text-dust">{post.excerpt}</p>}
     </Link>
   );
 }

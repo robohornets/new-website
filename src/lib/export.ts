@@ -25,7 +25,8 @@ export const EXPORT_TABLES: { name: string; label: string; omit?: string[] }[] =
   { name: "sponsor_tiers", label: "Sponsor tiers" },
   { name: "sponsors", label: "Sponsors" },
   { name: "sponsor_seasons", label: "Sponsor lineups (per season)" },
-  { name: "posts", label: "News & outreach posts" },
+  // No longer on the site; kept so posts written before can still be downloaded.
+  { name: "posts", label: "Old news posts" },
   { name: "albums", label: "Gallery albums" },
   { name: "album_photos", label: "Album photos" },
   { name: "contacts", label: "Contact page people" },

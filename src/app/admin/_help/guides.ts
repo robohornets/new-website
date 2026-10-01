@@ -6,14 +6,14 @@
 
 export type Guide = {
   id: string;
-  group: "Start here" | "Season basics" | "Photos & posts" | "People & sponsors" | "Outreach" | "Site text" | "Scouting";
+  group: "Start here" | "Season basics" | "Photos" | "People & sponsors" | "Outreach" | "Site text" | "Scouting";
   title: string;
   pages: string[];
   steps: string[];
   tips?: string[];
 };
 
-export const GROUPS: Guide["group"][] = ["Start here", "Season basics", "Photos & posts", "People & sponsors", "Outreach", "Site text", "Scouting"];
+export const GROUPS: Guide["group"][] = ["Start here", "Season basics", "Photos", "People & sponsors", "Outreach", "Site text", "Scouting"];
 
 export const GUIDES: Guide[] = [
   // ---- Start here ------------------------------------------------------------
@@ -173,10 +173,10 @@ export const GUIDES: Guide[] = [
     tips: ["It's safe to run again: it only fills in and updates, and never overwrites anything you've edited."],
   },
 
-  // ---- Photos & posts ---------------------------------------------------------
+  // ---- Photos ----------------------------------------------------------------
   {
     id: "upload-photos",
-    group: "Photos & posts",
+    group: "Photos",
     title: "Upload photos to an album",
     pages: ["/admin/gallery", "/admin/media"],
     steps: [
@@ -189,36 +189,34 @@ export const GUIDES: Guide[] = [
   },
   {
     id: "photo-details",
-    group: "Photos & posts",
+    group: "Photos",
     title: "Captions, alt text and the cover photo",
     pages: ["/admin/gallery/"],
     steps: [
       "Open the album. Under each photo you can fill in:",
       "**Alt text**: one sentence describing the photo for people using screen readers, like Drive team celebrating after a win.",
       "**Caption**: shown under the photo on the site.",
-      "**Order**: lower numbers show first. Then click **Save changes** in the bar at the bottom (you can do several photos first).",
+      "Then click **Save changes** in the bar at the bottom (you can do several photos first).",
       "Click **Make cover** on the photo that should represent the album.",
       "**Remove** takes a photo out of the album but keeps it in the Media library.",
     ],
   },
   {
-    id: "write-post",
-    group: "Photos & posts",
-    title: "Write a news or outreach post",
-    pages: ["/admin/posts"],
+    id: "reorder-gallery",
+    group: "Photos",
+    title: "Put albums and photos in order",
+    pages: ["/admin/gallery"],
     steps: [
-      "Go to **News & outreach** and click **New post**.",
-      "Fill in the **Title** and a one or two sentence **Summary** (shown on the post's card).",
-      "Write the post in **Article**. Leave an empty line between paragraphs. Put **two stars** around words for bold, and start a line with ## for a heading.",
-      "Click **Preview** to see how it will look, and **Write** to keep editing.",
-      "On the right, pick **Section** (News or Outreach) and optionally the **Season** it belongs to.",
-      "Tick **Published** to put it on the site now, or leave it unticked to save a draft. Then click **Create post**.",
+      "Go to **Gallery**. Albums are listed in the order the site shows them, on the Gallery page and each season's page. New albums start at the front.",
+      "Drag an album by its **⠿** handle to where it should go. On a phone or tablet, use the **◀** and **▶** buttons instead.",
+      "Click **Save changes** in the bar at the bottom, or **Revert** to put them back.",
+      "Inside an album, photos work the same way: drag them by **⠿** (or use **◀ ▶**) and save. New uploads go at the end.",
     ],
-    tips: ["Add a **Cover** image on the right: click **Upload new** or pick from the library."],
+    tips: ["You can reorder photos and change captions at the same time; one **Save changes** saves both."],
   },
   {
     id: "delete-file",
-    group: "Photos & posts",
+    group: "Photos",
     title: "Delete a photo for good",
     pages: ["/admin/media"],
     steps: [
@@ -419,7 +417,7 @@ export const GUIDES: Guide[] = [
     pages: ["/admin/outreach"],
     steps: [
       "The four numbers at the top of **Outreach hours** are the season's volunteer hours, outreach events, people reached and how many team members helped.",
-      "The Outreach page on the site shows the latest season's hours, events and people reached. It never shows anyone's name or their own hours.",
+      "The Impact page on the site shows the latest season's hours, events and people reached, then every outreach event with its **What we did** write-up (and the cover of its photo album, if it has one). It never shows who went or anyone's own hours.",
       "**Hours by person** lists everyone's total, most hours first. It's only in the admin.",
       "**Download totals (CSV)** gives one line per person; **Download full log (CSV)** gives one line per person per event. Both open in Excel or Google Sheets, handy for service-hour forms, letters of recommendation and the Impact Award.",
     ],

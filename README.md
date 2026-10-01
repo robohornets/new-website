@@ -39,7 +39,7 @@ npm run db:migrate:remote
 ```
 
 This runs `migrations/0001_initial.sql` (the schema), `migrations/0002_seed_content.sql` (text, contacts,
-socials, the 2024–2026 robots and the old news and outreach posts from the previous site) and any later
+socials, the 2024–2026 robots and the old news posts from the previous site, which the site no longer shows) and any later
 migrations. Wrangler tracks which migrations have run, so this is safe to rerun after every pull.
 
 ### 4. Set up Cloudflare Access for `/admin`
@@ -144,11 +144,11 @@ Everything is in **btwrobotics.com/admin**:
 | During/after events | **Seasons → (year) → event** | Results and every match fill in automatically. Fix anything (it's marked **Edited**), add a write-up, highlight video or album, or hide an event/match. |
 | Recruiting | **Join requests** | Switch the form on, share the `/join` link, then add students to the roster with one click (or decline). Switch it off when you're done. |
 | Anytime | **Team roster** | Each person is a card: **Edit** opens a popup for their details, subteams and photo (add, replace, remove, or hide from the site); **Remove** takes them off the season. **Add person** and **Manage subteams** are at the top, with search and filters by subteam, class or leadership. Students show publicly as "First L." and their photos stay hidden unless *Show photo* is on. On the Team page students are grouped by main subteam (leaders first, showing their role), as compact cards with their photo or initials; a bio, if filled in, opens when the card is clicked. |
-| Anytime | **News & outreach**, **Gallery**, **Sponsors** | Posts (Markdown), photo albums (drag and drop many at once), sponsors (each one's tier for the picked season is set under **Edit** and shown on its row). |
+| Anytime | **Gallery**, **Sponsors** | Photo albums (drag and drop many files at once to upload; drag albums, and photos inside an album, into the order the site shows them), sponsors (each one's tier for the picked season is set under **Edit** and shown on its row). |
 | When it changes | **Site text & links** | Mission, values and the Strategic Plan (PDF or link) on the Team page. |
 | Anytime | Google Calendar | Meetings and events added to the team's public Google Calendar show on the Team page within about 10 minutes (the calendar is set under **Site text & links → Calendar**). |
 | Rarely | **Site text & links** | Homepage hero, stats (`{members}` shows this season's student count, rounded down to the nearest 10), about text, socials, contact people, footer links, donate link. |
-| After each outreach event | **Outreach hours** | Add the event (or open it), tick who went and save. Everyone gets the event's length unless you type their own hours. The Outreach page shows the season's totals (hours, events, people reached); per-person hours and CSVs are admin-only. |
+| After each outreach event | **Outreach hours** | Add the event (or open it), tick who went and save. Everyone gets the event's length unless you type their own hours. The public Impact page shows the season's totals (hours, events, people reached) and each event's write-up; per-person hours and CSVs are admin-only. |
 | After kickoff | **Scouting** | Build this year's scouting form (copy last year's or start from the example), then tick **Open /scouting** and share the link. |
 | Always | **Messages** | Contact form submissions. |
 
@@ -184,7 +184,7 @@ hornet** at small sizes: save its SVG as `src/app/icon.svg` and delete `src/app/
 ## How it's built
 
 ```
-src/app/(site)/        public pages (home, team, seasons, news, outreach, gallery, sponsors, contact)
+src/app/(site)/        public pages (home, team, seasons, impact, gallery, sponsors, contact)
 src/app/join/          the unlisted join-request form (on/off in the admin)
 src/app/scouting/      the public scouting app (/scouting) and its API (/scouting/api/*)
 src/app/admin/         admin panel: pages, server actions, api/upload
@@ -219,8 +219,8 @@ Content is organised around **seasons**. Each FRC year is a row, and most other 
 - `scouting_forms`, `scouting_entries`, `scouting_history`: see Scouting below
 - `join_requests`: students asking to join from `/join` (name, class, subteam ranking, about), with pending / added / declined status. The form only accepts requests while `site_settings.join_requests.open` is on.
 - `sponsors` + `sponsor_tiers` + `sponsor_seasons`: sponsors are stored once; each season lists who sponsored it and at what tier
-- `posts`: news and outreach articles in Markdown (raw HTML is not rendered), optionally tied to a season
-- `albums` + `album_photos`: gallery albums, optionally tied to a season
+- `posts`: news posts from the old site. Nothing shows them any more (News was removed); they're kept only so Export can still download them.
+- `albums` + `album_photos`: gallery albums, optionally tied to a season, each with a `sort_order` (albums on the Gallery and season pages; photos inside an album) set by dragging in the admin
 - `media`: every file uploaded to R2 (key, original filename, type, size, pixel width/height, alt text). Other tables point at it by id.
 - `site_settings`: key/value JSON for editable page text, including the mission, values and Strategic Plan
 - `contacts`: people listed on the Contact page
@@ -241,6 +241,17 @@ Every upload goes to R2 **once, unchanged**. That file is the only copy: nothing
 - iPhone HEIC photos are fine: the resized copies are WebP/JPEG, which every browser can show.
 - Videos (MP4/MOV/WebM, up to 95 MB) are served straight from R2 with range requests, so they stream and seek.
   For long videos like full matches, upload to the team YouTube channel and link it instead.
+
+**Uploads and the 10 ms CPU limit.** `POST /admin/api/upload` is answered by `worker.ts` itself
+(`src/lib/upload.ts`), before the request reaches Next.js. Profiling a 7.5 MB phone photo on workerd showed why:
+through Next, OpenNext copies the whole request body through Node.js streams in JavaScript (often 100+ ms of CPU, more
+for bigger files), and reading the photo back from R2 to measure it added more. The direct path streams the file
+into R2 natively and only runs a few milliseconds of our own code. The browser reads the photo's pixel size and sends
+it with the upload; only when it can't (HEIC outside Safari) does the Worker read the file back to measure it. The
+Cloudflare Access token is checked the same way as in the rest of the admin (`src/lib/access.ts`), cached per token
+for the length of a bulk upload, and uploads from any other site are refused. Under `next dev` the Next.js route at the
+same path does the same work. If uploads still fail on the Free plan, the next steps are uploading straight from the
+browser to R2 with presigned URLs (needs an R2 API token and a CORS rule on the bucket) or the $5 Workers Paid plan.
 
 Why not Cloudflare *hosted* Images or Stream? Hosted Images needs the paid Images plan (from $5/month) and keeps
 the originals in Cloudflare's own store, so they're harder to take elsewhere. Stream is $5 per 1,000 minutes
@@ -294,8 +305,9 @@ works while **Open /scouting** is on in the admin, and uses the current season's
 Outreach events are ordinary `events` rows with kind `outreach` (they also list on their season's page). The admin
 **Outreach hours** tab (`src/app/admin/outreach`) adds them and saves attendance together with the event, from the
 save bar. Totals are in `src/lib/outreach.ts`: a person's hours are `COALESCE(attendance.hours, events.outreach_hours)`,
-and an event counts once it has started or has anyone logged. The public `/outreach` page only gets
-`getPublicOutreachTotals()` (hours, events, people reached for the latest season with any), never names.
+and an event counts once it has started or has anyone logged. The public **Impact** page (`/impact`; `/outreach`
+redirects there) only gets `getPublicOutreachTotals()` (hours, events, people reached for the latest season with any)
+and `getPublicOutreachEvents()` (name, date, place, write-up, album cover), never names or anyone's hours.
 CSV downloads are at `/admin/api/outreach-export?season=YYYY&part=people|log`.
 
 ### Live match card

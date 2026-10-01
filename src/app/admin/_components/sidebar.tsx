@@ -20,7 +20,6 @@ const GROUPS = [
   {
     label: "Content",
     items: [
-      { href: "/admin/posts", label: "News & outreach" },
       { href: "/admin/gallery", label: "Gallery" },
       { href: "/admin/sponsors", label: "Sponsors" },
       { href: "/admin/settings", label: "Site text & links" },

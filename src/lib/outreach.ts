@@ -1,7 +1,7 @@
 import "server-only";
 import { cache } from "react";
 import { getEnv } from "./cf";
-import { TODAY } from "./data";
+import { FIRST_IMAGE, TODAY } from "./data";
 import { all, first } from "./db";
 
 /** Hours someone logged, or the whole event when they didn't say. */
@@ -39,7 +39,7 @@ export async function getOutreachTotals(year: number): Promise<OutreachTotals> {
 }
 
 /**
- * The public Outreach page's numbers: the latest season (up to the current
+ * The public Impact page's numbers: the latest season (up to the current
  * one) that has any outreach logged. Null when there's none, or before the
  * outreach migration has been applied.
  */
@@ -61,6 +61,37 @@ export const getPublicOutreachTotals = cache(async (): Promise<OutreachTotals | 
     return null;
   }
 });
+
+export type PublicOutreachEvent = {
+  id: number;
+  season_year: number;
+  name: string;
+  location: string;
+  start_date: string | null;
+  end_date: string | null;
+  recap: string;
+  /** The cover of the event's album (or its first photo), if it has one. */
+  cover_key: string | null;
+  upcoming: number;
+};
+
+/**
+ * Outreach events for the public Impact page, newest first: what we did and
+ * where, never who went or for how long.
+ */
+export const getPublicOutreachEvents = cache(async (limit = 60): Promise<PublicOutreachEvent[]> =>
+  all<PublicOutreachEvent>(
+    `SELECT e.id, e.season_year, e.name, e.location, e.start_date, e.end_date, e.recap,
+            m.r2_key AS cover_key, COALESCE(date(e.start_date) > ${TODAY}, 0) AS upcoming
+     FROM events e
+     LEFT JOIN albums a ON a.id = e.album_id AND a.published = 1
+     LEFT JOIN media m ON m.id = COALESCE(a.cover_media_id, ${FIRST_IMAGE})
+     WHERE e.kind = 'outreach' AND e.hidden = 0
+     ORDER BY e.start_date IS NULL, e.start_date DESC, e.id DESC
+     LIMIT ?`,
+    limit,
+  ),
+);
 
 export type OutreachEventRow = {
   id: number;
