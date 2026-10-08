@@ -1,4 +1,4 @@
-# btwrobotics.com
+# btwrobohornets.com
 
 The website for **FRC Team 1209 - RoboHornets** (Booker T. Washington High School, Tulsa).
 
@@ -41,7 +41,7 @@ The name must match `r2_buckets[0].bucket_name` in `wrangler.jsonc`.
    (`R2_ACCOUNT_ID` and `R2_BUCKET_NAME` are already in `wrangler.jsonc`.)
 3. **R2 → btwrobotics-media → Settings → CORS policy**, add:
    ```json
-   [{ "AllowedOrigins": ["https://btwrobotics.com"], "AllowedMethods": ["PUT"], "AllowedHeaders": ["content-type"], "MaxAgeSeconds": 3600 }]
+   [{ "AllowedOrigins": ["https://btwrobohornets.com"], "AllowedMethods": ["PUT"], "AllowedHeaders": ["content-type"], "MaxAgeSeconds": 3600 }]
    ```
    Add your `*.workers.dev` address to `AllowedOrigins` too if you use the admin there.
 
@@ -63,7 +63,7 @@ migrations. Wrangler tracks which migrations have run, so this is safe to rerun 
 ### 4. Set up Cloudflare Access for `/admin`
 
 1. Cloudflare dashboard → **Zero Trust** → **Access** → **Applications** → **Add an application** → **Self-hosted**.
-2. Application domain: `btwrobotics.com`, path: `admin`. This covers `/admin` and everything under it, including uploads.
+2. Application domain: `btwrobohornets.com`, path: `admin`. This covers `/admin` and everything under it, including uploads.
 3. Add a policy, for example **Allow** → *Emails* → the mentors' and student leads' addresses (or *Emails ending in* `@tulsaschools.org`).
 4. Save. On the application's **Overview** tab, copy the **Application Audience (AUD) Tag**.
 5. Your **team domain** is under Zero Trust → Settings → Custom Pages (it looks like `robohornets.cloudflareaccess.com`).
@@ -83,7 +83,7 @@ The Worker also checks the Access token itself, so the admin stays locked even w
 
 Events, rankings, awards and match results come from [The Blue Alliance](https://www.thebluealliance.com) (TBA).
 
-1. Sign in at thebluealliance.com, open **Account**, and under **Read API Keys** add a key (description: "btwrobotics.com").
+1. Sign in at thebluealliance.com, open **Account**, and under **Read API Keys** add a key (description: "btwrobohornets.com").
 2. Store it as a Worker secret (never in `wrangler.jsonc`):
 
    ```bash
@@ -118,9 +118,9 @@ npm run deploy
 ```
 
 Until the domain is set up, the site runs on the Worker's `*.workers.dev` address and the `routes` block in
-`wrangler.jsonc` stays commented out. When `btwrobotics.com` is on Cloudflare, uncomment it, delete any old DNS
+`wrangler.jsonc` stays commented out. When `btwrobohornets.com` is on Cloudflare, uncomment it, delete any old DNS
 records for the domain (A/CNAME for the old host) in **DNS → Records**, and deploy again. Then point the Cloudflare
-Access application at `btwrobotics.com/admin` too.
+Access application at `btwrobohornets.com/admin` too.
 
 ---
 
@@ -151,7 +151,7 @@ Other scripts: `npm run lint`, `npm run typecheck`, `npm run cf-typegen` (rerun 
 
 ## Updating the site each year
 
-Everything is in **btwrobotics.com/admin**:
+Everything is in **btwrobohornets.com/admin**:
 
 | When | Where | What |
 | --- | --- | --- |

@@ -23,7 +23,7 @@ export const GUIDES: Guide[] = [
     title: "How the admin works",
     pages: ["/admin"],
     steps: [
-      "Everything on btwrobotics.com comes from this admin. You never need to touch code.",
+      "Everything on btwrobohornets.com comes from this admin. You never need to touch code.",
       "Use the menu on the left to pick what to change. On a phone, tap **Open admin menu** at the top.",
       "Change as many boxes on a page as you like. A bar pops up at the bottom saying **Save your changes**.",
       "Click **Save changes** in that bar to save everything at once, or **Revert** to put it all back. Nothing changes on the site until you save. (Ctrl+S or Cmd+S saves too.)",
@@ -207,7 +207,7 @@ export const GUIDES: Guide[] = [
       "Tick **Show on every season** for team documents like the branding guidelines; they show on every season's Resources tab.",
       "Click a resource to change or delete it.",
     ],
-    tips: ["Send judges and other teams the address of the tab itself, like btwrobotics.com/seasons/2026/resources."],
+    tips: ["Send judges and other teams the address of the tab itself, like btwrobohornets.com/seasons/2026/resources."],
   },
 
   // ---- Photos ----------------------------------------------------------------

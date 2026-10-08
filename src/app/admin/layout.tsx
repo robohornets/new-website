@@ -49,7 +49,7 @@ function AccessRequired({ configured }: { configured: boolean }) {
       {configured ? (
         <p className="max-w-md text-sand">
           The admin is protected by Cloudflare Access. Open{" "}
-          <span className="font-mono text-bone">btwrobotics.com/admin</span> and sign in with an approved team email.
+          <span className="font-mono text-bone">btwrobohornets.com/admin</span> and sign in with an approved team email.
         </p>
       ) : (
         <p className="max-w-md text-sand">

@@ -105,7 +105,7 @@ function Brand() {
       <img src="/brand/hornet.svg" alt="" width={425} height={599} className="h-11 w-auto" />
       <span className="flex flex-col">
         <span className="font-display text-xl font-extrabold tracking-wide">1209 ADMIN</span>
-        <span className="text-xs text-ash">btwrobotics.com</span>
+        <span className="text-xs text-ash">btwrobohornets.com</span>
       </span>
     </Link>
   );

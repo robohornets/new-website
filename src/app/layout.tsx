@@ -24,7 +24,7 @@ const mono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://btwrobotics.com"),
+  metadataBase: new URL("https://btwrobohornets.com"),
   title: {
     default: "FRC Team 1209 - RoboHornets",
     template: "%s | FRC Team 1209 - RoboHornets",

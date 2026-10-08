@@ -10,9 +10,6 @@
 		"directory": ".open-next/assets",
 		"binding": "ASSETS"
 	},
-	// "routes": [
-	// 	{ "pattern": "btwrobotics.com", "custom_domain": true }
-	// ],
 	"workers_dev": true,
 	"triggers": {
 		// Every 15 minutes. Most runs do nothing; during an event they refresh it,

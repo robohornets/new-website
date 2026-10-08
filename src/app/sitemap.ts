@@ -2,7 +2,7 @@ import type { MetadataRoute } from "next";
 import { all } from "@/lib/db";
 import { impactPath } from "@/lib/format";
 
-const BASE = "https://btwrobotics.com";
+const BASE = "https://btwrobohornets.com";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [seasons, impact, albums, events] = await Promise.all([

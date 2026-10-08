@@ -1,4 +1,4 @@
--- Starter content carried over from the old btwrobotics.com site and the team's
+-- Starter content carried over from the old btwrobohornets.com site and the team's
 -- GitHub repos. Everything here can be edited or deleted in /admin.
 
 INSERT INTO site_settings (key, value) VALUES

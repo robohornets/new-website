@@ -82,7 +82,7 @@ export function SiteFooter({ settings }: { settings: SiteSettings }) {
           <span>
             © {year} FRC Team 1209 - RoboHornets · Booker T. Washington High School
           </span>
-          <span className="font-label">btwrobotics.com</span>
+          <span className="font-label">btwrobohornets.com</span>
         </div>
       </div>
     </footer>
