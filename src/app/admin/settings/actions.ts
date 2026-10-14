@@ -1,6 +1,6 @@
 "use server";
 
-import { adminAction, bool, FormError, int, optionalInt, parsePairs, str, url, type ActionState } from "@/lib/admin";
+import { adminAction, bool, FormError, int, optionalInt, parseLines, parsePairs, str, url, type ActionState } from "@/lib/admin";
 import { run } from "@/lib/db";
 import type { SiteSettings, Social, SocialPlatform } from "@/lib/types";
 
@@ -81,6 +81,8 @@ function build(section: Section, fd: FormData): unknown {
       }
       return { id };
     }
+    case "sponsor_in_kind":
+      return parseLines(str(fd, "items", 2000));
   }
 }
 

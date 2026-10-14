@@ -7,7 +7,7 @@ import { sendMessage, type ContactState } from "./actions";
 const input =
   "h-12 w-full rounded-md border border-edge bg-ink px-3.5 text-base text-bone placeholder:text-ash focus:border-hornet focus:outline-none";
 
-export function ContactForm({ defaultTopic }: { defaultTopic: MessageTopic }) {
+export function ContactForm({ defaultTopic, defaultBody }: { defaultTopic: MessageTopic; defaultBody?: string }) {
   const [state, action, pending] = useActionState<ContactState, FormData>(sendMessage, { ok: false });
 
   if (state.ok) {
@@ -57,7 +57,7 @@ export function ContactForm({ defaultTopic }: { defaultTopic: MessageTopic }) {
           name="body"
           rows={6}
           required
-          defaultValue={state.values?.body}
+          defaultValue={state.values?.body ?? defaultBody}
           className={`${input} h-auto py-3`}
           aria-invalid={Boolean(state.fieldErrors?.body)}
         />

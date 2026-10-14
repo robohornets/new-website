@@ -11,6 +11,7 @@ import type {
   Season,
   SeasonSponsor,
   SiteSettings,
+  SponsorTier,
   Subteam,
   TeamEvent,
 } from "./types";
@@ -31,6 +32,7 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   join_requests: { open: false },
   scouting: { open: false },
   calendar: { id: "" },
+  sponsor_in_kind: [],
 };
 
 export const getSettings = cache(async (): Promise<SiteSettings> => {
@@ -233,7 +235,7 @@ export const getSubteams = cache(async (): Promise<Subteam[]> =>
 export const getSeasonSponsors = cache(async (year: number): Promise<SeasonSponsor[]> =>
   all<SeasonSponsor>(
     `SELECT s.id, s.name, s.url, s.description, s.logo_media_id, m.r2_key AS logo_key,
-            t.id AS tier_id, t.name AS tier_name, t.rank AS tier_rank, ss.sort_order
+            t.id AS tier_id, t.name AS tier_name, t.rank AS tier_rank, t.logo_size AS tier_logo_size, ss.sort_order
      FROM sponsor_seasons ss
      JOIN sponsors s ON s.id = ss.sponsor_id
      JOIN sponsor_tiers t ON t.id = ss.tier_id
@@ -243,6 +245,19 @@ export const getSeasonSponsors = cache(async (year: number): Promise<SeasonSpons
     year,
   ),
 );
+
+type SponsorTierRow = Omit<SponsorTier, "provides" | "benefits"> & { provides: string; benefits: string };
+
+/** Every tier, top first. */
+export const getSponsorTiers = cache(async (): Promise<SponsorTier[]> => {
+  const rows = await all<SponsorTierRow>(
+    "SELECT id, name, rank, amount, amount_note, provides, benefits, logo_size FROM sponsor_tiers ORDER BY rank, name",
+  );
+  return rows.map((t) => ({ ...t, provides: parseJson(t.provides, []), benefits: parseJson(t.benefits, []) }));
+});
+
+/** The tiers on the Sponsors page's levels table: the ones with an amount. */
+export const getSponsorLevels = cache(async (): Promise<SponsorTier[]> => (await getSponsorTiers()).filter((t) => t.amount));
 
 /** Sponsors for the newest season that has any. */
 export const getLatestSponsors = cache(async (): Promise<{ year: number | null; sponsors: SeasonSponsor[] }> => {

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Mail, MapPin, SOCIAL_LABEL, SocialIcon } from "@/components/icons";
 import { Container, PageHeader } from "@/components/page-header";
-import { getContacts, getSettings } from "@/lib/data";
+import { getContacts, getSettings, getSponsorLevels } from "@/lib/data";
 import { MESSAGE_TOPICS, type MessageTopic } from "@/lib/types";
 import { ContactForm } from "./contact-form";
 
@@ -11,10 +11,14 @@ export const metadata: Metadata = {
 };
 
 export default async function ContactPage(props: PageProps<"/contact">) {
-  const { topic } = await props.searchParams;
+  const { topic, level } = await props.searchParams;
   const topicValue = Array.isArray(topic) ? topic[0] : topic;
   const defaultTopic: MessageTopic = MESSAGE_TOPICS.some((t) => t.value === topicValue) ? (topicValue as MessageTopic) : "other";
-  const [settings, contacts] = await Promise.all([getSettings(), getContacts()]);
+  const [settings, contacts, levels] = await Promise.all([getSettings(), getContacts(), getSponsorLevels()]);
+  // "Ask about Steel" on the Sponsors page starts the message; only real level names are used.
+  const levelValue = Array.isArray(level) ? level[0] : level;
+  const askedLevel = levels.find((l) => l.name === levelValue);
+  const defaultBody = askedLevel ? `I'm interested in sponsoring the team at the ${askedLevel.name} level.` : undefined;
   const { contact, socials } = settings;
 
   return (
@@ -72,7 +76,7 @@ export default async function ContactPage(props: PageProps<"/contact">) {
             </div>
           )}
         </div>
-        <ContactForm defaultTopic={defaultTopic} />
+        <ContactForm defaultTopic={defaultTopic} defaultBody={defaultBody} />
       </Container>
     </>
   );

@@ -162,7 +162,7 @@ Everything is in **btwrobohornets.com/admin**:
 | During/after events | **Seasons → (year) → event** | Results and every match fill in automatically. Fix anything (it's marked **Edited**), add a write-up, highlight video or album, or hide an event/match. |
 | Recruiting | **Join requests** | Switch the form on, share the `/join` link, then add students to the roster with one click (or decline). Switch it off when you're done. |
 | Anytime | **Team roster** | Each person is a card: **Edit** opens a popup for their details, subteams and photo (add, replace, remove, or hide from the site); **Remove** takes them off the season. **Add person** and **Manage subteams** are at the top, with search and filters by subteam, class or leadership. Students show publicly as "First L." and their photos stay hidden unless *Show photo* is on. On the Team page students are grouped by main subteam (leaders first, showing their role), as compact cards with their photo or initials; a bio, if filled in, opens when the card is clicked. |
-| Anytime | **Gallery**, **Sponsors** | Photo albums (drag and drop many files at once to upload; drag albums, and photos inside an album, into the order the site shows them), sponsors (each one's tier for the picked season is set under **Edit** and shown on its row). |
+| Anytime | **Gallery**, **Sponsors** | Photo albums (drag and drop many files at once to upload; drag albums, and photos inside an album, into the order the site shows them), sponsors (each one's tier for the picked season is set under **Edit** and shown on its row), and the tiers themselves: the amount, what it pays for and what sponsors get, shown as the levels table on `/sponsors`. |
 | When it changes | **Site text & links** | Mission, values and the Strategic Plan (PDF or link) on the Team page. |
 | Anytime | Google Calendar | Meetings and events added to the team's public Google Calendar show on the Team page within about 10 minutes (the calendar is set under **Site text & links → Calendar**). |
 | Rarely | **Site text & links** | Homepage hero, stats (`{members}` shows this season's student count, rounded down to the nearest 10), about text, socials, contact people, footer links, donate link. |
@@ -237,7 +237,7 @@ Content is organised around **seasons**. Each FRC year is a row, and most other 
 - `scouting_forms`, `scouting_entries`, `scouting_history`: see Scouting below. `scouting_forms.published` puts a season's scouting on its public Scouting tab.
 - `resources`: links and files on a season's Resources tab (`season_year` NULL for team documents shown on every season)
 - `join_requests`: students asking to join from `/join` (name, class, subteam ranking, about), with pending / added / declined status. The form only accepts requests while `site_settings.join_requests.open` is on.
-- `sponsors` + `sponsor_tiers` + `sponsor_seasons`: sponsors are stored once; each season lists who sponsored it and at what tier
+- `sponsors` + `sponsor_tiers` + `sponsor_seasons`: sponsors are stored once; each season lists who sponsored it and at what tier. A tier also holds its sponsorship level for the comparison table on `/sponsors` (amount, the lines under it, `provides` and `benefits` as JSON lists; no amount keeps it off the table) and `logo_size`, how the sponsor wall shows its sponsors (large, medium or small logos, or names only). `site_settings.sponsor_in_kind` lists the gifts that aren't money.
 - `posts`: posts from before impact events. Migration 0014 turned every outreach post into an impact event (`posts.event_id` says which, so old `/news/<slug>` and `/impact/<slug>` links redirect to it); old News posts stay here, hidden, until an admin turns one into an impact event. Export still downloads the table.
 - `albums` + `album_photos`: gallery albums, optionally tied to a season, each with a `sort_order` (albums on the Gallery and season pages; photos inside an album) set by dragging in the admin
 - `media`: every file uploaded to R2 (key, original filename, type, size, pixel width/height, alt text, and the browser's fingerprints `sha256` and `phash` for spotting duplicates). Other tables point at it by id. `media_distinct` holds pairs an admin said aren't duplicates.
@@ -421,11 +421,11 @@ browser, groups copies (`src/lib/duplicates.ts`), and merges a group: the kept f
 column above, then the copies are deleted from D1 and R2. "They're different photos" is remembered in `media_distinct`.
 
 Lists all work one way (`src/app/admin/_components/items.tsx`): every item is a row you click anywhere on. Small
-things (a sponsor, resource, photo, contact, message, match) open a popup with its own Save (`ModalItem` /
+things (a sponsor, sponsor tier, resource, photo, contact, message, match) open a popup with its own Save (`ModalItem` /
 `FormModal`, ✎ on the row); things with their own lists (a season, robot, event, album, impact event) open their own
 page (`LinkRow`, → on the row). Adding is a **+ Add …** button at the top of the list (`AddButton`). Delete is the
 last thing inside, in red, and asks first: in a popup's footer, or a `DeletePanel` at the end of a page. Tiny lists
-(sponsor tiers, subteams) are edited in place, with a trash button per row. The one exception is a scouting team's
+(subteams) are edited in place, with a trash button per row. The one exception is a scouting team's
 admin page, a review screen that shows every entry and version at once. Confirmations use the site's own dialog (`useConfirm()` from
 `_components/modal.tsx`, also used by any button with a `confirm` prop) instead of the browser's.
 

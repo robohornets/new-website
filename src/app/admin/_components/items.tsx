@@ -3,12 +3,12 @@
 // The one way lists work in the admin:
 //
 //   - Every item is a row (or card) you click anywhere on.
-//   - Small things (a sponsor, a resource, a photo) open in a popup: ✎ on the row.
+//   - Small things (a sponsor, a sponsor tier, a resource, a photo) open in a popup: ✎ on the row.
 //   - Big things with their own lists (a season, robot, event, album) open
 //     their own page: → on the row.
 //   - Adding is a "+ Add …" button at the top of the list, opening a popup.
 //   - Delete is always the last thing inside, in red, and asks first.
-//   - Tiny lists (tiers, subteams) are edited right in the list, with a
+//   - Tiny lists (subteams) are edited right in the list, with a
 //     trash button on each row.
 
 import Link from "next/link";
@@ -67,7 +67,7 @@ export function RowContent({
   );
 }
 
-/** The delete button on a row of a tiny list (tiers, subteams), edited in place. */
+/** The delete button on a row of a tiny list (subteams), edited in place. */
 export function TrashButton({ label, onClick, disabled }: { label: string; onClick: () => void; disabled?: boolean }) {
   return (
     <button
@@ -374,35 +374,5 @@ export function AddButton({
       )}
       {toast}
     </>
-  );
-}
-
-/** A trash button that asks, then runs a delete action (tiny lists like tiers). */
-export function TrashAction({ label, confirm, action }: { label: string; confirm: string; action: Destroy }) {
-  const ask = useConfirm();
-  const router = useRouter();
-  const [pending, startTransition] = useTransition();
-  const [error, setError] = useState<string | null>(null);
-  return (
-    <span className="flex items-center gap-2">
-      {error && (
-        <span role="alert" className="text-xs text-danger">
-          {error}
-        </span>
-      )}
-      <TrashButton
-        label={label}
-        disabled={pending}
-        onClick={async () => {
-          if (!(await ask({ message: confirm, confirmLabel: "Delete", danger: true }))) return;
-          setError(null);
-          startTransition(async () => {
-            const result = await action({ ok: false });
-            if (result.ok) router.refresh();
-            else setError(result.error ?? "That didn't work.");
-          });
-        }}
-      />
-    </span>
   );
 }

@@ -402,7 +402,7 @@ export const GUIDES: Guide[] = [
     steps: [
       "Go to **Sponsors** and pick the season at the top.",
       "Click **+ Add sponsor**, then type the name and website.",
-      "Pick their tier for this season (Titanium, Gold…).",
+      "Pick their tier for this season (Titanium, Carbon Fiber…).",
       "For the **Logo**, click **Upload new**. A logo with a transparent background (PNG or SVG) looks best. Then click **Add sponsor**.",
     ],
   },
@@ -416,9 +416,26 @@ export const GUIDES: Guide[] = [
       "Each sponsor in **Sponsors** shows their tier for that season (or **Not in** that year). Click a sponsor to open it.",
       "Pick their tier in the **tier** box, or **Not this season** if they aren't sponsoring this year. **Order within tier** decides who comes first among sponsors in the same tier.",
       "Click **Save changes** in the bar at the bottom. You can change several sponsors and save them all at once.",
-      "To rename tiers or change their order, use the **Tiers** box. Lower rank shows first and gets the big logos.",
+      "To rename tiers or change their order, click one in the **Tiers** box. Lower rank shows first.",
     ],
     tips: ["When you start a new season, last season's sponsors are copied over. Update their tiers once you know who's renewing."],
+  },
+  {
+    id: "sponsor-levels",
+    group: "People & sponsors",
+    title: "Change the sponsorship levels",
+    pages: ["/admin/sponsors"],
+    steps: [
+      "Go to **Sponsors** and click a tier in the **Tiers** box.",
+      "**Amount** is the big number on the Sponsors page's levels table, like $5,000+. **Under the amount** is a line each for the full range and other ways to reach the level, like \"or 3–9 mentors\".",
+      "**Pays for** and **Sponsors get** take one item per line. Word each thing the same on every tier (\"Logo on robot\", not \"Robot logo\" on one of them) so the table puts them on the same row. To add a note, put it after a colon: \"Team shirt: Several\".",
+      "**On the sponsor wall** sets how this tier's sponsors show: large, medium or small logos, or just their names.",
+      "Click **Save**. To add a new level, click **+ Add tier**.",
+    ],
+    tips: [
+      "Leave **Amount** blank to keep a tier off the levels table. Its sponsors still show on the wall.",
+      "The **Other ways to help** box below the tiers is the list of gifts that aren't money on the Sponsors page.",
+    ],
   },
 
   // ---- Site text -------------------------------------------------------------

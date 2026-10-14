@@ -1,14 +1,16 @@
 import type { Metadata } from "next";
 import { resolveSeasonParam } from "@/lib/admin-data";
+import { specsToText } from "@/lib/admin";
+import { getSettings, getSponsorTiers } from "@/lib/data";
 import { all } from "@/lib/db";
 import { mediaUrl } from "@/lib/media";
-import type { Sponsor, SponsorTier } from "@/lib/types";
-import { ActionForm } from "../_components/action-form";
-import { AddButton, Badge, ModalItem, RowContent, TrashAction } from "../_components/items";
+import { SPONSOR_LOGO_SIZES, type Sponsor, type SponsorTier } from "@/lib/types";
+import { AddButton, Badge, ModalItem, RowContent } from "../_components/items";
 import { EditForm } from "../_components/unsaved";
 import { AdminPageHeader, Grid, Panel, SelectField, TextArea, TextField } from "../_components/fields";
 import { MediaField } from "../_components/media-field";
 import { SeasonPicker } from "../_components/season-picker";
+import { saveSettings } from "../settings/actions";
 import { createSponsor, createTier, deleteSponsor, deleteTier, updateSponsor, updateTier } from "./actions";
 import { requireAdminPage } from "@/lib/auth";
 import { seasonLabel } from "@/lib/format";
@@ -19,9 +21,10 @@ export default async function AdminSponsorsPage(props: PageProps<"/admin/sponsor
   await requireAdminPage();
   const { season } = await props.searchParams;
   const { year, years } = await resolveSeasonParam(season);
-  const [sponsors, tiers, lineup] = await Promise.all([
+  const [sponsors, tiers, settings, lineup] = await Promise.all([
     all<Sponsor>("SELECT s.*, m.r2_key AS logo_key FROM sponsors s LEFT JOIN media m ON m.id = s.logo_media_id ORDER BY s.name"),
-    all<SponsorTier>("SELECT * FROM sponsor_tiers ORDER BY rank, name"),
+    getSponsorTiers(),
+    getSettings(),
     year
       ? all<{ sponsor_id: number; tier_id: number; sort_order: number }>(
           "SELECT sponsor_id, tier_id, sort_order FROM sponsor_seasons WHERE season_year = ?",
@@ -118,28 +121,41 @@ export default async function AdminSponsorsPage(props: PageProps<"/admin/sponsor
 
         {/* Settings before the list: beside it on wide screens, above it otherwise. */}
         <div className="order-first flex min-w-0 flex-col gap-6 xl:order-none">
-          <Panel title="Tiers" description="Lower rank shows first. The top tier gets large tiles.">
-            <ActionForm action={createTier} submitLabel="Add tier" submitVariant="secondary" resetOnSuccess>
-              <div className="grid grid-cols-[1fr_80px] gap-2">
-                <TextField label="New tier" name="name" placeholder="Platinum" />
-                <TextField label="Rank" name="rank" type="number" defaultValue={tiers.length} />
-              </div>
-            </ActionForm>
-            <ul className="flex flex-col gap-2 border-t border-line pt-4">
+          <Panel
+            title="Tiers"
+            description="The sponsorship levels, top first. Click one to change its amount, what it pays for and what sponsors get."
+            actions={
+              <AddButton label="Add tier" title="Add a tier" action={createTier} size="lg">
+                <TierFields rank={tiers.length} />
+              </AddButton>
+            }
+          >
+            <div className="flex flex-col gap-2">
               {tiers.map((t) => (
-                <li key={t.id} className="flex items-end gap-2">
-                  <EditForm action={updateTier.bind(null, t.id)} className="grow">
-                    <div className="grid grid-cols-[1fr_80px] gap-2">
-                      <TextField label="Name" name="name" defaultValue={t.name} />
-                      <TextField label="Rank" name="rank" type="number" defaultValue={t.rank} />
-                    </div>
-                  </EditForm>
-                  <span className="pb-0.5">
-                    <TrashAction label={`Delete the ${t.name} tier`} confirm={`Delete the ${t.name} tier?`} action={deleteTier.bind(null, t.id)} />
-                  </span>
-                </li>
+                <ModalItem
+                  key={t.id}
+                  title={t.name}
+                  size="lg"
+                  action={updateTier.bind(null, t.id)}
+                  destroy={{ label: "Delete tier", confirm: `Delete the ${t.name} tier?`, action: deleteTier.bind(null, t.id) }}
+                  row={
+                    <RowContent
+                      opens="popup"
+                      title={t.name}
+                      meta={t.amount || "Not on the levels table"}
+                      badges={<Badge tone="muted">{SPONSOR_LOGO_SIZES.find((s) => s.value === t.logo_size)?.label}</Badge>}
+                    />
+                  }
+                >
+                  <TierFields tier={t} />
+                </ModalItem>
               ))}
-            </ul>
+            </div>
+          </Panel>
+          <Panel title="Other ways to help" description="Gifts that aren't money, listed on the Sponsors page. One per line. Leave empty to hide the list.">
+            <EditForm action={saveSettings.bind(null, "sponsor_in_kind")}>
+              <TextArea label="Gifts that aren't money" name="items" rows={7} defaultValue={settings.sponsor_in_kind.join("\n")} />
+            </EditForm>
           </Panel>
         </div>
       </div>
@@ -160,6 +176,57 @@ function SponsorFields({ sponsor }: { sponsor?: Sponsor }) {
         label="Logo"
         current={sponsor?.logo_media_id && sponsor.logo_key ? { id: sponsor.logo_media_id, r2_key: sponsor.logo_key, filename: sponsor.name } : null}
         hint="Transparent PNG or SVG works best. Shown on a light tile."
+      />
+    </>
+  );
+}
+
+function TierFields({ tier, rank }: { tier?: SponsorTier; rank?: number }) {
+  return (
+    <>
+      <div className="grid grid-cols-[1fr_96px] gap-4">
+        <TextField label="Name" name="name" defaultValue={tier?.name} placeholder="Titanium" required />
+        <TextField label="Rank" name="rank" type="number" defaultValue={tier?.rank ?? rank} hint="Lower shows first." />
+      </div>
+      <Grid>
+        <TextField
+          label="Amount"
+          name="amount"
+          defaultValue={tier?.amount}
+          placeholder="$5,000+"
+          hint="The big number on the levels table. Leave it blank to keep this tier off the table."
+        />
+        <TextArea
+          label="Under the amount"
+          name="amount_note"
+          rows={2}
+          defaultValue={tier?.amount_note}
+          placeholder={"$5,000–$9,999\nor 3–9 mentors"}
+          hint="One line each: the full range, other ways to reach this level."
+        />
+      </Grid>
+      <TextArea
+        label="Pays for"
+        name="provides"
+        rows={3}
+        defaultValue={tier?.provides.join("\n")}
+        placeholder={"Transportation to competitions\nCompetition equipment"}
+        hint="One per line."
+      />
+      <TextArea
+        label="Sponsors get"
+        name="benefits"
+        rows={5}
+        defaultValue={tier ? specsToText(tier.benefits) : ""}
+        placeholder={"Team shirt: Several\nLogo on robot"}
+        hint="One per line. Word them the same on every tier so the table lines them up. Add a note after a colon: Team shirt: Several."
+      />
+      <SelectField
+        label="On the sponsor wall"
+        name="logo_size"
+        defaultValue={tier?.logo_size ?? "small"}
+        options={SPONSOR_LOGO_SIZES}
+        hint="How this tier's sponsors show on the Sponsors page, homepage and season pages."
       />
     </>
   );

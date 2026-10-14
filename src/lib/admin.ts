@@ -120,6 +120,15 @@ export function specsToText(specs: { label: string; value: string }[]): string {
   return specs.map((s) => (s.value ? `${s.label}: ${s.value}` : s.label)).join("\n");
 }
 
+/** One item per line → ["a","b"] */
+export function parseLines(text: string, max = 12): string[] {
+  return text
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .slice(0, max);
+}
+
 /** "a, b, c" → ["a","b","c"] */
 export function parseList(text: string): string[] {
   return text

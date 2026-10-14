@@ -1,7 +1,8 @@
 "use server";
 
-import { adminAction, FormError, int, optionalInt, str, url, type ActionState } from "@/lib/admin";
+import { adminAction, FormError, int, oneOf, optionalInt, parseLines, parseSpecs, str, url, type ActionState } from "@/lib/admin";
 import { batch, first, run } from "@/lib/db";
+import { SPONSOR_LOGO_SIZES } from "@/lib/types";
 
 function sponsorFields(fd: FormData) {
   const name = str(fd, "name", 160);
@@ -58,20 +59,39 @@ export async function deleteSponsor(id: number, _prev: ActionState): Promise<Act
   });
 }
 
+const LOGO_SIZES = SPONSOR_LOGO_SIZES.map((s) => s.value);
+
+function tierFields(fd: FormData) {
+  const name = str(fd, "name", 60);
+  if (!name) throw new FormError("Tier name is required.");
+  return [
+    name,
+    int(fd, "rank", 10),
+    str(fd, "amount", 40),
+    str(fd, "amount_note", 200),
+    JSON.stringify(parseLines(str(fd, "provides", 1000))),
+    JSON.stringify(parseSpecs(str(fd, "benefits", 1000)).slice(0, 12)),
+    oneOf(fd, "logo_size", LOGO_SIZES, "small"),
+  ] as const;
+}
+
 export async function createTier(_prev: ActionState, fd: FormData): Promise<ActionState> {
   return adminAction({ action: "create", entity: "sponsor_tier", entityId: str(fd, "name") }, async () => {
-    const name = str(fd, "name", 60);
-    if (!name) throw new FormError("Tier name is required.");
-    await run("INSERT INTO sponsor_tiers (name, rank) VALUES (?, ?)", name, int(fd, "rank", 10));
+    await run(
+      "INSERT INTO sponsor_tiers (name, rank, amount, amount_note, provides, benefits, logo_size) VALUES (?, ?, ?, ?, ?, ?, ?)",
+      ...tierFields(fd),
+    );
     return "Tier added.";
   });
 }
 
 export async function updateTier(id: number, _prev: ActionState, fd: FormData): Promise<ActionState> {
   return adminAction({ action: "update", entity: "sponsor_tier", entityId: id }, async () => {
-    const name = str(fd, "name", 60);
-    if (!name) throw new FormError("Tier name is required.");
-    await run("UPDATE sponsor_tiers SET name = ?, rank = ? WHERE id = ?", name, int(fd, "rank", 0), id);
+    await run(
+      "UPDATE sponsor_tiers SET name = ?, rank = ?, amount = ?, amount_note = ?, provides = ?, benefits = ?, logo_size = ? WHERE id = ?",
+      ...tierFields(fd),
+      id,
+    );
   });
 }
 

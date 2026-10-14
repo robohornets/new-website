@@ -34,6 +34,12 @@ export const Plus = (p: IconProps) => (
   </Svg>
 );
 
+export const Check = (p: IconProps) => (
+  <Svg strokeWidth={2.5} {...p}>
+    <path d="M20 6 9 17l-5-5" />
+  </Svg>
+);
+
 export const Menu = (p: IconProps) => (
   <Svg {...p}>
     <path d="M4 7h16M4 12h16M4 17h16" />

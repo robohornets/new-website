@@ -272,7 +272,7 @@ export default async function HomePage() {
             title="Powered by our partners"
             aside={
               <Link
-                href="/sponsors#support"
+                href="/sponsors#levels"
                 className="flex h-13 items-center self-start rounded-md border-[1.5px] border-hornet px-6 font-bold text-hornet hover:border-hornet hover:text-hornet-hover md:self-auto"
               >
                 Become a sponsor

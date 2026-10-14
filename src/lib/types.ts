@@ -165,7 +165,30 @@ export type JoinRequest = {
   created_at: string;
 };
 
-export type SponsorTier = { id: number; name: string; rank: number };
+/** How the sponsor wall shows a tier's sponsors. */
+export type SponsorLogoSize = "large" | "medium" | "small" | "name";
+
+export const SPONSOR_LOGO_SIZES: { value: SponsorLogoSize; label: string }[] = [
+  { value: "large", label: "Large logos" },
+  { value: "medium", label: "Medium logos" },
+  { value: "small", label: "Small logos" },
+  { value: "name", label: "Names only" },
+];
+
+export type SponsorTier = {
+  id: number;
+  name: string;
+  rank: number;
+  /** The big number on the levels table ("$5,000+"). Empty keeps the tier off the table. */
+  amount: string;
+  /** Lines under the amount: a range, "or 3–9 mentors". */
+  amount_note: string;
+  /** What the money pays for. */
+  provides: string[];
+  /** What sponsors get; tiers line up in the table by label. */
+  benefits: Spec[];
+  logo_size: SponsorLogoSize;
+};
 
 export type Sponsor = {
   id: number;
@@ -176,7 +199,13 @@ export type Sponsor = {
   logo_key: string | null;
 };
 
-export type SeasonSponsor = Sponsor & { tier_id: number; tier_name: string; tier_rank: number; sort_order: number };
+export type SeasonSponsor = Sponsor & {
+  tier_id: number;
+  tier_name: string;
+  tier_rank: number;
+  tier_logo_size: SponsorLogoSize;
+  sort_order: number;
+};
 
 export type Album = {
   id: number;
@@ -258,4 +287,6 @@ export type SiteSettings = {
   scouting: { open: boolean };
   /** Google Calendar ID (e.g. btwrobotics@gmail.com) or a public iCal link. Empty hides the calendar. */
   calendar: { id: string };
+  /** Gifts that aren't money, listed on /sponsors. */
+  sponsor_in_kind: string[];
 };
